@@ -21,10 +21,7 @@ $(OBJ):
 	mkdir -p $@
 
 SRC_mic = \
-	digital/clk_generator/i2s_clock_gen.sv \
-	digital/clk_generator/double_buffer_ram.sv \
-	digital/clk_generator/sampler.sv 
-
+	digital/clk_generator/i2s_clock_gen.sv
 
 SRC_I2C = \
 	digital/i2c_if/i2c_if.v \
