@@ -1,0 +1,180 @@
+// ============================================================================
+// pingpong_sp_ram.sv  (bypass read mode)
+// - 2 x Single-Port BSRAM (Gowin primitive "SP")
+// - 16-bit data, 256 samples per buffer
+// - WRITE_MODE = normal, READ_MODE = bypass
+// - Synchronous, active-low reset (rst_ni)
+// - Intern tæller styrer både write- og read-adresser (ping-pong)
+// - buffer_ready_o: ét-clock pulse ved afslutning af hver 256-samples blok
+// - read_data_o: streamer ud fra læse-bufferen synkroniseret til sample_ready_i
+// ----------------------------------------------------------------------------
+// For 16-bit bredde bruger Gowin SP adresselinjer AD[13:4] (10 bit). Her
+// anvender vi kun 8 bit (DEPTH=256), og padd’er nederste 4 bit med 0:
+//
+//   AD = { 2'b00, addr[7:0], 4'b0000 }
+//
+// BLKSEL er ikke brugt her (ingen intern kaskadéring), så den sættes til 3'b000.
+// CE=1, OCE ignoreres i bypass.
+
+// buffer_select = 0 write to RAM 0       buffer_select = 1 write to RAM 1
+// ============================================================================
+
+module pingpong_sp_ram #(
+  parameter int unsigned WIDTH = 16,
+  parameter int unsigned DEPTH = 256             // samples pr. buffer (skal være 256 her)
+) (
+  input  logic               clk_i,
+  input  logic               rst_ni,             // synkron, aktiv-lav
+  input  logic [WIDTH-1:0]   sample_i,
+  input  logic               sample_ready_i,     // 1 = "én sample klar" (skriv)
+  output logic [WIDTH-1:0]   read_data_o,
+  output logic               buffer_ready_o         // ét-clock pulse når en buffer er fyldt
+);
+
+  // ------------------------------
+  // Lokale konstanter & hjælpefunktioner
+  // ------------------------------
+  localparam int unsigned AW = 8;  // log2(256) = 8
+
+  // Pak adresse til Gowin SP (16-bit -> AD[13:4] aktive, [3:0]=0)
+  function automatic logic [13:0] pack_addr(input logic [AW-1:0] a8);
+    pack_addr = {2'b00, a8, 4'b0000};
+  endfunction
+
+  // ------------------------------
+  // Ping-pong styring
+  // ------------------------------
+  logic [AW-1:0] write_address, read_address;
+  logic          buffer_select;     // 0: skriv RAM0, 1: skriv RAM1
+  //logic          rd_buf_sel;     // 0: læs  RAM0, 1: læs  RAM1
+  logic          have_valid_block; // bliver 1 efter første fulde blok (så rd streamer)
+  logic          buffer_full;     // ét-slag når vi skriver sample nummer 255
+  logic          sample_ready;          // skrive-enable (sample_ready_i)
+
+  assign sample_ready      = sample_ready_i;
+  assign buffer_full = sample_ready && (write_address == DEPTH-1);
+
+  // Synchronous, active-low reset + ping-pong logik
+  always_ff @(posedge clk_i) begin
+    if (!rst_ni) begin
+      write_address         <= '0;
+      read_address          <= '0;
+      buffer_select         <= 1'b0;   // start: skriv RAM0
+ //     rd_buf_sel       <= 1'b1;   // start: læs RAM1 (vil være tom indtil første blok)
+      have_valid_block      <= 1'b0;
+      buffer_ready_o        <= 1'b0;
+    end else begin
+      // default: pulse går lav igen
+      buffer_ready_o <= 1'b0;
+
+//--------------Counters for read write------------------------
+      // Skriv-adresse tælles på ready-pulser
+      if (sample_ready) begin
+        if (buffer_full) begin
+          write_address <= '0;
+        end else begin
+          write_address <= write_address + 1'b1;
+        end
+      end
+
+      // Læs-adresse: kører i takt med input-sampling (når vi har en fuld blok)
+      if (sample_ready && have_valid_block) begin
+        if (read_address == DEPTH-1) begin
+          read_address <= '0;
+        end else begin
+          read_address <= read_address + 1'b1;
+        end
+      end
+//-------------------------------------------------------------
+  
+      // Når en blok (256) er færdigskrevet:
+      if (buffer_full) begin
+        buffer_ready_o        <= 1'b1;        // ét-clock flag: buffer færdig
+        have_valid_block      <= 1'b1;        // nu findes der data at læse løbende
+        read_address          <= '0;          // start læsning fra 0 for næste periode
+//        rd_buf_sel       <= buffer_select;  // læs fra den buffer vi netop fyldte
+        buffer_select         <= ~buffer_select; // og skriv til den anden buffer fremover
+      end
+
+
+    end
+  end
+
+  // ------------------------------
+  // Address & write enables pr. RAM
+  // ------------------------------
+  // RAM0 skriver når buffer_select==0, RAM1 skriver når buffer_select==1.
+  // Den RAM der ikke skriver, bruges som læse-buffer (rd_buf_sel).
+  logic [13:0] address_RAM_0, address_RAM_1;
+  wire         write_enable = sample_ready && (buffer_select == 1'b0);    // RAM0 = 0, RAM1 = 1
+  // wire         wre_ram1 = sample_ready && (buffer_select == 1'b1);
+
+  always_comb begin
+    // Standard-værdier (irrelevante kombinationer)
+    address_RAM_0 = pack_addr(write_address);
+    address_RAM_1 = pack_addr(read_address);
+
+    if (buffer_select == 1'b0) begin
+      // RAM0 skriver, RAM1 læser
+      address_RAM_0 = pack_addr(write_address);
+      address_RAM_1 = pack_addr(read_address);
+    end else begin
+      // RAM1 skriver, RAM0 læser
+      address_RAM_0 = pack_addr(read_address);
+      address_RAM_1 = pack_addr(write_address);
+    end
+  end
+
+  // ------------------------------
+  // Fysiske RAM-instanser (Gowin SP)
+  // ------------------------------
+  // READ_MODE = 1'b0 (bypass)  → OCE ignoreres
+  // WRITE_MODE= 2'b00 (normal)
+  // CE=1, RESET=0, BLKSEL=3'b000
+  logic [WIDTH-1:0] data_out_RAM_0, data_out_RAM_1;
+
+  // RAM0
+  SP u_ram0 (
+    .DO     (data_out_RAM_0),
+    .CLK    (clk_i),
+    .CE     (1'b1),
+    .OCE    (1'b0),       
+    .RESET  (1'b0),
+    .WRE    (write_enable), 
+    .BLKSEL (3'b000),
+    .AD     (address_RAM_0),
+    .DI     (sample_i)
+  );
+  defparam u_ram0.BIT_WIDTH  = 16;
+  defparam u_ram0.READ_MODE  = 1'b0;    // BYPASS
+  defparam u_ram0.WRITE_MODE = 2'b00;   // NORMAL
+  defparam u_ram0.BLK_SEL    = 3'b000;
+
+  // RAM1
+  SP u_ram1 (
+    .DO     (data_out_RAM_1),
+    .CLK    (clk_i),
+    .CE     (1'b1),
+    .OCE    (1'b0),       
+    .RESET  (1'b0),
+    .WRE    (~write_enable),  
+    .BLKSEL (3'b000),
+    .AD     (address_RAM_1),
+    .DI     (sample_i)
+  );
+  defparam u_ram1.BIT_WIDTH  = 16;
+  defparam u_ram1.READ_MODE  = 1'b0;    // BYPASS
+  defparam u_ram1.WRITE_MODE = 2'b00;   // NORMAL
+  defparam u_ram1.BLK_SEL    = 3'b000;
+
+  // Vælg data fra aktuel læse-buffer (bypass → DO opdateres uden ekstra pipeline)
+  always_comb begin
+    read_data_o = '0;
+    if (have_valid_block) begin
+      read_data_o = (~buffer_select == 1'b0) ? data_out_RAM_0 : data_out_RAM_1;
+    end
+  end
+
+
+
+endmodule

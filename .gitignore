@@ -1,0 +1,131 @@
+# FPGA Tool Generated Files
+# Xilinx ISE/Vivado
+*.jou
+*.log
+*.backup.*
+*.dcp
+*.rpt
+*.xml
+*.html
+*.pb
+*.wdb
+*.wcfg
+*.xpr.user
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.srcs/
+*.Xil/
+xsim.dir/
+.Xil/
+vivado*.jou
+vivado*.log
+webtalk*.jou
+webtalk*.log
+usage_statistics_webtalk.*
+
+# Intel Quartus
+*.qws
+*.qtl
+*.sof
+*.pof
+*.jdi
+*.pin
+*.done
+*.smsg
+*.summary
+*.qdf
+db/
+incremental_db/
+output_files/
+simulation/
+greybox_tmp/
+qar_info.json
+*.qar
+
+# Lattice Diamond
+*.ldf.bak
+*.lpf.bak
+*.rva
+*.rvl
+impl*/
+*.bgn
+*.bit
+*.drc
+*.ncd
+*.twr
+
+# ModelSim/QuestaSim
+work/
+*.mti
+*.mpf
+*.wlf
+transcript
+vsim.wlf
+*.vstf
+*.wlft
+modelsim.ini
+
+# General Simulation
+*.vcd
+*.ghw
+*.fst
+*.fst.hier
+*.sav
+*.saif
+
+# Synthesis
+*.edf
+*.edif
+*.ngc
+*.ngd
+*.bld
+*.pcf
+
+# Build artifacts
+*.bin
+*.bit
+*.mcs
+*.hex
+*.elf
+*.o
+*.a
+*.so
+*.exe
+
+# OS Generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+*.swp
+*.swo
+.directory
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+*.code-workspace
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.old
+
+# Documentation generated
+doc/html/
+doc/latex/
+*.aux
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
