@@ -29,13 +29,7 @@ module fpga_template_top(
     output logic       i2s_sck,
     output logic       i2s_ws,
     output logic       frame_start
-    //---Sampler---
-    // output logic mic_sck,        // Clock for mikrofon array
-    // output logic mic_ws,         // Word select (skifter mellem L/R mikrofon)
-    // input  logic mic_sd_0,       // Mikrofon 0 + 1
-    // input  logic mic_sd_1,       // Mikrofon 2 + 3
-    // input  logic mic_sd_2,       // Mikrofon 4 + 5
-    // input  logic mic_sd_3        // Mikrofon 6 +(7)
+
 );
     
 
