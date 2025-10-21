@@ -144,6 +144,42 @@
       "reset"       : "0",
       "readonly"    : "0",
       "description" : "placeholder"
+    },
+    {
+      "symbol"      : "sampler_cfg.sampler_start",
+      "address"     : "0x20",
+      "pos"         : "0",
+      "size"        : "1",
+      "reset"       : "1",
+      "readonly"    : "0",
+      "description" : "Enable sampler"
+    },
+    {
+      "symbol"      : "sampler_cfg.chanel0_lsb",
+      "address"     : "0x21",
+      "pos"         : "0",
+      "size"        : "8",
+      "reset"       : "0",
+      "readonly"    : "1",
+      "description" : "Enable stuf"
+    },
+    {
+      "symbol"      : "sampler_cfg.chanel1_lsb",
+      "address"     : "0x22",
+      "pos"         : "0",
+      "size"        : "8",
+      "reset"       : "0",
+      "readonly"    : "1",
+      "description" : "Enable stuf"
+    },
+    {
+      "symbol"      : "sampler_cfg.chanel2_lsb",
+      "address"     : "0x23",
+      "pos"         : "0",
+      "size"        : "8",
+      "reset"       : "0",
+      "readonly"    : "1",
+      "description" : "Enable stuf"
     }
   ]
 }

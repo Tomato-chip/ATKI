@@ -15,8 +15,8 @@ module i2s_capture_24 (
   input  logic        ws_i,       // 0=Left, 1=Right
   input  logic        sd_i,       // I²S data (MSB-first, gyldig på SCK rising)
 
-  output logic [23:0] left_o,
-  output logic [23:0] right_o,
+  output logic signed [23:0] left_o,   // Explicitly signed for PCM audio
+  output logic signed [23:0] right_o,
   output logic        ready_o     // 1 clk_i-cycle når L+R begge er opdateret
 );
 
@@ -32,12 +32,14 @@ module i2s_capture_24 (
     end
   end
   wire sck_rise = ~sck_d & sck_i;
-  wire ws_edge  = ws_d ^ ws_i;
+  wire ws_edge = (ws_d != ws_i);
+  
 
   // 25-bit shifter + tæller 0..25
   logic [24:0] shift25_q;
   logic [5:0]  cnt_q;           // tæller til 25
   logic        left_done_q, right_done_q;
+  logic        channel_q;       // Capture which channel we're in (0=left, 1=right)
 
   always_ff @(posedge clk_i) begin
     if (!rst_ni) begin
@@ -48,6 +50,7 @@ module i2s_capture_24 (
       left_done_q  <= 1'b0;
       right_done_q <= 1'b0;
       ready_o      <= 1'b0;
+      channel_q    <= 1'b0;
     end else begin
       ready_o <= 1'b0;
 
@@ -55,24 +58,28 @@ module i2s_capture_24 (
       if (ws_edge) begin
         cnt_q     <= 6'd0;
         shift25_q <= '0;
+        channel_q <= ws_i;  // Capture channel at WS edge
       end else if (sck_rise) begin
+        // Shift in new bit and increment counter
+        // Sample sd_i directly when SCK rises (both are synchronous to clk_i)
         if (cnt_q < 6'd25) begin
-          shift25_q <= {shift25_q[23:0], sd_i}; // LSB-ind
+          shift25_q <= {shift25_q[23:0], sd_i}; // LSB-ind, sample current sd_i value
           cnt_q     <= cnt_q + 6'd1;
-
-          // når 25. bit er skubbet ind, er shift25_q[24] = dummy,
-          // og shift25_q[23:0] = 24 gyldige bits (MSB..LSB)
-          if (cnt_q == 6'd24) begin
-            if (ws_i == 1'b0) begin
-              left_o      <= shift25_q[23:0];
-              left_done_q <= 1'b1;
-            end else begin
-              right_o      <= shift25_q[23:0];
-              right_done_q <= 1'b1;
-            end
-          end
         end
         // resten af slotten (32-25 = 7 SCK) ignoreres automatisk
+      end
+
+      // når 25. bit er skubbet ind, er shift25_q[24] = dummy,
+      // og shift25_q[23:0] = 24 gyldige bits (MSB..LSB)
+      // Check AFTER counter reaches 25 (separate from increment logic)
+      if (cnt_q == 6'd25) begin
+        if (channel_q == 1'b0) begin  // Use captured channel, not current ws_i
+          left_o      <= shift25_q[23:0];
+          left_done_q <= 1'b1;
+        end else begin
+          right_o      <= shift25_q[23:0];
+          right_done_q <= 1'b1;
+        end
       end
 
       if (left_done_q && right_done_q) begin

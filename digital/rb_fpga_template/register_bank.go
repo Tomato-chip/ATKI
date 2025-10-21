@@ -69,8 +69,10 @@ func main() {
 //{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{ Mine tilføjelser}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}	
 	sampler_cfg := []Symbol{
 		{0, "sampler_start", 		"sampler_cfg", 0,  1, 0, 1,  false, "Enable sampler", "Long"},
-		{1, "chanel0_lsb", 			"sampler_cfg", 8,  8, 0, 0,  true,  "Enable stuf", "Long"},
-		{2, "chanel0_lsb", 			"sampler_cfg", 8,  8, 0, 0,  true,  "Enable stuf", "Long"},
+		{1, "chanel0_lsb", 			"sampler_cfg", 1,  8, 0, 0,  true,  "Enable stuf", "Long"},
+		{2, "chanel1_lsb", 			"sampler_cfg", 2,  8, 0, 0,  true,  "Enable stuf", "Long"},
+		{3, "chanel2_lsb", 			"sampler_cfg", 3,  8, 0, 0,  true,  "Enable stuf", "Long"},
+
 
 	}
 	//syid, name, 					section, address, size, pos, reset, readonly, shortDescription, longDescription 		 make the rest of the 3 registers for adress 0, and offseet the rest
@@ -94,7 +96,7 @@ func main() {
 		{1, "dsp_cfg", "DSP interface and statemachine", 		nil, 0x40, 0x10, dsp_cfg},
 
 //{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{ Mine tilføjelser}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}	
-		{2, "sampler_cfg", "kontrol af mikrofon sampleren", 	nil, 0x10, 0x10, sampler_cfg},
+		{2, "sampler_cfg", "kontrol af mikrofon sampleren", 	nil, 0x20, 0x10, sampler_cfg},
 //{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}	
 
 	}

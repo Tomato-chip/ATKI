@@ -23,7 +23,7 @@ module fpga_template_top (
     //---Debug---------
         output  [5:0] debug_led,
         input   btn_s1_resetb,     // Button 1 input
-        input   btn_s2            // Button 2 input
+        input   btn_s2,            // Button 2 input
     //---I2S sampler outputs MIC---
         output logic       i2s_sck,
         output logic       i2s_ws,
@@ -42,8 +42,12 @@ module fpga_template_top (
     // for (genvar i = 0; i < 6; i++)
     //     assign debug_led[i] = (i <= steps);    // evt. inverter hvis aktiv lav
 
-    assign debug_led = debug_sample_led2[5:0];
-    assign sampler_cfg.chanel0_lsb = debug_sample_r[7:0];
+    assign debug_led = ~debug_sample_led[5:0];
+    assign sampler_cfg.chanel0_lsb = debug_sample_l[7:0];
+    assign sampler_cfg.chanel1_lsb = debug_sample_l[15:8];
+    assign sampler_cfg.chanel2_lsb = debug_sample_l[23:16];
+
+
 
 
 //--------------------------------------------------------------------------------------------------------
@@ -66,7 +70,7 @@ module fpga_template_top (
 //  Sampler
 //--------------------------------------------------------------------------------------------------------
     wire [23:0] debug_sample_l, debug_sample_r;
-    wire [5:0] debug_sample_led, debug_sample_led2;
+    wire [5:0] debug_sample_led;
 
     //  i2s_sd_edge_meter_led6 u_sd_test (
     //     .clk_i      (clk),
@@ -74,7 +78,7 @@ module fpga_template_top (
     //     .sck_i      (i2s_sck),
     //     .ws_i       (i2s_ws),
     //     .sd_i       (mic_sd_0),
-    //     .level6_o   (debug_sample_led2)
+    //     .level6_o   (debug_sample_led)
     // );
 
     i2s_capture_24 u_sampler (
@@ -87,14 +91,23 @@ module fpga_template_top (
         .right_o   (debug_sample_r),      // output [23:0]   
         .ready_o   (buffer_full)        // output          
     );
-
-    activity_envelope_led6 uled6 (
-        .clk_i              (clk),
-        .rst_ni             (resetb),
-        .sample_valid_i     (buffer_full),
-        .sample_i           (debug_sample_l),
-        .level6_o           (debug_sample_led)
+    // VU-meter på KUN én kanal (vælg her: 1=venstre, 0=højre)
+    vu_meter_6led vu (
+        .clk_i          (clk),
+        .rst_ni         (resetb),
+        .sample_stb_i   (buffer_full), // fra cap.ready_o
+        .left_sample_i  (debug_sample_l),
+        .right_sample_i (debug_sample_r),
+        .leds_o         (debug_sample_led)        // forbind til dine 6 LED pins i .cst
     );
+
+    // activity_envelope_led6 uled6 (
+    //     .clk_i              (clk),
+    //     .rst_ni             (resetb),
+    //     .sample_valid_i     (buffer_full),
+    //     .sample_i           (debug_sample_l),
+    //     .level6_o           (debug_sample_led)
+    // );
 
 //--------------------------------------------------------------------------------------------------------
 // Clock Generator
@@ -128,7 +141,7 @@ module fpga_template_top (
     // TX monitor shows divided clock (~25.8 Hz at 27MHz)
     assign uart_tx_mon = clk_div_counter[20]; 
 
-    assign debug_led = ~sys_cfg.debug_led; // Inverted for Tang Nano 20K active-LOW LEDs
+    // assign debug_led = ~sys_cfg.debug_led; // Inverted for Tang Nano 20K active-LOW LEDs
 
 //--------------------------------------------------------------------------------------------------------
 // Clock and reset
@@ -138,13 +151,15 @@ module fpga_template_top (
     // Tang Nano 9K:  Button pulls LOW when pressed  (active LOW)
     // Tang Nano 20K: Button pulls HIGH when pressed (active HIGH)
     wire resetb;
-    `ifdef TANGNANO20K
         assign resetb = ~btn_s1_resetb;   // 20K: button HIGH when pressed
-    `elsif TANGNANO9K
-        assign resetb = btn_s1_resetb;    // 9K: button LOW when pressed, invert to get active high reset
-    `else
-        assign resetb = ~btn_s1_resetb;   // Default to 20K behavior
-    `endif 
+
+    // `ifdef TANGNANO20K
+    //     assign resetb = ~btn_s1_resetb;   // 20K: button HIGH when pressed
+    // `elsif TANGNANO9K
+    //     assign resetb = btn_s1_resetb;    // 9K: button LOW when pressed, invert to get active high reset
+    // `else
+    //     assign resetb = ~btn_s1_resetb;   // Default to 20K behavior
+    // `endif 
 
     // Direct clock insert PLL here when needed
 

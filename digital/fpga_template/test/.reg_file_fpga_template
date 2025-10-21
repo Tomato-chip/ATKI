@@ -15,3 +15,7 @@ dsp_cfg.pli_filter_enable 0x40 4 1 1 Bypass PLI filter on the DSP
 dsp_cfg.placeholder1 0x40 5 1 0 placeholder
 dsp_cfg.placeholder2 0x40 6 1 0 placeholder
 dsp_cfg.placeholder3 0x40 7 1 0 placeholder
+sampler_cfg.sampler_start 0x20 0 1 1 Enable sampler
+sampler_cfg.chanel0_lsb 0x21 0 8 0 Enable stuf
+sampler_cfg.chanel1_lsb 0x22 0 8 0 Enable stuf
+sampler_cfg.chanel2_lsb 0x23 0 8 0 Enable stuf
