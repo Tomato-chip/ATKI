@@ -31,6 +31,13 @@ PKG 		= $(WS)/digital/rb_$(PROJ)/rb_$(PROJ)_struct.svh
 $(OBJ):
 	mkdir -p $@
 
+SRC_jesper = \
+	digital/clk_generator/i2s_clock_gen.sv \
+	digital/sampler/i2s_capture_24.sv \
+	digital/sampler/activity_envelope_led6.sv \
+	digital/sampler/i2s_sd_edge_meter_led6.sv 
+
+
 SRC_I2C = \
 	digital/i2c_if/i2c_if.v \
 	digital/i2c_if/i2cSlave_define.v \
@@ -40,9 +47,10 @@ SRC_I2C = \
 SRC_UART = \
 	digital/uart_if/uart_if.v
 
-SRC_RB_IF = $(SRC_I2C) $(SRC_UART) 
+SRC_RB_IF = $(SRC_I2C) $(SRC_UART)
 
 SRC_LIST = \
+	$(SRC_jesper) \
 	digital/pwm/pwm.v \
 	$(SRC_RB_IF) \
 	digital/rb_$(PROJ)/rb_$(PROJ).sv \
