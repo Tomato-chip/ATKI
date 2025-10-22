@@ -18,7 +18,8 @@ module rb_fpga_template
 	input  logic 				write_en,
 //---------------------------------------------
 	inout rb_sys_cfg_wire_t              sys_cfg,
-	inout rb_dsp_cfg_wire_t              dsp_cfg 
+	inout rb_dsp_cfg_wire_t              dsp_cfg,
+	inout rb_sampler_cfg_wire_t          sampler_cfg 
 );
 //------------------------------------------------Write to registers and reset-
 // Create registers
@@ -41,6 +42,9 @@ reg        reg__dsp_cfg__pli_filter_enable;                      //Bypass PLI fi
 reg        reg__dsp_cfg__placeholder1;                           //placeholder
 reg        reg__dsp_cfg__placeholder2;                           //placeholder
 reg        reg__dsp_cfg__placeholder3;                           //placeholder
+
+    // --- Section: sampler_cfg  Offset: 0x0020  Size: 16
+reg        reg__sampler_cfg__sampler_start;                      //Enable sampler
 
 always_ff @(posedge clk)
 begin
@@ -65,6 +69,9 @@ begin
     reg__dsp_cfg__placeholder1                            <=  1'b0;   //placeholder
     reg__dsp_cfg__placeholder2                            <=  1'b0;   //placeholder
     reg__dsp_cfg__placeholder3                            <=  1'b0;   //placeholder
+
+    // --- Section: sampler_cfg  Offset: 0x0020  Size: 16
+    reg__sampler_cfg__sampler_start                       <=  1'b1;   //Enable sampler
   end
   else
   begin
@@ -84,6 +91,8 @@ begin
         005 : reg__sys_cfg__debug_data1                         <=   data_write_in[7:0];  // Data store
  
         006 : reg__sys_cfg__debug_data2                         <=   data_write_in[7:0];  // Data store
+ 
+        032 : reg__sampler_cfg__sampler_start                   <=   data_write_in[0:0];  // Enable sampler
  
         064 : begin 
               reg__dsp_cfg__bypass_enable                       <=   data_write_in[0:0];  // Bypass filters on the DSP
@@ -123,6 +132,14 @@ begin
  
         006 : data_read_out[7:0]  <=  reg__sys_cfg__debug_data2;                // Data store
  
+        032 : data_read_out[0:0]  <=  reg__sampler_cfg__sampler_start;          // Enable sampler
+ 
+        033 : data_read_out[7:0]  <=  sampler_cfg.chanel0_lsb;                  // Enable stuf
+ 
+        034 : data_read_out[7:0]  <=  sampler_cfg.chanel1_lsb;                  // Enable stuf
+ 
+        035 : data_read_out[7:0]  <=  sampler_cfg.chanel2_lsb;                  // Enable stuf
+ 
         064 : begin 
               data_read_out[0:0]  <=  reg__dsp_cfg__bypass_enable;              // Bypass filters on the DSP
               data_read_out[1:1]  <=  reg__dsp_cfg__dc_filter_enable;           // Bypass DC filter on the DSP
@@ -153,4 +170,5 @@ assign dsp_cfg.pli_filter_enable                = reg__dsp_cfg__pli_filter_enabl
 assign dsp_cfg.placeholder1                     = reg__dsp_cfg__placeholder1 ;
 assign dsp_cfg.placeholder2                     = reg__dsp_cfg__placeholder2 ;
 assign dsp_cfg.placeholder3                     = reg__dsp_cfg__placeholder3 ;
+assign sampler_cfg.sampler_start                = reg__sampler_cfg__sampler_start ;
 endmodule

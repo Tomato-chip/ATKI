@@ -29,6 +29,14 @@ typedef struct packed {
   logic       placeholder3;                    // placeholder
 } rb_dsp_cfg_wire_t;
 
+// Wire interface for sampler_cfg
+typedef struct packed {
+  logic       sampler_start;                   // Enable sampler
+  logic [7:0] chanel0_lsb;                     // Enable stuf
+  logic [7:0] chanel1_lsb;                     // Enable stuf
+  logic [7:0] chanel2_lsb;                     // Enable stuf
+} rb_sampler_cfg_wire_t;
+
 
 endpackage
 

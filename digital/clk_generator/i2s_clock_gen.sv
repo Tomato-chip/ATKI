@@ -14,7 +14,7 @@
 module i2s_clock_gen #(
   parameter int unsigned SYS_CLK_HZ      = 27_000_000,  // System clock frequency
   parameter int unsigned SCK_DIV         = 8,           // SCK divider (must be >= 2)
-  parameter int unsigned SCKS_PER_FRAME  = 32,          // SCKs per full frame (L+R)
+  parameter int unsigned SCKS_PER_FRAME  = 32,          // SCKs per half frame (L+R)
   parameter bit          WS_POL          = 1'b0,        // WS polarity: 0=left-low, 1=left-high
   parameter bit          FRAME_PULSE_EN  = 1'b1         // Enable frame_start_o output
 ) (
@@ -32,7 +32,7 @@ module i2s_clock_gen #(
 
   // Counter widths
   localparam int unsigned SCK_CTR_WIDTH = $clog2(SCK_DIV);
-  localparam int unsigned WS_CTR_WIDTH  = $clog2(SCKS_PER_FRAME);
+  localparam int unsigned WS_CTR_WIDTH  = $clog2(64);
 
   // SCK generation - 50% duty cycle
   localparam int unsigned SCK_HALF_HIGH = SCK_DIV / 2;
