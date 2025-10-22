@@ -1,6 +1,6 @@
 module pingpong_sp_ram #(
-    parameter int unsigned WIDTH = 16,
-    parameter int unsigned DEPTH = 256
+    parameter int unsigned WIDTH = 24,
+    parameter int unsigned DEPTH = 24
 ) (
     input  logic               clk_i,
     input  logic               rst_ni,             // synkron, aktiv-lav
@@ -30,6 +30,7 @@ module pingpong_sp_ram #(
 
     assign sample_ready = sample_ready_i;
     assign buffer_full  = sample_ready && (write_address == DEPTH-1);
+    
 
     always_ff @(posedge clk_i) begin
         if (!rst_ni) begin
@@ -49,9 +50,9 @@ module pingpong_sp_ram #(
             end
 
             // read addr (kører i takt med sampling når der findes en fuld blok)
-            if (sample_ready && valid_read_out) begin
-                if (read_address == DEPTH-1) read_address <= '0;
-                else                         read_address <= read_address + 1'b1;
+            if (sample_ready) begin
+                if (buffer_full) read_address <= '0;
+                else             read_address <= read_address + 1'b1;
             end
 
             // blok færdig
@@ -87,10 +88,12 @@ module pingpong_sp_ram #(
     end
 
   // Fysiske RAM
-  logic [WIDTH-1:0] data_out_RAM_0, data_out_RAM_1;
+
+    logic [32-1:0] data_out_RAM_32_0, data_out_RAM_32_1;
+
 
     SP u_ram0 (
-        .DO     (data_out_RAM_0),
+        .DO     (data_out_RAM_32_0),
         .CLK    (clk_i),
         .CE     (1'b1),
         .OCE    (1'b0),
@@ -98,15 +101,16 @@ module pingpong_sp_ram #(
         .WRE    (write_enable_RAM_0),
         .BLKSEL (3'b000),
         .AD     (address_RAM_0),
-        .DI     (sample_i)
+        .DI     ({8'b0, sample_i})
     );
-    defparam u_ram0.BIT_WIDTH  = 16;
+    defparam u_ram0.BIT_WIDTH  = 32;
     defparam u_ram0.READ_MODE  = 1'b0;    // BYPASS
     defparam u_ram0.WRITE_MODE = 2'b00;   // NORMAL
     defparam u_ram0.BLK_SEL    = 3'b000;
 
+
     SP u_ram1 (
-        .DO     (data_out_RAM_1),
+        .DO     (data_out_RAM_32_1),
         .CLK    (clk_i),
         .CE     (1'b1),
         .OCE    (1'b0),
@@ -114,18 +118,22 @@ module pingpong_sp_ram #(
         .WRE    (write_enable_RAM_1),
         .BLKSEL (3'b000),
         .AD     (address_RAM_1),
-        .DI     (sample_i)
+        .DI     ({8'b0, sample_i})
     );
-    defparam u_ram1.BIT_WIDTH  = 16;
+    defparam u_ram1.BIT_WIDTH  = 32;
     defparam u_ram1.READ_MODE  = 1'b0;    // BYPASS
     defparam u_ram1.WRITE_MODE = 2'b00;   // NORMAL
     defparam u_ram1.BLK_SEL    = 3'b000;
+
+
 
     // Output-mux: vælg den buffer, der blev gjort klar ved sidste blokskift
     always_comb begin
         read_data_o = '0;
         if (valid_read_out) begin
-            read_data_o = (read_buffer_sel == 1'b0) ? data_out_RAM_0 : data_out_RAM_1;
+            read_data_o = (read_buffer_sel == 1'b0) ? data_out_RAM_32_0[23:0] : data_out_RAM_32_1[23:0];
+
+            // read_data_o = (read_buffer_sel == 1'b0) ? data_out_RAM_32_0[15:0] : data_out_RAM_32_1[15:0];
         end
     end
 

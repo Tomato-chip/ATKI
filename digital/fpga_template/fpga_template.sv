@@ -70,16 +70,9 @@ module fpga_template_top (
 //  Sampler
 //--------------------------------------------------------------------------------------------------------
     wire [23:0] debug_sample_l, debug_sample_r;
-    wire [5:0] debug_sample_led;
-
-    //  i2s_sd_edge_meter_led6 u_sd_test (
-    //     .clk_i      (clk),
-    //     .rst_ni     (resetb),
-    //     .sck_i      (i2s_sck),
-    //     .ws_i       (i2s_ws),
-    //     .sd_i       (mic_sd_0),
-    //     .level6_o   (debug_sample_led)
-    // );
+    wire [23:0] sample_ram_o;
+    wire [5:0]  debug_sample_led;
+    wire sample_ready_w;
 
     i2s_capture_24 u_sampler (
         .clk_i     (clk),               // input         
@@ -87,27 +80,30 @@ module fpga_template_top (
         .sck_i     (i2s_sck),           // input         
         .ws_i      (i2s_ws),            // input         
         .sd_i      (mic_sd_0),          // input    
-        .left_o    (debug_sample_l),  // output [23:0]   
+        .left_o    (debug_sample_l),     // output [23:0]   
         .right_o   (debug_sample_r),      // output [23:0]   
-        .ready_o   (buffer_full)        // output          
+        .ready_o   (sample_ready_w)        // output          
     );
+    pingpong_sp_ram ram_a (
+        .clk_i              (clk),
+        .rst_ni             (resetb),     // synkron, aktiv-lav
+        .sample_i           (debug_sample_l),
+        .sample_ready_i     (sample_ready_w),     // 1 = "én sample klar" (skriv)
+        .read_data_o        (sample_ram_o),
+        .buffer_ready_o     (buffer_full)      // ét-clock pulse når en buffer er fyldt
+    );
+
+
     // VU-meter på KUN én kanal (vælg her: 1=venstre, 0=højre)
     vu_meter_6led vu (
         .clk_i          (clk),
         .rst_ni         (resetb),
-        .sample_stb_i   (buffer_full), // fra cap.ready_o
-        .left_sample_i  (debug_sample_l),
+        .sample_stb_i   (sample_ready_w), // fra cap.ready_o
+        .left_sample_i  (sample_ram_o),
         .right_sample_i (debug_sample_r),
         .leds_o         (debug_sample_led)        // forbind til dine 6 LED pins i .cst
     );
 
-    // activity_envelope_led6 uled6 (
-    //     .clk_i              (clk),
-    //     .rst_ni             (resetb),
-    //     .sample_valid_i     (buffer_full),
-    //     .sample_i           (debug_sample_l),
-    //     .level6_o           (debug_sample_led)
-    // );
 
 //--------------------------------------------------------------------------------------------------------
 // Clock Generator
@@ -126,20 +122,20 @@ module fpga_template_top (
 //  assign uart_rx
 //--------------------------------------------------------------------------------------------------------
     // UART monitor assignments for scope debugging
-    assign uart_rx_mon = uart_rx;
-    wire debug_rx_data_valid;
+    // assign uart_rx_mon = uart_rx;
+    // wire debug_rx_data_valid;
 
-    // Clock divider to verify clock is running
-    reg [20:0] clk_div_counter;
-    always @(posedge clk) begin
-        if (!resetb)
-            clk_div_counter <= 0;
-        else
-            clk_div_counter <= clk_div_counter + 1;
-    end
+    // // Clock divider to verify clock is running
+    // reg [20:0] clk_div_counter;
+    // always @(posedge clk) begin
+    //     if (!resetb)
+    //         clk_div_counter <= 0;
+    //     else
+    //         clk_div_counter <= clk_div_counter + 1;
+    // end
 
-    // TX monitor shows divided clock (~25.8 Hz at 27MHz)
-    assign uart_tx_mon = clk_div_counter[20]; 
+    // // TX monitor shows divided clock (~25.8 Hz at 27MHz)
+    // assign uart_tx_mon = clk_div_counter[20]; 
 
     // assign debug_led = ~sys_cfg.debug_led; // Inverted for Tang Nano 20K active-LOW LEDs
 
@@ -166,40 +162,40 @@ module fpga_template_top (
 //--------------------------------------------------------------------------------------------------------
 // Register bank structs  
 //--------------------------------------------------------------------------------------------------------
-    rb_sys_cfg_wire_t sys_cfg;
-    assign sys_cfg.monitor_flag = 1'b0;
+    // rb_sys_cfg_wire_t sys_cfg;
+    // assign sys_cfg.monitor_flag = 1'b0;
 
-    rb_dsp_cfg_wire_t dsp_cfg;
+    // rb_dsp_cfg_wire_t dsp_cfg;
 
 //--------------------------------------------------------------------------------------------------------
 // Interface signals (shared between I2C and UART)
 //--------------------------------------------------------------------------------------------------------
-    wire [7:0] rb_address;
-    wire [7:0] rb_data_write_to_reg;
-    wire [7:0] rb_data_read_from_reg;
-    wire rb_reg_en;
-    wire rb_write_en;
-    wire [1:0] rb_streamSt_mon;
+    // wire [7:0] rb_address;
+    // wire [7:0] rb_data_write_to_reg;
+    // wire [7:0] rb_data_read_from_reg;
+    // wire rb_reg_en;
+    // wire rb_write_en;
+    // wire [1:0] rb_streamSt_mon;
 
-    // I2C interface signals
-    wire [7:0] i2c_address;
-    wire [7:0] i2c_data_write_to_reg;
-    wire i2c_reg_en;
-    wire i2c_write_en;
-    wire [1:0] i2c_streamSt_mon;
+    // // I2C interface signals
+    // wire [7:0] i2c_address;
+    // wire [7:0] i2c_data_write_to_reg;
+    // wire i2c_reg_en;
+    // wire i2c_write_en;
+    // wire [1:0] i2c_streamSt_mon;
 
-    // UART interface signals
-    wire [7:0] uart_address;
-    wire [7:0] uart_data_write_to_reg;
-    wire uart_reg_en;
-    wire uart_write_en;
-    wire [1:0] uart_streamSt_mon;
-    wire [7:0] uart_debug_out;
-    wire [1:0] uart_tx_state_mon;  // Keep TX state from being optimized away
+    // // UART interface signals
+    // wire [7:0] uart_address;
+    // wire [7:0] uart_data_write_to_reg;
+    // wire uart_reg_en;
+    // wire uart_write_en;
+    // wire [1:0] uart_streamSt_mon;
+    // wire [7:0] uart_debug_out;
+    // wire [1:0] uart_tx_state_mon;  // Keep TX state from being optimized away
 
-    // Debug UART signals
-    assign debug_uart_send = debug_send;
-    assign debug_uart_data = debug_byte;
+    // // Debug UART signals
+    // assign debug_uart_send = debug_send;
+    // assign debug_uart_data = debug_byte;
 
 //--------------------------------------------------------------------------------------------------------
 // I2C interface - DISABLED (pins used for UART monitors)
@@ -220,27 +216,27 @@ module fpga_template_top (
 //--------------------------------------------------------------------------------------------------------
 // UART interface
 //--------------------------------------------------------------------------------------------------------
-    uart_if uart_inst (
-        .clk                (clk),
-        .resetb             (resetb),
-        .uart_rx            (uart_rx),
-        .uart_tx            (uart_tx),
+    // uart_if uart_inst (
+    //     .clk                (clk),
+    //     .resetb             (resetb),
+    //     .uart_rx            (uart_rx),
+    //     .uart_tx            (uart_tx),
 
-        .address            (uart_address),
-        .data_write_to_reg  (uart_data_write_to_reg),
-        .data_read_from_reg (rb_data_read_from_reg),
-        .reg_en             (uart_reg_en),
-        .write_en           (uart_write_en),
-        .streamSt_mon       (uart_streamSt_mon),
-        // Debug interface
-        .debug_send         (debug_uart_send),
-        .debug_data         (debug_uart_data),
-        .debug_out          (uart_debug_out),
-        .debug_rx_data_valid (debug_rx_data_valid),
-        .rx_state_mon       (),
-        .proto_state_mon    (),
-        .tx_state_mon       (uart_tx_state_mon)  // Critical: prevents TX optimization
-    );
+    //     .address            (uart_address),
+    //     .data_write_to_reg  (uart_data_write_to_reg),
+    //     .data_read_from_reg (rb_data_read_from_reg),
+    //     .reg_en             (uart_reg_en),
+    //     .write_en           (uart_write_en),
+    //     .streamSt_mon       (uart_streamSt_mon),
+    //     // Debug interface
+    //     .debug_send         (debug_uart_send),
+    //     .debug_data         (debug_uart_data),
+    //     .debug_out          (uart_debug_out),
+    //     .debug_rx_data_valid (debug_rx_data_valid),
+    //     .rx_state_mon       (),
+    //     .proto_state_mon    (),
+    //     .tx_state_mon       (uart_tx_state_mon)  // Critical: prevents TX optimization
+    // );
 
 //--------------------------------------------------------------------------------------------------------
 // Interface arbitration (OR together since only one active at a time)
@@ -250,149 +246,149 @@ module fpga_template_top (
     //assign rb_reg_en = i2c_reg_en | uart_reg_en;
     //assign rb_write_en = i2c_write_en | uart_write_en;
 
-    assign rb_address           = uart_address;
-    assign rb_data_write_to_reg = uart_data_write_to_reg;
-    assign rb_reg_en            = uart_reg_en;
-    assign rb_write_en          = uart_write_en;
-    assign rb_streamSt_mon      = uart_streamSt_mon; 
+    // assign rb_address           = uart_address;
+    // assign rb_data_write_to_reg = uart_data_write_to_reg;
+    // assign rb_reg_en            = uart_reg_en;
+    // assign rb_write_en          = uart_write_en;
+    // assign rb_streamSt_mon      = uart_streamSt_mon; 
 //--------------------------------------------------------------------------------------------------------
 // Register bank        
 //-------------------------------------------------------------------------------------------------------- 
-    rb_fpga_template rb_fpga_template_inst (
-        .clk                (clk),
-        .resetb             (resetb),
-        .address            (rb_address),
-        .data_write_in      (rb_data_write_to_reg),
-        .data_read_out      (rb_data_read_from_reg),
-        .reg_en             (rb_reg_en),
-        .write_en           (rb_write_en),
-        .sys_cfg            (sys_cfg),
-        .dsp_cfg            (dsp_cfg)
-        ); 
+    // rb_fpga_template rb_fpga_template_inst (
+    //     .clk                (clk),
+    //     .resetb             (resetb),
+    //     .address            (rb_address),
+    //     .data_write_in      (rb_data_write_to_reg),
+    //     .data_read_out      (rb_data_read_from_reg),
+    //     .reg_en             (rb_reg_en),
+    //     .write_en           (rb_write_en),
+    //     .sys_cfg            (sys_cfg),
+    //     .dsp_cfg            (dsp_cfg)
+    //     ); 
 
 //-------------------------------------------------------------------------------------------------------- 
 // pwm            
 //-------------------------------------------------------------------------------------------------------- 
-    pwm pwm_inst (
-        .clock_in(clk),
-        .reset(!resetb),
-        .duty_cycle(sys_cfg.pwm_duty),  // 0x80 -> 50% 
-        .pwm_out(pwm_out)
-    ); 
+    // pwm pwm_inst (
+    //     .clock_in(clk),
+    //     .reset(!resetb),
+    //     .duty_cycle(sys_cfg.pwm_duty),  // 0x80 -> 50% 
+    //     .pwm_out(pwm_out)
+    // ); 
          
 //--------------------------------------------------------------------------------------------------------
 // Debug functionality - Button S2 triggers UART debug sequence
 //--------------------------------------------------------------------------------------------------------
 
-    // Button debouncing and edge detection for btn_s2
-    reg [2:0] btn_s2_sync;
-    reg btn_s2_prev;
-    wire btn_s2_edge;
+    // // Button debouncing and edge detection for btn_s2
+    // reg [2:0] btn_s2_sync;
+    // reg btn_s2_prev;
+    // wire btn_s2_edge;
 
-    always @(posedge clk) begin
-        if (!resetb) begin
-            btn_s2_sync <= 3'b000;
-            btn_s2_prev <= 1'b0;
-        end else begin
-            btn_s2_sync <= {btn_s2_sync[1:0], btn_s2};
-            btn_s2_prev <= btn_s2_sync[2];
-        end
-    end
+    // always @(posedge clk) begin
+    //     if (!resetb) begin
+    //         btn_s2_sync <= 3'b000;
+    //         btn_s2_prev <= 1'b0;
+    //     end else begin
+    //         btn_s2_sync <= {btn_s2_sync[1:0], btn_s2};
+    //         btn_s2_prev <= btn_s2_sync[2];
+    //     end
+    // end
 
-    assign btn_s2_edge = btn_s2_sync[2] & ~btn_s2_prev;  // Rising edge
+    // assign btn_s2_edge = btn_s2_sync[2] & ~btn_s2_prev;  // Rising edge
 
-    // Debug sequence generator
-    reg [3:0] debug_state;
-    reg [15:0] debug_counter;
-    reg [7:0] debug_byte;
-    reg debug_send;
-    reg debug_active;
+    // // Debug sequence generator
+    // reg [3:0] debug_state;
+    // reg [15:0] debug_counter;
+    // reg [7:0] debug_byte;
+    // reg debug_send;
+    // reg debug_active;
 
-    localparam DEBUG_IDLE = 4'h0;
-    localparam DEBUG_START = 4'h1;
-    localparam DEBUG_SEND = 4'h2;
-    localparam DEBUG_WAIT = 4'h3;
+    // localparam DEBUG_IDLE = 4'h0;
+    // localparam DEBUG_START = 4'h1;
+    // localparam DEBUG_SEND = 4'h2;
+    // localparam DEBUG_WAIT = 4'h3;
 
-    // Debug sequence: "DBG:" followed by incrementing numbers 0x00 to 0x0F
-    always @(posedge clk) begin
-        if (!resetb) begin
-            //debug_led <= 6'b111111;
-            debug_state <= DEBUG_IDLE;
-            debug_counter <= 16'h0000;
-            debug_byte <= 8'h00;
-            debug_send <= 1'b0;
-            debug_active <= 1'b0;
-        end else begin
-            debug_send <= 1'b0;  // Default
+    // // Debug sequence: "DBG:" followed by incrementing numbers 0x00 to 0x0F
+    // always @(posedge clk) begin
+    //     if (!resetb) begin
+    //         //debug_led <= 6'b111111;
+    //         debug_state <= DEBUG_IDLE;
+    //         debug_counter <= 16'h0000;
+    //         debug_byte <= 8'h00;
+    //         debug_send <= 1'b0;
+    //         debug_active <= 1'b0;
+    //     end else begin
+    //         debug_send <= 1'b0;  // Default
 
-            case (debug_state)
-                DEBUG_IDLE: begin
-                    if (!btn_s2_edge) begin
-                        //debug_led <= 6'b000000;
-                        debug_state <= DEBUG_START;
-                        debug_counter <= 16'h0000;
-                        debug_active <= 1'b1;
-                    end
-                end
+    //         case (debug_state)
+    //             DEBUG_IDLE: begin
+    //                 if (!btn_s2_edge) begin
+    //                     //debug_led <= 6'b000000;
+    //                     debug_state <= DEBUG_START;
+    //                     debug_counter <= 16'h0000;
+    //                     debug_active <= 1'b1;
+    //                 end
+    //             end
 
-                DEBUG_START: begin
-                    if (debug_counter < 16'h1000) begin  // Prevent timeout
-                        debug_counter <= debug_counter + 1;
+    //             DEBUG_START: begin
+    //                 if (debug_counter < 16'h1000) begin  // Prevent timeout
+    //                     debug_counter <= debug_counter + 1;
 
-                        // Send debug sequence with delays between bytes
-                        if (debug_counter[15:8] == 8'h00) begin  // First part - send bytes
-                            case (debug_counter[7:0])
-                                8'h10: begin debug_byte <= 8'h44; debug_send <= 1'b1; end  // 'D'
-                                8'h20: begin debug_byte <= 8'h42; debug_send <= 1'b1; end  // 'B'
-                                8'h30: begin debug_byte <= 8'h47; debug_send <= 1'b1; end  // 'G'
-                                8'h40: begin debug_byte <= 8'h3A; debug_send <= 1'b1; end  // ':'
-                                8'h50: begin debug_byte <= 8'h20; debug_send <= 1'b1; end  // ' '
-                                8'h60: begin debug_byte <= 8'h00; debug_send <= 1'b1; end  // 0x00
-                                8'h70: begin debug_byte <= 8'h01; debug_send <= 1'b1; end  // 0x01
-                                8'h80: begin debug_byte <= 8'h02; debug_send <= 1'b1; end  // 0x02
-                                8'h90: begin debug_byte <= 8'h03; debug_send <= 1'b1; end  // 0x03
-                                8'hA0: begin debug_byte <= 8'h04; debug_send <= 1'b1; end  // 0x04
-                                8'hB0: begin debug_byte <= 8'h05; debug_send <= 1'b1; end  // 0x05
-                                8'hC0: begin debug_byte <= 8'h06; debug_send <= 1'b1; end  // 0x06
-                                8'hD0: begin debug_byte <= 8'h07; debug_send <= 1'b1; end  // 0x07
-                                8'hE0: begin debug_byte <= 8'h08; debug_send <= 1'b1; end  // 0x08
-                                8'hF0: begin debug_byte <= 8'h09; debug_send <= 1'b1; end  // 0x09
-                                default: begin
-                                    // Do nothing, just count
-                                end
-                            endcase
-                        end else if (debug_counter[15:8] == 8'h01) begin  // Second part
-                            case (debug_counter[7:0])
-                                8'h00: begin debug_byte <= 8'h0A; debug_send <= 1'b1; end  // 0x0A
-                                8'h10: begin debug_byte <= 8'h0B; debug_send <= 1'b1; end  // 0x0B
-                                8'h20: begin debug_byte <= 8'h0C; debug_send <= 1'b1; end  // 0x0C
-                                8'h30: begin debug_byte <= 8'h0D; debug_send <= 1'b1; end  // 0x0D
-                                8'h40: begin debug_byte <= 8'h0E; debug_send <= 1'b1; end  // 0x0E
-                                8'h50: begin debug_byte <= 8'h0F; debug_send <= 1'b1; end  // 0x0F
-                                8'h60: begin debug_byte <= 8'h0D; debug_send <= 1'b1; end  // '\r'
-                                8'h70: begin debug_byte <= 8'h0A; debug_send <= 1'b1; end  // '\n'
-                                8'h80: begin
-                                    debug_state <= DEBUG_IDLE;
-                                    debug_active <= 1'b0;
-                                end
-                                default: begin
-                                    // Do nothing, just count
-                                end
-                            endcase
-                        end else begin
-                            // Finished
-                            debug_state <= DEBUG_IDLE;
-                            debug_active <= 1'b0;
-                        end
-                    end else begin
-                        // Timeout
-                        debug_state <= DEBUG_IDLE;
-                        debug_active <= 1'b0;
-                    end
-                end
-            endcase
-        end
-    end
+    //                     // Send debug sequence with delays between bytes
+    //                     if (debug_counter[15:8] == 8'h00) begin  // First part - send bytes
+    //                         case (debug_counter[7:0])
+    //                             8'h10: begin debug_byte <= 8'h44; debug_send <= 1'b1; end  // 'D'
+    //                             8'h20: begin debug_byte <= 8'h42; debug_send <= 1'b1; end  // 'B'
+    //                             8'h30: begin debug_byte <= 8'h47; debug_send <= 1'b1; end  // 'G'
+    //                             8'h40: begin debug_byte <= 8'h3A; debug_send <= 1'b1; end  // ':'
+    //                             8'h50: begin debug_byte <= 8'h20; debug_send <= 1'b1; end  // ' '
+    //                             8'h60: begin debug_byte <= 8'h00; debug_send <= 1'b1; end  // 0x00
+    //                             8'h70: begin debug_byte <= 8'h01; debug_send <= 1'b1; end  // 0x01
+    //                             8'h80: begin debug_byte <= 8'h02; debug_send <= 1'b1; end  // 0x02
+    //                             8'h90: begin debug_byte <= 8'h03; debug_send <= 1'b1; end  // 0x03
+    //                             8'hA0: begin debug_byte <= 8'h04; debug_send <= 1'b1; end  // 0x04
+    //                             8'hB0: begin debug_byte <= 8'h05; debug_send <= 1'b1; end  // 0x05
+    //                             8'hC0: begin debug_byte <= 8'h06; debug_send <= 1'b1; end  // 0x06
+    //                             8'hD0: begin debug_byte <= 8'h07; debug_send <= 1'b1; end  // 0x07
+    //                             8'hE0: begin debug_byte <= 8'h08; debug_send <= 1'b1; end  // 0x08
+    //                             8'hF0: begin debug_byte <= 8'h09; debug_send <= 1'b1; end  // 0x09
+    //                             default: begin
+    //                                 // Do nothing, just count
+    //                             end
+    //                         endcase
+    //                     end else if (debug_counter[15:8] == 8'h01) begin  // Second part
+    //                         case (debug_counter[7:0])
+    //                             8'h00: begin debug_byte <= 8'h0A; debug_send <= 1'b1; end  // 0x0A
+    //                             8'h10: begin debug_byte <= 8'h0B; debug_send <= 1'b1; end  // 0x0B
+    //                             8'h20: begin debug_byte <= 8'h0C; debug_send <= 1'b1; end  // 0x0C
+    //                             8'h30: begin debug_byte <= 8'h0D; debug_send <= 1'b1; end  // 0x0D
+    //                             8'h40: begin debug_byte <= 8'h0E; debug_send <= 1'b1; end  // 0x0E
+    //                             8'h50: begin debug_byte <= 8'h0F; debug_send <= 1'b1; end  // 0x0F
+    //                             8'h60: begin debug_byte <= 8'h0D; debug_send <= 1'b1; end  // '\r'
+    //                             8'h70: begin debug_byte <= 8'h0A; debug_send <= 1'b1; end  // '\n'
+    //                             8'h80: begin
+    //                                 debug_state <= DEBUG_IDLE;
+    //                                 debug_active <= 1'b0;
+    //                             end
+    //                             default: begin
+    //                                 // Do nothing, just count
+    //                             end
+    //                         endcase
+    //                     end else begin
+    //                         // Finished
+    //                         debug_state <= DEBUG_IDLE;
+    //                         debug_active <= 1'b0;
+    //                     end
+    //                 end else begin
+    //                     // Timeout
+    //                     debug_state <= DEBUG_IDLE;
+    //                     debug_active <= 1'b0;
+    //                 end
+    //             end
+    //         endcase
+    //     end
+    // end
 
 //--------------------------------------------------------------------------------------------------------
 
