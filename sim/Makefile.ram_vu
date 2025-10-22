@@ -1,0 +1,103 @@
+# ============================================================================
+# RAM-VU Handshake Test Makefile
+# ============================================================================
+# Builds and runs Verilator simulation of RAM-VU meter handshake
+# ============================================================================
+
+# Directories
+SIM_DIR := .
+SRC_DIR := ../digital
+RTL_DIR := ../rtl/gen
+OUT_DIR := out/ram_vu_run
+
+# Source files
+TB_SRC := ram_vu_handshake_tb.sv
+RAM_SRC := $(SRC_DIR)/ram/sp_ram.sv
+VU_SRC := $(SRC_DIR)/sampler/vu_meter_6led.sv
+SP_MODEL := $(RTL_DIR)/SP.v
+
+ALL_SRC := $(TB_SRC) $(RAM_SRC) $(VU_SRC) $(SP_MODEL)
+
+# Verilator flags
+VFLAGS := --binary
+VFLAGS += --trace
+VFLAGS += --trace-structs
+VFLAGS += --trace-max-array 1024
+VFLAGS += -Wall
+VFLAGS += -Wno-fatal
+VFLAGS += -Wno-TIMESCALEMOD
+VFLAGS += -Wno-WIDTHEXPAND
+VFLAGS += -Wno-WIDTHTRUNC
+VFLAGS += -Wno-UNUSEDSIGNAL
+VFLAGS += -Wno-UNUSEDPARAM
+VFLAGS += -Wno-UNDRIVEN
+VFLAGS += -Wno-PINCONNECTEMPTY
+VFLAGS += -Wno-DECLFILENAME
+VFLAGS += -Wno-DEFPARAM
+VFLAGS += -Wno-BLKSEQ
+VFLAGS += --top-module ram_vu_handshake_tb
+VFLAGS += --timing
+VFLAGS += -j 0
+
+# Output binary
+VTARGET := $(OUT_DIR)/Vram_vu_handshake_tb
+
+# ============================================================================
+# Targets
+# ============================================================================
+
+.PHONY: all sim clean help
+
+all: sim
+
+# Build and run simulation
+sim: $(VTARGET)
+	@echo "================================================================"
+	@echo "Running RAM-VU Handshake Simulation"
+	@echo "================================================================"
+	@cd $(OUT_DIR) && ./Vram_vu_handshake_tb 2>&1 | tee simulation.log
+	@echo ""
+	@echo "Simulation complete. Results in $(OUT_DIR)/"
+	@echo "  - simulation.log: Full simulation output"
+	@echo "  - ram_vu_handshake.vcd: Waveform file"
+	@echo ""
+	@echo "View waveform with: gtkwave $(OUT_DIR)/ram_vu_handshake.vcd"
+	@echo ""
+
+# Build Verilator executable
+$(VTARGET): $(ALL_SRC) | $(OUT_DIR)
+	@echo "Building Verilator simulation..."
+	@echo "Source files:"
+	@echo "  - $(TB_SRC)"
+	@echo "  - $(RAM_SRC)"
+	@echo "  - $(VU_SRC)"
+	@echo "  - $(SP_MODEL)"
+	@verilator $(VFLAGS) \
+		-Mdir $(OUT_DIR)/obj_dir \
+		$(ALL_SRC) 2>&1 | tee $(OUT_DIR)/build.log
+	@mv $(OUT_DIR)/obj_dir/Vram_vu_handshake_tb $(OUT_DIR)/ 2>/dev/null || true
+	@echo "Build complete."
+
+# Create output directory
+$(OUT_DIR):
+	@mkdir -p $(OUT_DIR)
+
+# Clean build artifacts
+clean:
+	@echo "Cleaning simulation artifacts..."
+	@rm -rf $(OUT_DIR)
+	@echo "Clean complete."
+
+# Help
+help:
+	@echo "RAM-VU Handshake Test Makefile"
+	@echo ""
+	@echo "Targets:"
+	@echo "  make -f Makefile.ram_vu sim    - Build and run simulation (default)"
+	@echo "  make -f Makefile.ram_vu clean  - Remove all build artifacts"
+	@echo "  make -f Makefile.ram_vu help   - Show this help message"
+	@echo ""
+	@echo "Output:"
+	@echo "  $(OUT_DIR)/simulation.log         - Simulation output"
+	@echo "  $(OUT_DIR)/ram_vu_handshake.vcd   - Waveform file"
+	@echo ""
