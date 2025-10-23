@@ -1,6 +1,6 @@
 module pingpong_sp_ram #(
     parameter int unsigned WIDTH = 16,
-    parameter int unsigned DEPTH = 256
+    parameter int unsigned DEPTH = 10
 ) (
     input  logic               clk_i,
     input  logic               rst_ni,             // synkron, aktiv-lav
@@ -9,9 +9,8 @@ module pingpong_sp_ram #(
     input  logic               sample_ready_i,     // 1 = "én sample klar" (skriv)
 
     output logic [WIDTH-1:0]   read_data_o,
-    output logic               buffer_ready_o,      // ét-clock pulse når en buffer er fyldt
-    // input  logic               fft_address_sel      // puls fra fft, når den har læst data
-
+    output logic               buffer_ready_o      // ét-clock pulse når en buffer er fyldt
+    // input  logic            fft_address_sel      // puls fra fft, når den har læst data
 );
 
     localparam int unsigned AW = 8;  // log2(256)
@@ -22,8 +21,8 @@ module pingpong_sp_ram #(
 
     // Styring
     logic [AW-1:0] write_address, read_address;
-    logic          write_buffer_sel;        // 0: skriv RAM0, 1: skriv RAM1
-    logic          read_buffer_sel;         // 0: læs   RAM0, 1: læs  RAM1   
+    logic          rw_sel;                  // 0: skriv RAM0/læs RAM1, 1: skriv RAM1/læs RAM0
+    logic          rw_sel_read;             // Delayed version for output mux (avoid race)
     logic          valid_read_out;
     logic          buffer_full;
     logic          sample_ready;
@@ -35,8 +34,8 @@ module pingpong_sp_ram #(
         if (!rst_ni) begin
             write_address       <= '0;
             read_address        <= '0;
-            write_buffer_sel    <= 1'b0;     // start: skriv RAM0
-            read_buffer_sel     <= 1'b1;     // start: læs RAM1 (tom indtil første blok)
+            rw_sel              <= 1'b0;     // start: skriv RAM0, læs RAM1
+            rw_sel_read         <= 1'b1;     // start: læs fra RAM1
             valid_read_out      <= 1'b0;
             buffer_ready_o      <= 1'b0;
         end else begin
@@ -59,23 +58,23 @@ module pingpong_sp_ram #(
                 buffer_ready_o      <= 1'b1;                // pulser 1 clk
                 valid_read_out      <= 1'b1;
                 read_address        <= '0;
-                read_buffer_sel     <= write_buffer_sel;    // Læs fra den buffer der netop blev fyldt
-                write_buffer_sel    <= ~write_buffer_sel;   // skriv til den anden fremover
+                rw_sel              <= ~rw_sel;             // Skift mellem RAM0 og RAM1
+                rw_sel_read         <= rw_sel;              // Update read selector (will point to just-filled buffer)
             end
         end
     end
 
-    // AD/WRE pr. RAM
+    // AD/WRE pr. RAM - unified control
     logic [13:0] address_RAM_0, address_RAM_1;
-    wire         write_enable_RAM_0 = sample_ready && (write_buffer_sel == 1'b0);
-    wire         write_enable_RAM_1 = sample_ready && (write_buffer_sel == 1'b1);
+    wire         write_enable_RAM_0 = sample_ready && (rw_sel == 1'b0);
+    wire         write_enable_RAM_1 = sample_ready && (rw_sel == 1'b1);
 
     always_comb begin
         // defaults
         address_RAM_0 = '0;
         address_RAM_1 = '0;
 
-        if (write_buffer_sel == 1'b0) begin
+        if (rw_sel == 1'b0) begin
             // RAM0 skriver, RAM1 læser
             address_RAM_0 = pack_addr(write_address);
             address_RAM_1 = pack_addr(read_address);
@@ -94,7 +93,7 @@ module pingpong_sp_ram #(
         .CLK    (clk_i),
         .CE     (1'b1),
         .OCE    (1'b0),
-        .RESET  (1'b0),
+        .RESET  (!rst_ni),
         .WRE    (write_enable_RAM_0),
         .BLKSEL (3'b000),
         .AD     (address_RAM_0),
@@ -110,7 +109,7 @@ module pingpong_sp_ram #(
         .CLK    (clk_i),
         .CE     (1'b1),
         .OCE    (1'b0),
-        .RESET  (1'b0),
+        .RESET  (!rst_ni),
         .WRE    (write_enable_RAM_1),
         .BLKSEL (3'b000),
         .AD     (address_RAM_1),
@@ -121,11 +120,14 @@ module pingpong_sp_ram #(
     defparam u_ram1.WRITE_MODE = 2'b00;   // NORMAL
     defparam u_ram1.BLK_SEL    = 3'b000;
 
-    // Output-mux: vælg den buffer, der blev gjort klar ved sidste blokskift
+    // Output-mux: vælg den buffer, der læses fra
+    // Bruger rw_sel_read (delayed) for at undgå race condition ved buffer swap
     always_comb begin
         read_data_o = '0;
         if (valid_read_out) begin
-            read_data_o = (read_buffer_sel == 1'b0) ? data_out_RAM_0 : data_out_RAM_1;
+            // rw_sel_read=0 => læs RAM0
+            // rw_sel_read=1 => læs RAM1
+            read_data_o = (rw_sel_read == 1'b0) ? data_out_RAM_0 : data_out_RAM_1;
         end
     end
 

@@ -1,0 +1,74 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Thu Oct 23 12:48:00 2025
+[*]
+[dumpfile] "/home/tomato-chip/ATKI/digital/ram/sp_ram_simple_tb.vcd"
+[dumpfile_mtime] "Thu Oct 23 12:48:00 2025"
+[dumpfile_size] 15000
+[savefile] "/home/tomato-chip/ATKI/digital/ram/sp_ram_simple_tb.gtkw"
+[timestart] 0
+[size] 1920 1080
+[pos] -1 -1
+*-12.000000 500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.sp_ram_simple_tb.
+[treeopen] TOP.sp_ram_simple_tb.dut.
+[sst_width] 300
+[signals_width] 280
+[sst_expanded] 1
+[sst_vpaned_height] 500
+
+@28
+TOP.sp_ram_simple_tb.clk
+TOP.sp_ram_simple_tb.rst_n
+@200
+-
+-Test Inputs
+@28
+TOP.sp_ram_simple_tb.sample_ready
+@22
+TOP.sp_ram_simple_tb.sample_in[15:0]
+@200
+-
+-DUT Outputs
+@28
+TOP.sp_ram_simple_tb.buffer_ready
+@22
+TOP.sp_ram_simple_tb.read_data[15:0]
+@200
+-
+-Internal Ping-Pong Control
+@28
+TOP.sp_ram_simple_tb.dut.rw_sel
+TOP.sp_ram_simple_tb.dut.rw_sel_read
+TOP.sp_ram_simple_tb.dut.valid_read_out
+TOP.sp_ram_simple_tb.dut.buffer_full
+@22
+TOP.sp_ram_simple_tb.dut.write_address[7:0]
+TOP.sp_ram_simple_tb.dut.read_address[7:0]
+@200
+-
+-RAM Write Enables
+@28
+TOP.sp_ram_simple_tb.dut.write_enable_RAM_0
+TOP.sp_ram_simple_tb.dut.write_enable_RAM_1
+@200
+-
+-RAM Addresses (Packed)
+@22
+TOP.sp_ram_simple_tb.dut.address_RAM_0[13:0]
+TOP.sp_ram_simple_tb.dut.address_RAM_1[13:0]
+@200
+-
+-RAM Data Outputs
+@22
+TOP.sp_ram_simple_tb.dut.data_out_RAM_0[15:0]
+TOP.sp_ram_simple_tb.dut.data_out_RAM_1[15:0]
+@200
+-
+-Test Counters
+@22
+TOP.sp_ram_simple_tb.sample_count[31:0]
+TOP.sp_ram_simple_tb.cycle_count[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
