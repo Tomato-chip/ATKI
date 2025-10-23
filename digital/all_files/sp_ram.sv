@@ -1,6 +1,6 @@
 module pingpong_sp_ram #(
     parameter int unsigned WIDTH = 16,
-    parameter int unsigned DEPTH = 256
+    parameter int unsigned DEPTH = 10
 ) (
     input  logic               clk_i,
     input  logic               rst_ni,             // synkron, aktiv-lav
