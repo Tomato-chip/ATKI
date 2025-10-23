@@ -20,22 +20,15 @@ module fpga_template_top (
     assign debug_led = ~debug_sample_led[5:0];
 
 //--------------------------------------------------------------------------------------------------------
-pingpong_sp_ram u_ram(
-    .clk_i              (clk), 
-    .rst_ni             (resetb),   
-    .sample_i           (debug_sample_l),
-    .sample_ready_i     (),
-    .read_data_o        (),
-    .buffer_ready_o     ()
-);  
-
-
     
-//--------------------------------------------------------------------------------------------------------
 
     wire [23:0] debug_sample_l, debug_sample_r;
-    wire [5:0] debug_sample_led;
-
+    wire [5:0]  debug_sample_led;
+    wire [15:0] ram_data_w;
+    wire        ram_buffer_ready_w;
+    wire        ram_read_enable_w;
+    wire        ram_read_ack_w;
+    wire        sample_ready_w;
 
     i2s_capture_24 u_sampler (
         .clk_i     (clk),               // input         
@@ -45,8 +38,25 @@ pingpong_sp_ram u_ram(
         .sd_i      (mic_sd_0),          // input    
         .left_o    (debug_sample_l),  // output [23:0]   
         .right_o   (debug_sample_r),      // output [23:0]   
-        .ready_o   (buffer_full)        // output          
+        .ready_o   (sample_ready_w)        // output          
     );
+
+
+
+
+    pingpong_sp_ram u_ram (
+        .clk_i              (clk), 
+        .rst_ni             (resetb),   
+        .sample_i           (debug_sample_l[15:0]),
+        .sample_ready_i     (sample_ready_w),
+        .read_data_o        (ram_data_w),
+        .buffer_ready_o     (ram_buffer_ready_w)
+    );  
+
+
+    
+//--------------------------------------------------------------------------------------------------------
+
 //--------------------------------------------------------------------------------------------------------
 
     // VU-meter på KUN én kanal (vælg her: 1=venstre, 0=højre)

@@ -1,0 +1,45 @@
+    wire [23:0] debug_sample_l, debug_sample_r;
+    wire [5:0] debug_sample_led;
+
+
+    // I2S capture sampler
+    wire sample_ready_w;
+    i2s_capture_24 u_sampler (
+        .clk_i     (clk),               // input
+        .rst_ni    (resetb),            // input
+        .sck_i     (i2s_sck),           // input
+        .ws_i      (i2s_ws),            // input
+        .sd_i      (mic_sd_0),          // input
+        .left_o    (debug_sample_l),    // output [23:0]
+        .right_o   (debug_sample_r),    // output [23:0]
+        .ready_o   (sample_ready_w)     // output - ny sample klar
+    );
+
+
+    wire [15:0] ram_data_w;
+    wire        ram_buffer_ready_w;
+    wire        ram_read_enable_w;
+    wire        ram_read_ack_w;
+
+    pingpong_sp_ram u_ram (
+        .clk_i          (clk),
+        .rst_ni         (resetb),
+        .sample_i       (debug_sample_l[15:0]),  // Brug øverste 16 bit af venstre kanal
+        .sample_ready_i (sample_ready_w),
+        .read_data_o    (ram_data_w),
+        .buffer_ready_o (ram_buffer_ready_w),
+        .read_enable_o  (ram_read_enable_w),
+        .read_ack_i     (ram_read_ack_w)
+    );
+
+    // VU-meter læser fra RAM via handshake
+    assign buffer_full = ram_buffer_ready_w;  // For debug monitor output
+    vu_meter_6led vu (
+        .clk_i          (clk),
+        .rst_ni         (resetb),
+        .buffer_ready_i (ram_buffer_ready_w),
+        .read_enable_i  (ram_read_enable_w),
+        .ram_sample_i   (ram_data_w),
+        .read_ack_o     (ram_read_ack_w),
+        .leds_o         (debug_sample_led)
+    );
