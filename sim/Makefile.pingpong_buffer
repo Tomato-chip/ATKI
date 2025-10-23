@@ -1,0 +1,96 @@
+# ============================================================================
+# Ping-Pong Buffer SP Test Makefile
+# ============================================================================
+# Builds and runs Verilator-based simulation of the ping-pong buffer with
+# full handshaking and dual Gowin SP RAM primitives
+# ============================================================================
+
+# Directories
+SIM_DIR := .
+SRC_DIR := ../digital
+OUT_DIR := out/pingpong_buffer_run
+
+# Source files
+TB_SRC := pingpong_buffer_sp_tb_simple.sv
+DUT_SRC := $(SRC_DIR)/ram/pingpong_buffer_sp.sv
+SP_SIM := gowin_sp_sim.v
+
+ALL_SRC := $(TB_SRC) $(DUT_SRC) $(SP_SIM)
+
+# Verilator flags
+VFLAGS := --binary
+VFLAGS += --trace
+VFLAGS += --trace-structs
+VFLAGS += --trace-max-array 1024
+VFLAGS += -Wall
+VFLAGS += -Wno-fatal
+VFLAGS += -Wno-TIMESCALEMOD
+VFLAGS += -Wno-WIDTHEXPAND
+VFLAGS += -Wno-UNUSEDSIGNAL
+VFLAGS += -Wno-UNUSEDPARAM
+VFLAGS += -Wno-CASEINCOMPLETE
+VFLAGS += -Wno-UNOPTFLAT
+VFLAGS += -Wno-DECLFILENAME
+VFLAGS += -Wno-DEFPARAM
+VFLAGS += --top-module pingpong_buffer_sp_tb_simple
+VFLAGS += --timing
+VFLAGS += -j 0
+
+# Output binary
+VTARGET := $(OUT_DIR)/Vpingpong_buffer_sp_tb_simple
+
+# ============================================================================
+# Targets
+# ============================================================================
+
+.PHONY: all sim clean help
+
+all: sim
+
+# Build and run simulation
+sim: $(VTARGET)
+	@echo "================================================================"
+	@echo "Running Ping-Pong Buffer SP Simulation"
+	@echo "================================================================"
+	@cd $(OUT_DIR) && ./Vpingpong_buffer_sp_tb_simple 2>&1 | tee simulation.log
+	@echo ""
+	@echo "Simulation complete. Results in $(OUT_DIR)/"
+	@echo "  - simulation.log: Full simulation output"
+	@echo "  - pingpong_buffer_sp_tb.vcd: Waveform file"
+	@echo ""
+
+# Build Verilator executable
+$(VTARGET): $(ALL_SRC) | $(OUT_DIR)
+	@echo "Building Verilator simulation..."
+	@echo "  Testbench: $(TB_SRC)"
+	@echo "  DUT:       $(DUT_SRC)"
+	@echo "  SP Model:  $(SP_SIM)"
+	@verilator $(VFLAGS) \
+		-Mdir $(OUT_DIR)/obj_dir \
+		$(ALL_SRC) 2>&1 | tee $(OUT_DIR)/build.log
+	@mv $(OUT_DIR)/obj_dir/Vpingpong_buffer_sp_tb_simple $(OUT_DIR)/ 2>/dev/null || true
+	@echo "Build complete."
+
+# Create output directory
+$(OUT_DIR):
+	@mkdir -p $(OUT_DIR)
+
+# Clean build artifacts
+clean:
+	@echo "Cleaning simulation artifacts..."
+	@rm -rf $(OUT_DIR)
+	@echo "Clean complete."
+
+# Help
+help:
+	@echo "Ping-Pong Buffer SP Test Makefile"
+	@echo ""
+	@echo "Targets:"
+	@echo "  make sim    - Build and run simulation (default)"
+	@echo "  make clean  - Remove all build artifacts"
+	@echo "  make help   - Show this help message"
+	@echo ""
+	@echo "Output:"
+	@echo "  $(OUT_DIR)/simulation.log          - Simulation output"
+	@echo "  $(OUT_DIR)/pingpong_buffer_sp_tb.vcd - Waveform file"
+	@echo ""
