@@ -20,7 +20,14 @@ module fpga_template_top (
     assign debug_led = ~debug_sample_led[5:0];
 
 //--------------------------------------------------------------------------------------------------------
-
+pingpong_sp_ram u_ram(
+    .clk_i              (clk), 
+    .rst_ni             (resetb),   
+    .sample_i           (debug_sample_l),
+    .sample_ready_i     (),
+    .read_data_o        (),
+    .buffer_ready_o     ()
+);  
 
 
     
