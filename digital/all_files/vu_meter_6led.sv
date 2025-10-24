@@ -20,17 +20,17 @@ module vu_meter_6led #(
   input  logic               clk_i,          // 27 MHz (samme som i2s_capture_24.clk_i)
   input  logic               rst_ni,
   input  logic               sample_stb_i,   // brug i2s_capture_24.ready_o
-  input  logic signed [23:0] left_sample_i,
-  input  logic signed [23:0] right_sample_i,
+  input  logic signed [15:0] left_sample_i,
+  input  logic signed [15:0] right_sample_i,
   output logic [5:0]         leds_o
 );
   // Vælg én kanal
-  logic signed [23:0] sample;
+  logic signed [15:0] sample;
   always_comb sample = (SELECT_LEFT ? left_sample_i : right_sample_i);
 
   // Absolutværdi (unsigned)
-  logic [23:0] mag;
-  always_comb mag = sample[23] ? (~sample + 1'b1) : sample;
+  logic [15:0] mag;
+  always_comb mag = sample[15] ? (~sample + 1'b1) : sample;
 
   // Leaky integrator (glidende middel)
   logic [31:0] level_q;

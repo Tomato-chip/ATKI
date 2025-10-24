@@ -98,6 +98,8 @@ VL_INLINE_OPT void Vi2s_clock_gen_tb_simple___024root___nba_sequent__TOP__0(Vi2s
     __Vtableidx1 = 0;
     CData/*0:0*/ __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_q;
     __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_q = 0;
+    CData/*0:0*/ __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q;
+    __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q = 0;
     CData/*5:0*/ __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q;
     __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q = 0;
     // Body
@@ -105,6 +107,8 @@ VL_INLINE_OPT void Vi2s_clock_gen_tb_simple___024root___nba_sequent__TOP__0(Vi2s
         = vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_q;
     __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q 
         = vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q;
+    __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q 
+        = vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q;
     if (vlSelf->i2s_clock_gen_tb_simple__DOT__rst_ni) {
         vlSelf->i2s_clock_gen_tb_simple__DOT__cycle_count 
             = ((IData)(1U) + vlSelf->i2s_clock_gen_tb_simple__DOT__cycle_count);
@@ -134,12 +138,16 @@ VL_INLINE_OPT void Vi2s_clock_gen_tb_simple___024root___nba_sequent__TOP__0(Vi2s
         vlSelf->i2s_clock_gen_tb_simple__DOT__ws_prev = 0U;
     }
     if (vlSelf->i2s_clock_gen_tb_simple__DOT__rst_ni) {
+        vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__frame_start_q = 0U;
         if (((~ (IData)(vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_q)) 
              & (IData)(vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_prev_q))) {
             if ((0x3fU == (IData)(vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q))) {
-                vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q 
+                __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q 
                     = (1U & (~ (IData)(vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q)));
                 __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q = 0U;
+                if (vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q) {
+                    vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__frame_start_q = 1U;
+                }
             } else {
                 __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q 
                     = (0x3fU & ((IData)(1U) + (IData)(vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q)));
@@ -147,7 +155,8 @@ VL_INLINE_OPT void Vi2s_clock_gen_tb_simple___024root___nba_sequent__TOP__0(Vi2s
         }
     } else {
         __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q = 0U;
-        vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q = 0U;
+        __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q = 0U;
+        vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__frame_start_q = 0U;
     }
     __Vtableidx1 = (((IData)(vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_ctr_q) 
                      << 2U) | (((IData)(vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_q) 
@@ -161,6 +170,8 @@ VL_INLINE_OPT void Vi2s_clock_gen_tb_simple___024root___nba_sequent__TOP__0(Vi2s
             = Vi2s_clock_gen_tb_simple__ConstPool__TABLE_h56c82868_0
             [__Vtableidx1];
     }
+    vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q 
+        = __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q;
     vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q 
         = __Vdly__i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q;
     vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_prev_q 
@@ -177,6 +188,7 @@ void Vi2s_clock_gen_tb_simple___024root___eval_nba(Vi2s_clock_gen_tb_simple___02
     // Body
     if ((1ULL & vlSelf->__VnbaTriggered.word(0U))) {
         Vi2s_clock_gen_tb_simple___024root___nba_sequent__TOP__0(vlSelf);
+        vlSelf->__Vm_traceActivity[1U] = 1U;
     }
 }
 

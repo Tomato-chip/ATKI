@@ -21,6 +21,8 @@ class alignas(VL_CACHE_LINE_BYTES)Vi2s_clock_gen_tb_simple__Syms final : public 
   public:
     // INTERNAL STATE
     Vi2s_clock_gen_tb_simple* const __Vm_modelp;
+    bool __Vm_activity = false;  ///< Used by trace routines to determine change occurred
+    uint32_t __Vm_baseCode = 0;  ///< Used by trace routines when tracing multiple models
     VlDeleter __Vm_deleter;
     bool __Vm_didInit = false;
 

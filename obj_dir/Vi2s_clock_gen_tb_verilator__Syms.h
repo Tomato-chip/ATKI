@@ -8,6 +8,7 @@
 #define VERILATED_VI2S_CLOCK_GEN_TB_VERILATOR__SYMS_H_  // guard
 
 #include "verilated.h"
+#include "verilated_vcd_c.h"
 
 // INCLUDE MODEL CLASS
 
@@ -21,6 +22,11 @@ class alignas(VL_CACHE_LINE_BYTES)Vi2s_clock_gen_tb_verilator__Syms final : publ
   public:
     // INTERNAL STATE
     Vi2s_clock_gen_tb_verilator* const __Vm_modelp;
+    bool __Vm_dumping = false;  // Dumping is active
+    VerilatedMutex __Vm_dumperMutex;  // Protect __Vm_dumperp
+    VerilatedVcdC* __Vm_dumperp VL_GUARDED_BY(__Vm_dumperMutex) = nullptr;  /// Trace class for $dump*
+    bool __Vm_activity = false;  ///< Used by trace routines to determine change occurred
+    uint32_t __Vm_baseCode = 0;  ///< Used by trace routines when tracing multiple models
     VlDeleter __Vm_deleter;
     bool __Vm_didInit = false;
 
@@ -39,6 +45,9 @@ class alignas(VL_CACHE_LINE_BYTES)Vi2s_clock_gen_tb_verilator__Syms final : publ
 
     // METHODS
     const char* name() { return TOP.name(); }
+    void _traceDump();
+    void _traceDumpOpen();
+    void _traceDumpClose();
 };
 
 #endif  // guard

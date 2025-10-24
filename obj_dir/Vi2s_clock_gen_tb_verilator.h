@@ -12,6 +12,7 @@
 
 class Vi2s_clock_gen_tb_verilator__Syms;
 class Vi2s_clock_gen_tb_verilator___024root;
+class VerilatedVcdC;
 
 // This class is the main interface to the Verilated model
 class alignas(VL_CACHE_LINE_BYTES) Vi2s_clock_gen_tb_verilator VL_NOT_FINAL : public VerilatedModel {
@@ -48,12 +49,12 @@ class alignas(VL_CACHE_LINE_BYTES) Vi2s_clock_gen_tb_verilator VL_NOT_FINAL : pu
   public:
     // API METHODS
     /// Evaluate the model.  Application must call when inputs change.
-    void eval() { eval_step(); }
+    void eval() { eval_step(); eval_end_step(); }
     /// Evaluate when calling multiple units/models per time step.
     void eval_step();
     /// Evaluate at end of a timestep for tracing, when using eval_step().
     /// Application must call after all eval() and before time changes.
-    void eval_end_step() {}
+    void eval_end_step();
     /// Simulation complete, run final blocks.  Application must call on completion.
     void final();
     /// Are there scheduled events to handle?
@@ -75,6 +76,7 @@ class alignas(VL_CACHE_LINE_BYTES) Vi2s_clock_gen_tb_verilator VL_NOT_FINAL : pu
     /// Re-init after cloning the model at the process level (e.g. fork in Linux)
     /// Re-allocate necessary resources. Called after cloning.
     void atClone() const;
+    std::unique_ptr<VerilatedTraceConfig> traceConfig() const override final;
 };
 
 #endif  // guard

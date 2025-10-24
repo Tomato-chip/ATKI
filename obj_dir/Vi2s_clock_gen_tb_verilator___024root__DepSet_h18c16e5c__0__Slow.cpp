@@ -19,5 +19,5 @@ VL_ATTR_COLD void Vi2s_clock_gen_tb_verilator___024root___eval_initial__TOP(Vi2s
     __Vtemp_1[3U] = 0x636c6f63U;
     __Vtemp_1[4U] = 0x6932735fU;
     vlSymsp->_vm_contextp__->dumpfile(VL_CVT_PACK_STR_NW(5, __Vtemp_1));
-    VL_PRINTF_MT("-Info: sim/i2s_clock_gen_tb_verilator.sv:357: $dumpvar ignored, as Verilated without --trace\n");
+    vlSymsp->_traceDumpOpen();
 }

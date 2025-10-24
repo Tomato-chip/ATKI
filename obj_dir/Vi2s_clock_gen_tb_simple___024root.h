@@ -21,15 +21,18 @@ class alignas(VL_CACHE_LINE_BYTES) Vi2s_clock_gen_tb_simple___024root final : pu
     CData/*0:0*/ i2s_clock_gen_tb_simple__DOT__ws_prev;
     CData/*2:0*/ i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_ctr_q;
     CData/*0:0*/ i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_q;
+    CData/*0:0*/ i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_tick;
     CData/*0:0*/ i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_prev_q;
     CData/*5:0*/ i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q;
     CData/*0:0*/ i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q;
+    CData/*0:0*/ i2s_clock_gen_tb_simple__DOT__dut__DOT__frame_start_q;
     CData/*0:0*/ __Vtrigprevexpr___TOP__i2s_clock_gen_tb_simple__DOT__clk_i__0;
     CData/*0:0*/ __VactContinue;
     IData/*31:0*/ i2s_clock_gen_tb_simple__DOT__cycle_count;
     IData/*31:0*/ i2s_clock_gen_tb_simple__DOT__sck_toggle_count;
     IData/*31:0*/ i2s_clock_gen_tb_simple__DOT__ws_toggle_count;
     IData/*31:0*/ __VactIterCount;
+    VlUnpacked<CData/*0:0*/, 2> __Vm_traceActivity;
     VlDelayScheduler __VdlySched;
     VlTriggerScheduler __VtrigSched_h69d85542__0;
     VlTriggerVec<2> __VactTriggered;

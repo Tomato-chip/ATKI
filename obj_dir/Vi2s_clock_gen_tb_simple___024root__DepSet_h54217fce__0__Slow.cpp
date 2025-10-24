@@ -73,8 +73,13 @@ VL_ATTR_COLD void Vi2s_clock_gen_tb_simple___024root___ctor_var_reset(Vi2s_clock
     vlSelf->i2s_clock_gen_tb_simple__DOT__ws_prev = VL_RAND_RESET_I(1);
     vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_ctr_q = VL_RAND_RESET_I(3);
     vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_q = VL_RAND_RESET_I(1);
+    vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_tick = VL_RAND_RESET_I(1);
     vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__sck_prev_q = VL_RAND_RESET_I(1);
     vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_ctr_q = VL_RAND_RESET_I(6);
     vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__ws_q = VL_RAND_RESET_I(1);
+    vlSelf->i2s_clock_gen_tb_simple__DOT__dut__DOT__frame_start_q = VL_RAND_RESET_I(1);
     vlSelf->__Vtrigprevexpr___TOP__i2s_clock_gen_tb_simple__DOT__clk_i__0 = VL_RAND_RESET_I(1);
+    for (int __Vi0 = 0; __Vi0 < 2; ++__Vi0) {
+        vlSelf->__Vm_traceActivity[__Vi0] = 0;
+    }
 }

@@ -11,12 +11,10 @@ VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__
     Vi2s_clock_gen_tb_verilator__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vi2s_clock_gen_tb_verilator___024root___eval_initial__TOP__Vtiming__1\n"); );
     // Init
-    CData/*0:0*/ i2s_clock_gen_tb_verilator__DOT__test_passed;
-    i2s_clock_gen_tb_verilator__DOT__test_passed = 0;
     IData/*31:0*/ i2s_clock_gen_tb_verilator__DOT____Vrepeat1;
     i2s_clock_gen_tb_verilator__DOT____Vrepeat1 = 0;
     // Body
-    i2s_clock_gen_tb_verilator__DOT__test_passed = 1U;
+    vlSelf->i2s_clock_gen_tb_verilator__DOT__test_passed = 1U;
     vlSelf->i2s_clock_gen_tb_verilator__DOT__errors = 0U;
     VL_WRITEF("=================================================================\nI2S Clock Generator Testbench\n=================================================================\nConfiguration:\n  System Clock:      27000000 Hz (37.037 ns period)\n  SCK Divider:       8\n  SCKs per Frame:    64\n  Expected SCK:      3.375 MHz\n  Expected WS:       52.734 kHz\n=================================================================\n\n");
     vlSelf->i2s_clock_gen_tb_verilator__DOT__rst_ni = 0U;
@@ -25,51 +23,61 @@ VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__
                                                        "@(posedge i2s_clock_gen_tb_verilator.clk_i)", 
                                                        "sim/i2s_clock_gen_tb_verilator.sv", 
                                                        214);
+    vlSelf->__Vm_traceActivity[2U] = 1U;
     co_await vlSelf->__VtrigSched_hb7b23e70__0.trigger(0U, 
                                                        nullptr, 
                                                        "@(posedge i2s_clock_gen_tb_verilator.clk_i)", 
                                                        "sim/i2s_clock_gen_tb_verilator.sv", 
                                                        214);
+    vlSelf->__Vm_traceActivity[2U] = 1U;
     co_await vlSelf->__VtrigSched_hb7b23e70__0.trigger(0U, 
                                                        nullptr, 
                                                        "@(posedge i2s_clock_gen_tb_verilator.clk_i)", 
                                                        "sim/i2s_clock_gen_tb_verilator.sv", 
                                                        214);
+    vlSelf->__Vm_traceActivity[2U] = 1U;
     co_await vlSelf->__VtrigSched_hb7b23e70__0.trigger(0U, 
                                                        nullptr, 
                                                        "@(posedge i2s_clock_gen_tb_verilator.clk_i)", 
                                                        "sim/i2s_clock_gen_tb_verilator.sv", 
                                                        214);
+    vlSelf->__Vm_traceActivity[2U] = 1U;
     co_await vlSelf->__VtrigSched_hb7b23e70__0.trigger(0U, 
                                                        nullptr, 
                                                        "@(posedge i2s_clock_gen_tb_verilator.clk_i)", 
                                                        "sim/i2s_clock_gen_tb_verilator.sv", 
                                                        214);
+    vlSelf->__Vm_traceActivity[2U] = 1U;
     co_await vlSelf->__VtrigSched_hb7b23e70__0.trigger(0U, 
                                                        nullptr, 
                                                        "@(posedge i2s_clock_gen_tb_verilator.clk_i)", 
                                                        "sim/i2s_clock_gen_tb_verilator.sv", 
                                                        214);
+    vlSelf->__Vm_traceActivity[2U] = 1U;
     co_await vlSelf->__VtrigSched_hb7b23e70__0.trigger(0U, 
                                                        nullptr, 
                                                        "@(posedge i2s_clock_gen_tb_verilator.clk_i)", 
                                                        "sim/i2s_clock_gen_tb_verilator.sv", 
                                                        214);
+    vlSelf->__Vm_traceActivity[2U] = 1U;
     co_await vlSelf->__VtrigSched_hb7b23e70__0.trigger(0U, 
                                                        nullptr, 
                                                        "@(posedge i2s_clock_gen_tb_verilator.clk_i)", 
                                                        "sim/i2s_clock_gen_tb_verilator.sv", 
                                                        214);
+    vlSelf->__Vm_traceActivity[2U] = 1U;
     co_await vlSelf->__VtrigSched_hb7b23e70__0.trigger(0U, 
                                                        nullptr, 
                                                        "@(posedge i2s_clock_gen_tb_verilator.clk_i)", 
                                                        "sim/i2s_clock_gen_tb_verilator.sv", 
                                                        214);
+    vlSelf->__Vm_traceActivity[2U] = 1U;
     co_await vlSelf->__VtrigSched_hb7b23e70__0.trigger(0U, 
                                                        nullptr, 
                                                        "@(posedge i2s_clock_gen_tb_verilator.clk_i)", 
                                                        "sim/i2s_clock_gen_tb_verilator.sv", 
                                                        214);
+    vlSelf->__Vm_traceActivity[2U] = 1U;
     vlSelf->i2s_clock_gen_tb_verilator__DOT__rst_ni = 1U;
     VL_WRITEF("[%0t] Reset released\n",64,VL_TIME_UNITED_Q(1000),
               -9);
@@ -79,6 +87,7 @@ VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__
                                                            "@([changed] (32'h8 <= i2s_clock_gen_tb_verilator.ws_toggle_count))", 
                                                            "sim/i2s_clock_gen_tb_verilator.sv", 
                                                            219);
+        vlSelf->__Vm_traceActivity[2U] = 1U;
     }
     i2s_clock_gen_tb_verilator__DOT____Vrepeat1 = 0x64U;
     while (VL_LTS_III(32, 0U, i2s_clock_gen_tb_verilator__DOT____Vrepeat1)) {
@@ -87,6 +96,7 @@ VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__
                                                            "@(posedge i2s_clock_gen_tb_verilator.clk_i)", 
                                                            "sim/i2s_clock_gen_tb_verilator.sv", 
                                                            220);
+        vlSelf->__Vm_traceActivity[2U] = 1U;
         i2s_clock_gen_tb_verilator__DOT____Vrepeat1 
             = (i2s_clock_gen_tb_verilator__DOT____Vrepeat1 
                - (IData)(1U));
@@ -109,7 +119,7 @@ VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__
                       vlSymsp->name(),32,(vlSelf->i2s_clock_gen_tb_verilator__DOT__sck_high_time 
                                           + vlSelf->i2s_clock_gen_tb_verilator__DOT__sck_low_time));
             VL_STOP_MT("sim/i2s_clock_gen_tb_verilator.sv", 240, "");
-            i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
+            vlSelf->i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
             vlSelf->i2s_clock_gen_tb_verilator__DOT__errors 
                 = ((IData)(1U) + vlSelf->i2s_clock_gen_tb_verilator__DOT__errors);
         } else {
@@ -127,7 +137,7 @@ VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__
                       64,VL_TIME_UNITED_Q(1000),-9,
                       vlSymsp->name(),32,vlSelf->i2s_clock_gen_tb_verilator__DOT__duty_diff_val);
             VL_STOP_MT("sim/i2s_clock_gen_tb_verilator.sv", 252, "");
-            i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
+            vlSelf->i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
             vlSelf->i2s_clock_gen_tb_verilator__DOT__errors 
                 = ((IData)(1U) + vlSelf->i2s_clock_gen_tb_verilator__DOT__errors);
         } else {
@@ -148,7 +158,7 @@ VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__
                       64,VL_TIME_UNITED_Q(1000),-9,
                       vlSymsp->name(),64,vlSelf->i2s_clock_gen_tb_verilator__DOT__unnamedblk4__DOT__ws_period_avg);
             VL_STOP_MT("sim/i2s_clock_gen_tb_verilator.sv", 272, "");
-            i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
+            vlSelf->i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
             vlSelf->i2s_clock_gen_tb_verilator__DOT__errors 
                 = ((IData)(1U) + vlSelf->i2s_clock_gen_tb_verilator__DOT__errors);
         } else {
@@ -168,7 +178,7 @@ VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__
                       64,VL_TIME_UNITED_Q(1000),-9,
                       vlSymsp->name());
             VL_STOP_MT("sim/i2s_clock_gen_tb_verilator.sv", 286, "");
-            i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
+            vlSelf->i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
             vlSelf->i2s_clock_gen_tb_verilator__DOT__errors 
                 = ((IData)(1U) + vlSelf->i2s_clock_gen_tb_verilator__DOT__errors);
         } else {
@@ -181,7 +191,7 @@ VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__
         VL_WRITEF("[%0t] %%Error: i2s_clock_gen_tb_verilator.sv:298: Assertion failed in %Ni2s_clock_gen_tb_verilator: [FAIL] WS changed when SCK was high\n",
                   64,VL_TIME_UNITED_Q(1000),-9,vlSymsp->name());
         VL_STOP_MT("sim/i2s_clock_gen_tb_verilator.sv", 298, "");
-        i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
+        vlSelf->i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
         vlSelf->i2s_clock_gen_tb_verilator__DOT__errors 
             = (vlSelf->i2s_clock_gen_tb_verilator__DOT__errors 
                + vlSelf->i2s_clock_gen_tb_verilator__DOT__ws_change_on_sck_high_count);
@@ -195,14 +205,14 @@ VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__
         VL_WRITEF("[%0t] %%Error: i2s_clock_gen_tb_verilator.sv:310: Assertion failed in %Ni2s_clock_gen_tb_verilator: [FAIL] Frame start pulse count unexpected\n",
                   64,VL_TIME_UNITED_Q(1000),-9,vlSymsp->name());
         VL_STOP_MT("sim/i2s_clock_gen_tb_verilator.sv", 310, "");
-        i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
+        vlSelf->i2s_clock_gen_tb_verilator__DOT__test_passed = 0U;
         vlSelf->i2s_clock_gen_tb_verilator__DOT__errors 
             = ((IData)(1U) + vlSelf->i2s_clock_gen_tb_verilator__DOT__errors);
     } else {
         VL_WRITEF("  [PASS] Frame start pulse count correct\n");
     }
     VL_WRITEF("\n=================================================================\nTest Summary\n=================================================================\n");
-    if (((IData)(i2s_clock_gen_tb_verilator__DOT__test_passed) 
+    if (((IData)(vlSelf->i2s_clock_gen_tb_verilator__DOT__test_passed) 
          & (0U == vlSelf->i2s_clock_gen_tb_verilator__DOT__errors))) {
         VL_WRITEF("  \342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227    \342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227  \342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227 \342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227\n  \342\225\232\342\225\220\342\225\220\342\226\210\342\226\210\342\225\224\342\225\220\342\225\220\342\225\235\342\226\210\342\226\210\342\225\224\342\225\220\342\225\220\342\225\220\342\225\220\342\225\235\342\226\210\342\226\210\342\225\224\342\225\220\342\225\220\342\225\220\342\225\220\342\225\235\342\225\232\342\225\220\342\225\220\342\226\210\342\226\210\342\225\224\342\225\220\342\225\220\342\225\235    \342\226\210\342\226\210\342\225\224\342\225\220\342\225\220\342\226\210\342\226\210\342\225\227\342\226\210\342\226\210\342\225\224\342\225\220\342\225\220\342\226\210\342\226\210\342\225\227\342\226\210\342\226\210\342\225\224\342\225\220\342\225\220\342\225\220\342\225\220\342\225\235\342\226\210\342\226\210\342\225\224\342\225\220\342\225\220\342\225\220\342\225\220\342\225\235\n");
         VL_WRITEF("     \342\226\210\342\226\210\342\225\221   \342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227  \342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227   \342\226\210\342\226\210\342\225\221       \342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\224\342\225\235\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\221\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\226\210\342\225\227\n     \342\226\210\342\226\210\342\225\221   \342\226\210\342\226\210\342\225\224\342\225\220\342\225\220\342\225\235  \342\225\232\342\225\220\342\225\220\342\225\220\342\225\220\342\226\210\342\226\210\342\225\221   \342\226\210\342\226\210\342\225\221       \342\226\210\342\226\210\342\225\224\342\225\220\342\225\220\342\225\220\342\225\235 \342\226\210\342\226\210\342\225\224\342\225\220\342\225\220\342\226\210\342\226\210\342\225\221\342\225\232\342\225\220\342\225\220\342\225\220\342\225\220\342\226\210\342\226\210\342\225\221\342\225\232\342\225\220\342\225\220\342\225\220\342\225\220\342\226\210\342\226\210\342\225\221\n");
@@ -215,6 +225,7 @@ VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__
     }
     VL_WRITEF("=================================================================\n\n");
     VL_FINISH_MT("sim/i2s_clock_gen_tb_verilator.sv", 341, "");
+    vlSelf->__Vm_traceActivity[2U] = 1U;
 }
 
 VL_INLINE_OPT VlCoroutine Vi2s_clock_gen_tb_verilator___024root___eval_initial__TOP__Vtiming__2(Vi2s_clock_gen_tb_verilator___024root* vlSelf) {

@@ -18,6 +18,7 @@ module fpga_template_top (
     );
 
     assign debug_led = ~debug_sample_led[5:0];
+    assign buffer_full = ram_buffer_ready_w;
 
 //--------------------------------------------------------------------------------------------------------
     
@@ -41,21 +42,17 @@ module fpga_template_top (
         .ready_o   (sample_ready_w)        // output          
     );
 
-
-
-
     pingpong_sp_ram u_ram (
-        .clk_i              (clk), 
-        .rst_ni             (resetb),   
-        .sample_i           (debug_sample_l[15:0]),
-        .sample_ready_i     (sample_ready_w),
-        .read_data_o        (ram_data_w),
-        .buffer_ready_o     (ram_buffer_ready_w)
-    );  
+        .clk_i          (clk),
+        .rst_ni         (resetb),
+        .sample_i       (debug_sample_l[15:0]),  // Brug øverste 16 bit af venstre kanal
+        .sample_ready_i (sample_ready_w),
+        .read_data_o    (ram_data_w),
+        .buffer_ready_o (ram_buffer_ready_w),
+        .read_enable_o  (ram_read_enable_w),
+        .read_ack_i     (ram_read_ack_w)
+    );
 
-
-    
-//--------------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------------
 
@@ -63,9 +60,9 @@ module fpga_template_top (
     vu_meter_6led vu (
         .clk_i          (clk),
         .rst_ni         (resetb),
-        .sample_stb_i   (buffer_full), // fra cap.ready_o
-        .left_sample_i  (debug_sample_l),
-        .right_sample_i (debug_sample_r),
+        .sample_stb_i   (sample_ready_w), // fra cap.ready_o
+        .left_sample_i  (debug_sample_l[15:0]),  // Use upper 16 bits of 24-bit sample
+        .right_sample_i (debug_sample_r[15:0]),  // Use upper 16 bits of 24-bit sample
         .leds_o         (debug_sample_led)        // forbind til dine 6 LED pins i .cst
     );
 //--------------------------------------------------------------------------------------------------------

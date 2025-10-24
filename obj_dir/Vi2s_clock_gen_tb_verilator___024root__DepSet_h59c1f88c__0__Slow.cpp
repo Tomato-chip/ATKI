@@ -86,6 +86,7 @@ VL_ATTR_COLD void Vi2s_clock_gen_tb_verilator___024root___ctor_var_reset(Vi2s_cl
     vlSelf->i2s_clock_gen_tb_verilator__DOT__ws_prev = VL_RAND_RESET_I(1);
     vlSelf->i2s_clock_gen_tb_verilator__DOT__cycle_count = 0;
     vlSelf->i2s_clock_gen_tb_verilator__DOT__frame_start_count = 0;
+    vlSelf->i2s_clock_gen_tb_verilator__DOT__test_passed = 0;
     vlSelf->i2s_clock_gen_tb_verilator__DOT__errors = 0;
     vlSelf->i2s_clock_gen_tb_verilator__DOT__ws_change_on_sck_high_count = 0;
     vlSelf->i2s_clock_gen_tb_verilator__DOT__duty_diff_val = 0;
@@ -96,6 +97,7 @@ VL_ATTR_COLD void Vi2s_clock_gen_tb_verilator___024root___ctor_var_reset(Vi2s_cl
     vlSelf->i2s_clock_gen_tb_verilator__DOT__unnamedblk4__DOT__ws_period_avg = 0;
     vlSelf->i2s_clock_gen_tb_verilator__DOT__dut__DOT__sck_ctr_q = VL_RAND_RESET_I(3);
     vlSelf->i2s_clock_gen_tb_verilator__DOT__dut__DOT__sck_q = VL_RAND_RESET_I(1);
+    vlSelf->i2s_clock_gen_tb_verilator__DOT__dut__DOT__sck_tick = VL_RAND_RESET_I(1);
     vlSelf->i2s_clock_gen_tb_verilator__DOT__dut__DOT__sck_prev_q = VL_RAND_RESET_I(1);
     vlSelf->i2s_clock_gen_tb_verilator__DOT__dut__DOT__ws_ctr_q = VL_RAND_RESET_I(6);
     vlSelf->i2s_clock_gen_tb_verilator__DOT__dut__DOT__ws_q = VL_RAND_RESET_I(1);
@@ -103,4 +105,7 @@ VL_ATTR_COLD void Vi2s_clock_gen_tb_verilator___024root___ctor_var_reset(Vi2s_cl
     vlSelf->__Vtrigprevexpr___TOP__i2s_clock_gen_tb_verilator__DOT__clk_i__0 = VL_RAND_RESET_I(1);
     vlSelf->__Vtrigprevexpr_hcd664f0a__0 = VL_RAND_RESET_I(1);
     vlSelf->__VactDidInit = 0;
+    for (int __Vi0 = 0; __Vi0 < 4; ++__Vi0) {
+        vlSelf->__Vm_traceActivity[__Vi0] = 0;
+    }
 }

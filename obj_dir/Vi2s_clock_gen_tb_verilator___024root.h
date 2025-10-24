@@ -19,8 +19,10 @@ class alignas(VL_CACHE_LINE_BYTES) Vi2s_clock_gen_tb_verilator___024root final :
     CData/*0:0*/ i2s_clock_gen_tb_verilator__DOT__rst_ni;
     CData/*0:0*/ i2s_clock_gen_tb_verilator__DOT__sck_prev;
     CData/*0:0*/ i2s_clock_gen_tb_verilator__DOT__ws_prev;
+    CData/*0:0*/ i2s_clock_gen_tb_verilator__DOT__test_passed;
     CData/*2:0*/ i2s_clock_gen_tb_verilator__DOT__dut__DOT__sck_ctr_q;
     CData/*0:0*/ i2s_clock_gen_tb_verilator__DOT__dut__DOT__sck_q;
+    CData/*0:0*/ i2s_clock_gen_tb_verilator__DOT__dut__DOT__sck_tick;
     CData/*0:0*/ i2s_clock_gen_tb_verilator__DOT__dut__DOT__sck_prev_q;
     CData/*5:0*/ i2s_clock_gen_tb_verilator__DOT__dut__DOT__ws_ctr_q;
     CData/*0:0*/ i2s_clock_gen_tb_verilator__DOT__dut__DOT__ws_q;
@@ -47,6 +49,7 @@ class alignas(VL_CACHE_LINE_BYTES) Vi2s_clock_gen_tb_verilator___024root final :
     IData/*31:0*/ i2s_clock_gen_tb_verilator__DOT__unnamedblk1__DOT__period;
     IData/*31:0*/ i2s_clock_gen_tb_verilator__DOT__unnamedblk2__DOT__period;
     IData/*31:0*/ __VactIterCount;
+    VlUnpacked<CData/*0:0*/, 4> __Vm_traceActivity;
     double i2s_clock_gen_tb_verilator__DOT__ws_to_sck_ratio_val;
     double i2s_clock_gen_tb_verilator__DOT__unnamedblk3__DOT__sck_period_avg;
     double i2s_clock_gen_tb_verilator__DOT__unnamedblk4__DOT__ws_period_avg;

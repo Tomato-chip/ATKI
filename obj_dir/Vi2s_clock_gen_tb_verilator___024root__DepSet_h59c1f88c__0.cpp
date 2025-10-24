@@ -16,6 +16,7 @@ void Vi2s_clock_gen_tb_verilator___024root___eval_initial(Vi2s_clock_gen_tb_veri
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vi2s_clock_gen_tb_verilator___024root___eval_initial\n"); );
     // Body
     Vi2s_clock_gen_tb_verilator___024root___eval_initial__TOP(vlSelf);
+    vlSelf->__Vm_traceActivity[1U] = 1U;
     Vi2s_clock_gen_tb_verilator___024root___eval_initial__TOP__Vtiming__0(vlSelf);
     Vi2s_clock_gen_tb_verilator___024root___eval_initial__TOP__Vtiming__1(vlSelf);
     Vi2s_clock_gen_tb_verilator___024root___eval_initial__TOP__Vtiming__2(vlSelf);
@@ -55,6 +56,7 @@ void Vi2s_clock_gen_tb_verilator___024root___eval_nba(Vi2s_clock_gen_tb_verilato
     // Body
     if ((1ULL & vlSelf->__VnbaTriggered.word(0U))) {
         Vi2s_clock_gen_tb_verilator___024root___nba_sequent__TOP__0(vlSelf);
+        vlSelf->__Vm_traceActivity[3U] = 1U;
     }
 }
 
