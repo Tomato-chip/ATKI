@@ -19,11 +19,12 @@ module vu_meter_6led #(
 )(
   input  logic               clk_i,          // 27 MHz (samme som i2s_capture_24.clk_i)
   input  logic               rst_ni,
-  input  logic               sample_stb_i,   // brug i2s_capture_24.ready_o
+  input  logic               sample_valid_i,   // brug i2s_capture_24.ready_o
   input  logic signed [23:0] left_sample_i,
   input  logic signed [23:0] right_sample_i,
   output logic [5:0]         leds_o
 );
+
   // Vælg én kanal
   logic signed [23:0] sample;
   always_comb sample = (SELECT_LEFT ? left_sample_i : right_sample_i);
@@ -37,7 +38,7 @@ module vu_meter_6led #(
   always_ff @(posedge clk_i) begin
     if (!rst_ni) begin
       level_q <= 32'd0;
-    end else if (sample_stb_i) begin
+    end else if (sample_valid_i) begin
       // level = level - (level >> DECAY) + (mag >> SCALE)
       level_q <= level_q - (level_q >> DECAY_SHIFT)
                           + (mag >> SCALE_SHIFT);

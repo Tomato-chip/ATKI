@@ -34,7 +34,7 @@ $(OBJ):
 SRC_jesper = \
 	digital/clk_generator/i2s_clock_gen.sv \
 	digital/sampler/i2s_capture_24.sv \
-	digital/sampler/activity_envelope_led6.sv \
+	digital/ram/ram_logic.sv \
 	digital/sampler/vu_meter_6led.sv 
 
 
