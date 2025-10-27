@@ -86,9 +86,9 @@ module ram_logic #(
     logic [WIDTH-1:0]       ram0_data_out;
     logic [WIDTH-1:0]       ram1_data_out;
 
-    ==========================================================================
-    Address packing function (for 14-bit Gowin SP RAM address format)
-    ==========================================================================
+    // ==========================================================================
+    // Address packing function (for 14-bit Gowin SP RAM address format)
+    // ==========================================================================
     function automatic logic [13:0] pack_address(input logic [ADDR_WIDTH-1:0] addr);
         // Pack address into 14-bit format with lower bits zero-padded
         // Format: [unused bits][address][zero padding]
@@ -169,22 +169,24 @@ module ram_logic #(
             buffer_overflow_o <= 1'b0;
 
             //==================================================================
-            // Buffer swap on write buffer full - must happen BEFORE other logic
+            // Buffer swap on write buffer full
             //==================================================================
-            if (write_count == DEPTH && !read_in_progress) begin
-                // Swap buffers
+            if (write_count == DEPTH) begin
+                // Swap buffers - can happen even if reading
                 buffer_ready_o      <= 1'b1;                    // Signal new buffer ready
                 read_buffer_valid   <= 1'b1;                    // Mark read buffer as valid
                 read_in_progress    <= 1'b1;                    // Start read phase
                 read_buffer_sel     <= write_buffer_sel;        // Read from just-filled buffer
                 write_buffer_sel    <= ~write_buffer_sel;       // Write to other buffer
 
-                // Reset counters
+                // Reset write counters
                 write_address       <= '0;
                 write_count         <= '0;
+
+                // Reset read counters
                 read_address        <= '0;
                 read_count          <= '0;
-                read_valid_o        <= 1'b0;                    // Clear read valid on swap
+                read_valid_o        <= 1'b1;                    // Assert read valid immediately
             end else begin
                 //==============================================================
                 // Write path management
@@ -201,25 +203,23 @@ module ram_logic #(
                 end
 
                 //==============================================================
-                // Read path management
+                // Read path management - CIRCULAR BUFFER MODE
                 //==============================================================
                 if (read_accepted && read_buffer_valid) begin
+                    // Increment read address and wrap around
                     if (read_count < DEPTH - 1) begin
                         read_address <= read_address + 1'b1;
                         read_count   <= read_count + 1'b1;
                     end else begin
-                        // Last read complete
-                        read_in_progress <= 1'b0;
-                        read_count       <= '0;
-                        read_address     <= '0;
+                        // Wrap to beginning - keep reading from same buffer
+                        read_address <= '0;
+                        read_count   <= '0;
+                        // DON'T clear read_in_progress or read_buffer_valid
+                        // DON'T clear read_valid_o - keep streaming!
                     end
-                end
-
-                //==============================================================
-                // Read valid output control
-                //==============================================================
-                // Data is valid when read buffer is valid and in progress
-                if (read_buffer_valid && read_in_progress) begin
+                    read_valid_o <= 1'b1;  // Always valid when buffer is valid
+                end else if (read_buffer_valid && read_in_progress) begin
+                    // Maintain read_valid while buffer is valid
                     read_valid_o <= 1'b1;
                 end else begin
                     read_valid_o <= 1'b0;

@@ -2,11 +2,12 @@
 // vu_meter_6led.sv
 // Enkel 6-LED VU-meter for én I2S-kanal (24-bit PCM)
 // Bruges sammen med i2s_capture_24 (clk_i = 27 MHz, strobe = ready_o)
+// Eller med ram_logic via ready/valid handshake
 // ===============================================================
 module vu_meter_6led #(
   parameter bit SELECT_LEFT    = 1'b1,   // 1=venstre, 0=højre
   parameter int DECAY_SHIFT    = 11,     // større = langsommere fald (12..13 = mere træg)
-  parameter int SCALE_SHIFT    = 10,     // større = mindre følsom; justér 8..12
+  parameter int SCALE_SHIFT    = 12,     // større = mindre følsom; justér 8..12
   // faste tærskler — hæv/sænk hvis for mange/få LED'er tænder
   parameter int unsigned TH1   = 24'd1000,
   parameter int unsigned TH2   = 24'd3000,
@@ -15,19 +16,54 @@ module vu_meter_6led #(
   parameter int unsigned TH5   = 24'd40000,
   parameter int unsigned TH6   = 24'd80000,
   // LED-opdatering ~50 Hz ved 27 MHz: 27e6 / 540000 ≈ 50
-  parameter int LED_DIV        = 540000
+  parameter int LED_DIV        = 540000,
+  // RAM consumer mode enable
+  parameter bit USE_RAM_IF     = 1'b1    // 1=use RAM handshake, 0=use direct sample_valid
 )(
   input  logic               clk_i,          // 27 MHz (samme som i2s_capture_24.clk_i)
   input  logic               rst_ni,
+
+  // Direct sample interface (original mode)
   input  logic               sample_valid_i,   // brug i2s_capture_24.ready_o
   input  logic signed [23:0] left_sample_i,
   input  logic signed [23:0] right_sample_i,
+
+  // RAM consumer interface (ready/valid handshake with ram_logic)
+  input  logic signed [23:0] ram_read_data_i,  // From ram_logic.read_data_o
+  input  logic               ram_read_valid_i, // From ram_logic.read_valid_o
+  output logic               ram_read_ready_o, // To ram_logic.read_ready_i
+  input  logic               ram_buffer_ready_i, // From ram_logic.buffer_ready_o (optional)
+
   output logic [5:0]         leds_o
 );
 
-  // Vælg én kanal
+  //==========================================================================
+  // Sample source selection and handshaking
+  //==========================================================================
   logic signed [23:0] sample;
-  always_comb sample = (SELECT_LEFT ? left_sample_i : right_sample_i);
+  logic               sample_valid;
+  logic               ram_read_accepted;
+  logic               ram_ready_q;  // Registered ready signal
+
+  generate
+    if (USE_RAM_IF) begin : gen_ram_mode
+      // RAM consumer mode: use ready/valid handshake with flow control
+      // Ready signal indicates we can accept a new sample
+      assign ram_read_ready_o = ram_ready_q;
+      assign ram_read_accepted = ram_read_valid_i && ram_read_ready_o;
+
+      // In RAM mode, interpret ram_read_data_i as a single channel sample
+      // (Assumes ram_logic stores either left or right channel, selected externally)
+      assign sample = ram_read_data_i;
+      assign sample_valid = ram_read_accepted;
+
+    end else begin : gen_direct_mode
+      // Direct sample mode: use original interface
+      assign ram_read_ready_o = 1'b0;  // Not using RAM interface
+      assign sample = (SELECT_LEFT ? left_sample_i : right_sample_i);
+      assign sample_valid = sample_valid_i;
+    end
+  endgenerate
 
   // Absolutværdi (unsigned)
   logic [23:0] mag;
@@ -35,13 +71,22 @@ module vu_meter_6led #(
 
   // Leaky integrator (glidende middel)
   logic [31:0] level_q;
+
+  // Ready/valid flow control for RAM mode
+  // We need at least 1 cycle to compute the level update
   always_ff @(posedge clk_i) begin
     if (!rst_ni) begin
       level_q <= 32'd0;
-    end else if (sample_valid_i) begin
-      // level = level - (level >> DECAY) + (mag >> SCALE)
-      level_q <= level_q - (level_q >> DECAY_SHIFT)
-                          + (mag >> SCALE_SHIFT);
+      ram_ready_q <= 1'b1;  // Start ready
+    end else begin
+      if (sample_valid) begin
+        // level = level - (level >> DECAY) + (mag >> SCALE)
+        level_q <= level_q - (level_q >> DECAY_SHIFT)
+                            + (mag >> SCALE_SHIFT);
+        ram_ready_q <= 1'b0;  // Not ready - processing this sample
+      end else begin
+        ram_ready_q <= 1'b1;  // Ready for next sample
+      end
     end
   end
 
