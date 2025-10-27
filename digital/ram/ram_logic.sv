@@ -86,9 +86,9 @@ module ram_logic #(
     logic [WIDTH-1:0]       ram0_data_out;
     logic [WIDTH-1:0]       ram1_data_out;
 
-    ==========================================================================
-    Address packing function (for 14-bit Gowin SP RAM address format)
-    ==========================================================================
+    // ==========================================================================
+    // Address packing function (for 14-bit Gowin SP RAM address format)
+    // ==========================================================================
     function automatic logic [13:0] pack_address(input logic [ADDR_WIDTH-1:0] addr);
         // Pack address into 14-bit format with lower bits zero-padded
         // Format: [unused bits][address][zero padding]
@@ -171,7 +171,7 @@ module ram_logic #(
             //==================================================================
             // Buffer swap on write buffer full - must happen BEFORE other logic
             //==================================================================
-            if (write_count == DEPTH && !read_in_progress) begin
+            if (write_count == DEPTH) begin
                 // Swap buffers
                 buffer_ready_o      <= 1'b1;                    // Signal new buffer ready
                 read_buffer_valid   <= 1'b1;                    // Mark read buffer as valid

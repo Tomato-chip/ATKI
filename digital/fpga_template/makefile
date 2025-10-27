@@ -32,11 +32,10 @@ $(OBJ):
 	mkdir -p $@
 
 SRC_jesper = \
-	digital/clk_generator/i2s_clock_gen.sv \
-	digital/sampler/i2s_capture_24.sv \
-	digital/ram/ram_logic.sv \
-	digital/sampler/vu_meter_6led.sv 
-
+	digital/Project_files/i2s_capture_24_test.sv \
+	digital/Project_files/i2s_clock_gen_test.sv \
+	digital/Project_files/ram_logic_test.sv \
+	digital/Project_files/vu_meter_6led_test.sv
 
 SRC_I2C = \
 	digital/i2c_if/i2c_if.v \

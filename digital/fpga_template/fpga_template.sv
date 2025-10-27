@@ -93,9 +93,7 @@ module fpga_template_top (
 
 
 
-    ram_logic #(
-        .DEPTH(256)  // ✅ Circular buffer mode: Always readable, provides natural smoothing
-    ) u_ram (
+    ram_logic u_ram (
         .clk_i              (clk),
         .rst_ni             (resetb),       // Active-low synchronous reset
         .write_data_i       (sampler_to_ram_32_data_w),
@@ -111,14 +109,12 @@ module fpga_template_top (
     );
 
     // VU-meter på KUN én kanal (vælg her: 1=venstre, 0=højre)
-    vu_meter_6led #(
-        .USE_RAM_IF(1'b1)  // ✅ RAM mode - use buffered data
-    ) vu (
+    vu_meter_6led vu (
         .clk_i          (clk),
         .rst_ni         (resetb),
-        .sample_valid_i (sampler_to_ram_write_request_w), // Not used in RAM mode
-        .left_sample_i  (sample_left),                    // Not used in RAM mode
-        .right_sample_i (sample_right),                   // Not used in RAM mode
+        // .sample_valid_i (sampler_to_ram_write_request_w), // Not used in RAM mode
+        // .left_sample_i  (sample_left),                    // Not used in RAM mode
+        // .right_sample_i (sample_right),                   // Not used in RAM mode
         .leds_o         (debug_sample_led),        // forbind til dine 6 LED pins i .cst
 
         .ram_read_data_i     (ram_to_6led_32_data_w[23:0]),       // From ram_logic.read_data_o
