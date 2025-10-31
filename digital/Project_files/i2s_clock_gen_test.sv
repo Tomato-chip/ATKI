@@ -144,8 +144,8 @@ module i2s_clock_gen #(
     if (!rst_ni) begin
       sck_last_toggle_time <= 0;
     end else if (sck_q != sck_prev_q) begin
-      sck_period_cycles = $time / 1000 - sck_last_toggle_time;  // Convert from ps to cycles
-      sck_last_toggle_time = $time / 1000;
+      sck_period_cycles <= $time / 1000 - sck_last_toggle_time;  // Convert from ps to cycles
+      sck_last_toggle_time <= $time / 1000;
     end
   end
 
@@ -169,11 +169,14 @@ module i2s_clock_gen #(
   endproperty
 
   // SVA: WS period check (toggles every SCKS_PER_FRAME SCK edges)
+  // Note: ##1 operator not supported by Verilator
+  `ifndef VERILATOR
   property ws_toggle_period;
     @(posedge clk_i) disable iff (!rst_ni)
     (sck_falling_edge && (ws_ctr_q == (SCKS_PER_FRAME - 1))) |->
       ##1 (ws_q != $past(ws_q, 1));
   endproperty
+  `endif
 
   // SVA: Frame start pulse only when WS transitions to left channel
   property frame_start_check;
@@ -190,8 +193,10 @@ module i2s_clock_gen #(
   assert_ws_on_sck_fall:    assert property (ws_change_on_sck_fall)
     else $error("WS changed when SCK was not falling");
 
+  `ifndef VERILATOR
   assert_ws_toggle_period:  assert property (ws_toggle_period)
     else $error("WS toggle period incorrect");
+  `endif
 
   assert_frame_start:       assert property (frame_start_check)
     else $error("Frame start pulse at wrong time");

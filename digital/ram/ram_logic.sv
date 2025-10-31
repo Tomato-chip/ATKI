@@ -102,26 +102,27 @@ module ram_logic #(
             return {addr, (14-ADDR_WIDTH)'('0)};
         end
     endfunction
+    //==========================================================================
 
-    // function automatic logic [13:0] pack_address(input logic [13:0] addr);
-    //     // Pack address into 14-bit format with lower bits zero-padded
-    //     // Format: [unused bits][address][zero padding]
-    //     if (WIDTH == 32) begin
-    //         return {addr, 5'b00000};
-    //     end else if (WIDTH == 16) begin
-    //         return {addr, 4'b0000};
-    //     end else if (WIDTH == 8 ) begin
-    //         return {addr, 3'b000};
-    //     end else if (WIDTH == 4 ) begin
-    //         return {addr, 2'b00};
-    //     end else if (WIDTH == 2 ) begin
-    //         return {addr, 1'b0};
-    //     end else if (WIDTH == 1 ) begin
-    //         return {addr};
-    //     end else begin
-    //         return {addr, (14-ADDR_WIDTH)'('0)};
-    //     end
-    // endfunction
+        // function automatic logic [13:0] pack_address(input logic [13:0] addr);
+        //     // Pack address into 14-bit format with lower bits zero-padded
+        //     // Format: [unused bits][address][zero padding]
+        //     if (WIDTH == 32) begin
+        //         return {addr, 5'b00000};
+        //     end else if (WIDTH == 16) begin
+        //         return {addr, 4'b0000};
+        //     end else if (WIDTH == 8 ) begin
+        //         return {addr, 3'b000};
+        //     end else if (WIDTH == 4 ) begin
+        //         return {addr, 2'b00};
+        //     end else if (WIDTH == 2 ) begin
+        //         return {addr, 1'b0};
+        //     end else if (WIDTH == 1 ) begin
+        //         return {addr};
+        //     end else begin
+        //         return {addr, (14-ADDR_WIDTH)'('0)};
+        //     end
+        // endfunction
 
     //==========================================================================
     // Handshaking logic

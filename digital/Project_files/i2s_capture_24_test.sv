@@ -72,16 +72,17 @@ module i2s_capture_24 (
       // når 25. bit er skubbet ind, er shift25_q[24] = dummy,
       // og shift25_q[23:0] = 24 gyldige bits (MSB..LSB)
       // Check AFTER counter reaches 25 (separate from increment logic)
+      // left_done_q bruges til i begge if, for af ready_o igge togler hver gang der er ws_edge
+      // cnt_q = 25 og fx channel_q = 0 er sande indtil næste ws_edge, og derfor vil left_done_q = 1 til lige efter at den er nulstillet i ready_o
       if (cnt_q == 6'd25) begin
-        if (channel_q == 1'b0) begin  // Use captured channel, not current ws_i
+        if (channel_q == 1'b0 && !left_done_q) begin  // Use captured channel, not current ws_i
           left_o      <= shift25_q[23:0];
           left_done_q <= 1'b1;
-        end else begin
+        end else if (channel_q == 1'b1 && left_done_q) begin
           right_o      <= shift25_q[23:0];
           right_done_q <= 1'b1;
         end
       end
-
       if (left_done_q && right_done_q) begin
         ready_o      <= 1'b1;   // én clk_i-cyklus
         left_done_q  <= 1'b0;
@@ -91,3 +92,20 @@ module i2s_capture_24 (
   end
 endmodule
 
+
+
+      // if (cnt_q == 6'd25 ) begin
+      //   if (channel_q == 1'b0) begin  // Use captured channel, not current ws_i
+      //     left_o      <= shift25_q[23:0];
+      //     left_done_q <= 1'b1;
+      //   end else begin
+      //     right_o      <= shift25_q[23:0];
+      //     right_done_q <= 1'b1;
+      //   end
+      // end
+
+      // if (left_done_q && right_done_q) begin
+      //   ready_o      <= 1'b1;   // én clk_i-cyklus
+      //   left_done_q  <= 1'b0;
+      //   right_done_q <= 1'b0;
+      // end

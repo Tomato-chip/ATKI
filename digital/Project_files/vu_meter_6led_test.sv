@@ -16,8 +16,8 @@ module vu_meter_6led #(
   parameter int unsigned TH5   = 24'd40000,
   parameter int unsigned TH6   = 24'd80000,
   // LED-opdatering ~50 Hz ved 27 MHz: 27e6 / 540000 ≈ 50
-  parameter int LED_DIV        = 540000,
-  // RAM consumer mode enable
+  parameter int LED_DIV        = 540000
+  // RAM consumer mode enable (always true - direct mode removed)
   // parameter bit USE_RAM_IF     = 1'b1    // 1=use RAM handshake, 0=use direct sample_valid
 )(
   input  logic               clk_i,          // 27 MHz (samme som i2s_capture_24.clk_i)

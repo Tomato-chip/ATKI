@@ -83,19 +83,15 @@ module fpga_template_top (
         .read_count_o       ()               // Current read buffer position
     );
 
-    // VU-meter på KUN én kanal (vælg her: 1=venstre, 0=højre)
+    // VU-meter (RAM consumer mode only)
     vu_meter_6led vu (
-        .clk_i          (clk),
-        .rst_ni         (resetb),
-        .sample_valid_i (ram_to_6led_read_valid_w), // fra cap.ready_o
-        .left_sample_i  (sample_left),
-        .right_sample_i (sample_right),
-        .leds_o         (debug_sample_led),        // forbind til dine 6 LED pins i .cst
-
+        .clk_i               (clk),
+        .rst_ni              (resetb),
         .ram_read_data_i     (ram_to_6led_32_data_w[23:0]),       // From ram_logic.read_data_o
-        .ram_read_valid_i    (ram_to_6led_read_valid_w),       // From ram_logic.read_valid_o
-        .ram_read_ready_o    (ram_to_6led_read_ready_w),       // To ram_logic.read_ready_i
-        .ram_buffer_ready_i  (ram_to_6led_buffer_ready_w)        // From ram_logic.buffer_ready_o (optional)
+        .ram_read_valid_i    (ram_to_6led_read_valid_w),          // From ram_logic.read_valid_o
+        .ram_read_ready_o    (ram_to_6led_read_ready_w),          // To ram_logic.read_ready_i
+        .ram_buffer_ready_i  (ram_to_6led_buffer_ready_w),        // From ram_logic.buffer_ready_o
+        .leds_o              (debug_sample_led)                    // 6-LED output
     );
 
 //--------------------------------------------------------------------------------------------------------
