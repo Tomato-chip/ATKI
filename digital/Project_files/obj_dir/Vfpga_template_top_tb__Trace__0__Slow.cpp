@@ -47,9 +47,9 @@ VL_ATTR_COLD void Vfpga_template_top_tb___024root__trace_init_sub__TOP__0(Vfpga_
     tracep->declBit(c+56,0,"mic_sd_0",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1);
     tracep->declBit(c+7,0,"buffer_full",-1, VerilatedTraceSigDirection::OUTPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1);
     tracep->declBit(c+61,0,"resetb",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1);
-    tracep->declBus(c+8,0,"sample_left",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 23,0);
-    tracep->declBus(c+9,0,"sample_right",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 23,0);
-    tracep->declBus(c+10,0,"debug_sample_led",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 5,0);
+    tracep->declBus(c+8,0,"sample_left",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 23,0);
+    tracep->declBus(c+9,0,"sample_right",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 23,0);
+    tracep->declBus(c+10,0,"debug_sample_led",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 5,0);
     tracep->declBus(c+11,0,"sampler_to_ram_32_data_w",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 31,0);
     tracep->declBit(c+12,0,"sampler_to_ram_write_request_w",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1);
     tracep->declBus(c+13,0,"ram_to_6led_32_data_w",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 31,0);
@@ -208,7 +208,7 @@ VL_ATTR_COLD void Vfpga_template_top_tb___024root__trace_init_sub__TOP__0(Vfpga_
     tracep->declBit(c+50,0,"processing_delay_q",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1);
     tracep->declBus(c+51,0,"mag",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 23,0);
     tracep->declBus(c+52,0,"level_q",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 31,0);
-    tracep->declBus(c+53,0,"div_q",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 19,0);
+    tracep->declBus(c+53,0,"div_q",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 3,0);
     tracep->declBit(c+54,0,"tick",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1);
     tracep->declBus(c+55,0,"leds_next",-1, VerilatedTraceSigDirection::NONE, VerilatedTraceSigKind::VAR, VerilatedTraceSigType::LOGIC, false,-1, 5,0);
     tracep->popPrefix();
@@ -296,7 +296,7 @@ VL_ATTR_COLD void Vfpga_template_top_tb___024root__trace_const_0_sub_0(Vfpga_tem
     bufp->fullIData(oldp+118,(0x4e20U),32);
     bufp->fullIData(oldp+119,(0x9c40U),32);
     bufp->fullIData(oldp+120,(0x13880U),32);
-    bufp->fullIData(oldp+121,(0x83d60U),32);
+    bufp->fullIData(oldp+121,(0xaU),32);
 }
 
 VL_ATTR_COLD void Vfpga_template_top_tb___024root__trace_full_0_sub_0(Vfpga_template_top_tb___024root* vlSelf, VerilatedVcd::Buffer* bufp);
@@ -380,7 +380,7 @@ VL_ATTR_COLD void Vfpga_template_top_tb___024root__trace_full_0_sub_0(Vfpga_temp
                                                + (~ vlSelf->fpga_template_top_tb__DOT__dut__DOT____Vcellinp__vu__ram_read_data_i))
                                             : vlSelf->fpga_template_top_tb__DOT__dut__DOT____Vcellinp__vu__ram_read_data_i))),24);
     bufp->fullIData(oldp+52,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__level_q),32);
-    bufp->fullIData(oldp+53,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q),20);
+    bufp->fullCData(oldp+53,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q),4);
     bufp->fullBit(oldp+54,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__tick));
     bufp->fullCData(oldp+55,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__leds_next),6);
     bufp->fullBit(oldp+56,(vlSelf->fpga_template_top_tb__DOT__mic_sd_0));

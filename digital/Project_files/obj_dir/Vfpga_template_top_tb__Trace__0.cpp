@@ -90,7 +90,7 @@ void Vfpga_template_top_tb___024root__trace_chg_0_sub_0(Vfpga_template_top_tb___
                                                   (~ vlSelf->fpga_template_top_tb__DOT__dut__DOT____Vcellinp__vu__ram_read_data_i))
                                                : vlSelf->fpga_template_top_tb__DOT__dut__DOT____Vcellinp__vu__ram_read_data_i))),24);
         bufp->chgIData(oldp+51,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__level_q),32);
-        bufp->chgIData(oldp+52,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q),20);
+        bufp->chgCData(oldp+52,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q),4);
         bufp->chgBit(oldp+53,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__tick));
         bufp->chgCData(oldp+54,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__leds_next),6);
     }

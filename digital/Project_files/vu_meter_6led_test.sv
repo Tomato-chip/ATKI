@@ -6,7 +6,7 @@
 // ===============================================================
 module vu_meter_6led #(
   parameter bit SELECT_LEFT    = 1'b1,   // 1=venstre, 0=højre
-  parameter int DECAY_SHIFT    = 11,     // større = langsommere fald (12..13 = mere træg)
+  parameter int DECAY_SHIFT    = 20,     // større = langsommere fald (12..13 = mere træg)
   parameter int SCALE_SHIFT    = 12,     // større = mindre følsom; justér 8..12
   // faste tærskler — hæv/sænk hvis for mange/få LED'er tænder
   parameter int unsigned TH1   = 24'd1000,

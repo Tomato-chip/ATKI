@@ -310,7 +310,7 @@ VL_ATTR_COLD void Vfpga_template_top_tb___024root___ctor_var_reset(Vfpga_templat
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__ram_ready_q = VL_RAND_RESET_I(1);
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__processing_delay_q = VL_RAND_RESET_I(1);
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__level_q = VL_RAND_RESET_I(32);
-    vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q = VL_RAND_RESET_I(20);
+    vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q = VL_RAND_RESET_I(4);
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__tick = VL_RAND_RESET_I(1);
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__leds_next = VL_RAND_RESET_I(6);
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_ctr_q = VL_RAND_RESET_I(3);

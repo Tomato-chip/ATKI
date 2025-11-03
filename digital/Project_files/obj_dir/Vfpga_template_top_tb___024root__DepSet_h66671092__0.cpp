@@ -325,7 +325,7 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__0(Vfpga_t
     __Vdlyvset__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram1__DOT__mem__v0 = 0;
     CData/*0:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__processing_delay_q;
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__processing_delay_q = 0;
-    IData/*19:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q;
+    CData/*3:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q;
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q = 0;
     CData/*0:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_q;
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_q = 0;
@@ -519,12 +519,12 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__0(Vfpga_t
             __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__left_done_q = 0U;
             __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__right_done_q = 0U;
         }
-        if ((0x83d5fU == vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q)) {
+        if ((9U == (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q))) {
             __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q = 0U;
             vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__tick = 1U;
         } else {
             __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q 
-                = (0xfffffU & ((IData)(1U) + vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q));
+                = (0xfU & ((IData)(1U) + (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q)));
             vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__tick = 0U;
         }
     } else {

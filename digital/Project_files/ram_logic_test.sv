@@ -33,14 +33,14 @@ module ram_logic #(
     //==========================================================================
     // Write interface
     //==========================================================================
-    input  logic [WIDTH-1:0]        write_data_i,
+    input  logic signed [WIDTH-1:0]        write_data_i,
     input  logic                    write_valid_i,   // Write request
     output logic                    write_ready_o,   // Ready to accept write
 
     //==========================================================================
     // Read interface
     //==========================================================================
-    output logic [WIDTH-1:0]        read_data_o,
+    output logic signed [WIDTH-1:0]        read_data_o,
     input  logic                    read_ready_i,    // Reader ready for data
     output logic                    read_valid_o,    // Read data valid
 
