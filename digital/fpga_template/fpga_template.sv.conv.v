@@ -28,7 +28,7 @@ module fpga_template_top (
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:32:5
 	wire resetb;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:33:9
-	assign resetb = ~btn_s1_resetb;
+	assign resetb = btn_s1_resetb;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:38:5
 	wire [5:0] debug_sample_led;
 	assign debug_led = ~debug_sample_led[5:0];
@@ -77,7 +77,7 @@ module fpga_template_top (
 		.write_count_o(),
 		.read_count_o()
 	);
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:89:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:91:5
 	vu_meter_6led vu(
 		.clk_i(clk),
 		.rst_ni(resetb),
@@ -87,7 +87,7 @@ module fpga_template_top (
 		.ram_buffer_ready_i(ram_to_6led_buffer_ready_w),
 		.leds_o(debug_sample_led)
 	);
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:105:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:107:5
 	i2s_clock_gen u_i2s_clock(
 		.clk_i(clk),
 		.rst_ni(resetb),

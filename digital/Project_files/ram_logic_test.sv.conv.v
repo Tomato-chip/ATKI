@@ -19,7 +19,7 @@ module ram_logic (
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:26:15
 	parameter [31:0] DEPTH = 16;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:27:15
-	parameter [31:0] ADDR_WIDTH = $clog2(DEPTH);
+	parameter [31:0] ADDR_WIDTH = $clog2(WIDTH);
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:30:5
 	input wire clk_i;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:31:5
@@ -89,7 +89,7 @@ module ram_logic (
 		// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:95:9
 		if (WIDTH == 32)
 			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:96:13
-			pack_address = {1'b0, addr, 5'b00000};
+			pack_address = {4'b0000, addr, 5'b00000};
 		else if (WIDTH == 16)
 			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:98:13
 			pack_address = {2'b00, addr, 4'b0000};

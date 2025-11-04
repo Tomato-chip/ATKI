@@ -12,9 +12,9 @@ module vu_meter_6led (
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/vu_meter_6led_test.sv:8:13
 	parameter [0:0] SELECT_LEFT = 1'b1;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/vu_meter_6led_test.sv:9:13
-	parameter signed [31:0] DECAY_SHIFT = 20;
+	parameter signed [31:0] DECAY_SHIFT = 11;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/vu_meter_6led_test.sv:10:13
-	parameter signed [31:0] SCALE_SHIFT = 12;
+	parameter signed [31:0] SCALE_SHIFT = 10;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/vu_meter_6led_test.sv:12:13
 	parameter [31:0] TH1 = 24'd1000;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/vu_meter_6led_test.sv:13:13

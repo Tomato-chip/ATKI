@@ -83,6 +83,9 @@ VL_ATTR_COLD void Vfpga_template_top_tb___024root___stl_sequent__TOP__0(Vfpga_te
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__ws_edge 
         = ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__ws_d) 
            != (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__ws_q));
+    vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_accepted 
+        = ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__ram_to_6led_read_valid_w) 
+           & (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__sampler_to_ram_write_request_w));
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__sample_valid 
         = ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__ram_to_6led_read_valid_w) 
            & (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__ram_ready_q));
@@ -290,6 +293,7 @@ VL_ATTR_COLD void Vfpga_template_top_tb___024root___ctor_var_reset(Vfpga_templat
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid = VL_RAND_RESET_I(1);
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_in_progress = VL_RAND_RESET_I(1);
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_accepted = VL_RAND_RESET_I(1);
+    vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_accepted = VL_RAND_RESET_I(1);
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_address = VL_RAND_RESET_I(14);
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_address = VL_RAND_RESET_I(14);
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_write_enable = VL_RAND_RESET_I(1);

@@ -79,7 +79,10 @@ module fpga_template_top (
         .write_valid_i      (sampler_to_ram_write_request_w),       // Write request
         .write_ready_o      (),             // Ready to accept write
         .read_data_o        (ram_to_6led_32_data_w),
-        .read_ready_i       (ram_to_6led_read_ready_w),             // Reader ready for data
+
+        // .read_ready_i       (ram_to_6led_read_ready_w),             // Reader ready for data
+        .read_ready_i       (sampler_to_ram_write_request_w),             // Reader ready for data
+
         .read_valid_o       (ram_to_6led_read_valid_w),             // Read data valid
         .buffer_ready_o     (ram_to_6led_buffer_ready_w),           // Pulse: full buffer ready for reading
         .buffer_overflow_o  (buffer_full),   // Error: write to full system (drives top-level output)
@@ -95,7 +98,9 @@ module fpga_template_top (
         // .ram_read_data_i     (sampler_test_32_data_w[23:0]),       // test uden ram
         .ram_read_data_i     (ram_to_6led_32_data_w[23:0]),       // From ram_logic.read_data_o
 
+        // .ram_read_valid_i    (sampler_to_ram_write_request_w),          // From ram_logic.read_valid_o
         .ram_read_valid_i    (ram_to_6led_read_valid_w),          // From ram_logic.read_valid_o
+
         .ram_read_ready_o    (ram_to_6led_read_ready_w),          // To ram_logic.read_ready_i
         .ram_buffer_ready_i  (ram_to_6led_buffer_ready_w),        // From ram_logic.buffer_ready_o
         .leds_o              (debug_sample_led)                    // 6-LED output

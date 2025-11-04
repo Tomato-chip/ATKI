@@ -460,7 +460,7 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__0(Vfpga_t
             vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_buffer_sel 
                 = (1U & (~ (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_buffer_sel)));
         } else {
-            if (((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__sample_valid) 
+            if (((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_accepted) 
                  & (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid))) {
                 if ((0xfU > (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_count))) {
                     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_address 
@@ -662,6 +662,9 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__0(Vfpga_t
         = ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid)
             ? (0xffffffU & vlSelf->__VdfgTmp_hb1fddee5__0)
             : 0U);
+    vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_accepted 
+        = ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__ram_to_6led_read_valid_w) 
+           & (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__sampler_to_ram_write_request_w));
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_accepted 
         = ((0x10U > (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count)) 
            & (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__sampler_to_ram_write_request_w));
