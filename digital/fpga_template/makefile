@@ -37,21 +37,8 @@ SRC_jesper = \
 	digital/Project_files/ram_logic_test.sv \
 	digital/Project_files/vu_meter_6led_test.sv
 
-SRC_I2C = \
-	digital/i2c_if/i2c_if.v \
-	digital/i2c_if/i2cSlave_define.v \
-	digital/i2c_if/serialInterface.v \
-	digital/i2c_if/timescale.v
-
-SRC_UART = \
-	digital/uart_if/uart_if.v
-
-SRC_RB_IF = $(SRC_I2C) $(SRC_UART)
-
 SRC_LIST = \
 	$(SRC_jesper) \
-	digital/pwm/pwm.v \
-	$(SRC_RB_IF) \
 	digital/rb_$(PROJ)/rb_$(PROJ).sv \
 	digital/$(PROJ)/$(PROJ).sv
 
