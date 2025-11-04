@@ -6,34 +6,26 @@
 // ===============================================================
 module vu_meter_6led #(
   parameter bit SELECT_LEFT    = 1'b1,   // 1=venstre, 0=højre
-  parameter int DECAY_SHIFT    = 11,     // større = langsommere fald (12..13 = mere træg)
-  parameter int SCALE_SHIFT    = 10,     // større = mindre følsom; justér 8..12
+  parameter int DECAY_SHIFT    = 14,     // større = langsommere fald (12..13 = mere træg)
+  parameter int SCALE_SHIFT    = 2,      // større = mindre følsom; justér 8..12 (REDUCED from 10 for more sensitivity)
   // faste tærskler — hæv/sænk hvis for mange/få LED'er tænder
-  parameter int unsigned TH1   = 24'd1000,
-  parameter int unsigned TH2   = 24'd3000,
-  parameter int unsigned TH3   = 24'd9000,
-  parameter int unsigned TH4   = 24'd20000,
-  parameter int unsigned TH5   = 24'd40000,
-  parameter int unsigned TH6   = 24'd80000,
+  parameter int unsigned TH1   = 24'd500,    // Lowered from 1000
+  parameter int unsigned TH2   = 24'd2000,   // Lowered from 3000
+  parameter int unsigned TH3   = 24'd6000,   // Lowered from 9000
+  parameter int unsigned TH4   = 24'd15000,  // Lowered from 20000
+  parameter int unsigned TH5   = 24'd35000,  // Lowered from 40000
+  parameter int unsigned TH6   = 24'd70000,  // Lowered from 80000
   // LED-opdatering ~50 Hz ved 27 MHz: 27e6 / 540000 ≈ 50
-  parameter int LED_DIV        = 540000
+  parameter int LED_DIV        = 2700000
   // RAM consumer mode enable (always true - direct mode removed)
   // parameter bit USE_RAM_IF     = 1'b1    // 1=use RAM handshake, 0=use direct sample_valid
 )(
   input  logic               clk_i,          // 27 MHz (samme som i2s_capture_24.clk_i)
   input  logic               rst_ni,
-
-  // Direct sample interface (original mode)
-  // input  logic               sample_valid_i,   // brug i2s_capture_24.ready_o
-  // input  logic signed [23:0] left_sample_i,
-  // input  logic signed [23:0] right_sample_i,
-
-  // RAM consumer interface (ready/valid handshake with ram_logic)
   input  logic signed [23:0] ram_read_data_i,  // From ram_logic.read_data_o
   input  logic               ram_read_valid_i, // From ram_logic.read_valid_o
   output logic               ram_read_ready_o, // To ram_logic.read_ready_i
   input  logic               ram_buffer_ready_i, // From ram_logic.buffer_ready_o (optional)
-
   output logic [5:0]         leds_o
 );
 

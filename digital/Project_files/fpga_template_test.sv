@@ -80,8 +80,8 @@ module fpga_template_top (
         .write_ready_o      (),             // Ready to accept write
         .read_data_o        (ram_to_6led_32_data_w),
 
-        // .read_ready_i       (ram_to_6led_read_ready_w),             // Reader ready for data
-        .read_ready_i       (sampler_to_ram_write_request_w),             // Reader ready for data
+        .read_ready_i       (ram_to_6led_read_ready_w),             // Reader ready for data
+        // .read_ready_i       (sampler_to_ram_write_request_w),             // Reader ready for data
 
         .read_valid_o       (ram_to_6led_read_valid_w),             // Read data valid
         .buffer_ready_o     (ram_to_6led_buffer_ready_w),           // Pulse: full buffer ready for reading

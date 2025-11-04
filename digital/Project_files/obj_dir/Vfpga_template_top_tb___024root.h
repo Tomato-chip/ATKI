@@ -46,7 +46,6 @@ class alignas(VL_CACHE_LINE_BYTES) Vfpga_template_top_tb___024root final : publi
         CData/*0:0*/ fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid;
         CData/*0:0*/ fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_in_progress;
         CData/*0:0*/ fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_accepted;
-        CData/*0:0*/ fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_accepted;
         CData/*0:0*/ fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_write_enable;
         CData/*0:0*/ fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_write_enable;
         CData/*0:0*/ fpga_template_top_tb__DOT__dut__DOT__vu__DOT__sample_valid;
@@ -81,9 +80,9 @@ class alignas(VL_CACHE_LINE_BYTES) Vfpga_template_top_tb___024root final : publi
         SData/*13:0*/ __Vfunc_fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__pack_address__1__Vfuncout;
         SData/*13:0*/ __Vfunc_fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__pack_address__2__Vfuncout;
         SData/*13:0*/ __Vfunc_fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__pack_address__3__Vfuncout;
+        IData/*31:0*/ fpga_template_top_tb__DOT__sample_count;
     };
     struct {
-        IData/*31:0*/ fpga_template_top_tb__DOT__sample_count;
         IData/*31:0*/ fpga_template_top_tb__DOT__buffer_swap_count;
         IData/*31:0*/ fpga_template_top_tb__DOT__handshake_count;
         IData/*31:0*/ fpga_template_top_tb__DOT__ready_low_cycles;
@@ -104,7 +103,7 @@ class alignas(VL_CACHE_LINE_BYTES) Vfpga_template_top_tb___024root final : publi
         IData/*31:0*/ fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram1__DOT__do_pipeline;
         IData/*31:0*/ fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram1__DOT__i;
         IData/*31:0*/ fpga_template_top_tb__DOT__dut__DOT__vu__DOT__level_q;
-        IData/*19:0*/ fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q;
+        IData/*21:0*/ fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q;
         IData/*31:0*/ fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_period_cycles;
         IData/*31:0*/ fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_last_toggle_time;
         IData/*31:0*/ __VdfgTmp_hb1fddee5__0;
