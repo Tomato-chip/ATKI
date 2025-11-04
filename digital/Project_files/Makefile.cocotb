@@ -1,0 +1,37 @@
+# Makefile for Cocotb simulation of ram_logic with Verilator
+
+# Simulator selection
+SIM ?= verilator
+
+# RTL source files
+VERILOG_SOURCES = $(PWD)/ram_logic_test.sv
+VERILOG_SOURCES += $(PWD)/gowin_sp_ram_model.sv
+
+# Top-level module
+TOPLEVEL = ram_logic
+
+# Python test module
+MODULE = test_ram_logic
+
+# Verilator compile args
+COMPILE_ARGS += --timescale 1ns/1ps
+COMPILE_ARGS += -Wno-fatal
+COMPILE_ARGS += --trace
+COMPILE_ARGS += --trace-structs
+
+# Verilator specific flags
+EXTRA_ARGS += --trace-fst
+EXTRA_ARGS += --coverage
+
+# Cocotb makefiles
+include $(shell cocotb-config --makefiles)/Makefile.sim
+
+# Clean targets
+clean::
+	rm -rf __pycache__
+	rm -rf sim_build
+	rm -f results.xml
+	rm -f *.vcd *.fst
+	rm -f dump.fst
+
+.PHONY: clean
