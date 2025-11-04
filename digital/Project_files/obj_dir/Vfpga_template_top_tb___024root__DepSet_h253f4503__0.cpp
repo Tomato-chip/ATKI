@@ -20,23 +20,23 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
                                                            nullptr, 
                                                            "@([changed] fpga_template_top_tb.btn_s1_resetb)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           203);
+                                                           206);
     }
     co_await vlSelf->__VtrigSched_h52ecb243__0.trigger(0U, 
                                                        nullptr, 
                                                        "@(posedge fpga_template_top_tb.clk)", 
                                                        "fpga_template_top_tb.sv", 
-                                                       204);
+                                                       207);
     while (1U) {
         co_await vlSelf->__VtrigSched_h52ecb243__0.trigger(0U, 
                                                            nullptr, 
                                                            "@(posedge fpga_template_top_tb.clk)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           207);
+                                                           210);
         co_await vlSelf->__VdlySched.delay(0x3e8ULL, 
                                            nullptr, 
                                            "fpga_template_top_tb.sv", 
-                                           208);
+                                           211);
         if (((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__sample_valid) 
              & (~ (IData)(vlSelf->fpga_template_top_tb__DOT__prev_sample_valid)))) {
             vlSelf->fpga_template_top_tb__DOT__handshake_count 
@@ -55,24 +55,24 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
             if (((0U == vlSelf->fpga_template_top_tb__DOT__ready_low_cycles) 
                  & (~ (IData)(vlSelf->fpga_template_top_tb__DOT__prev_sample_valid)))) {
                 if (VL_UNLIKELY(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__ram_ready_q)) {
-                    VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:229: Assertion failed in %Nfpga_template_top_tb: [%0t] TIMING ERROR: Ready should be LOW in cycle 1 after handshake!\n",
+                    VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:232: Assertion failed in %Nfpga_template_top_tb: [%0t] TIMING ERROR: Ready should be LOW in cycle 1 after handshake!\n",
                               64,VL_TIME_UNITED_Q(1000),
                               -9,vlSymsp->name(),64,
                               VL_TIME_UNITED_Q(1000),
                               -9);
-                    VL_STOP_MT("fpga_template_top_tb.sv", 229, "");
+                    VL_STOP_MT("fpga_template_top_tb.sv", 232, "");
                     vlSelf->fpga_template_top_tb__DOT__monitor_handshake = 0U;
                 } else {
                     vlSelf->fpga_template_top_tb__DOT__ready_low_cycles = 1U;
                 }
             } else if ((1U == vlSelf->fpga_template_top_tb__DOT__ready_low_cycles)) {
                 if (VL_UNLIKELY(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__ram_ready_q)) {
-                    VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:237: Assertion failed in %Nfpga_template_top_tb: [%0t] TIMING ERROR: Ready should be LOW in cycle 2 after handshake!\n",
+                    VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:240: Assertion failed in %Nfpga_template_top_tb: [%0t] TIMING ERROR: Ready should be LOW in cycle 2 after handshake!\n",
                               64,VL_TIME_UNITED_Q(1000),
                               -9,vlSymsp->name(),64,
                               VL_TIME_UNITED_Q(1000),
                               -9);
-                    VL_STOP_MT("fpga_template_top_tb.sv", 237, "");
+                    VL_STOP_MT("fpga_template_top_tb.sv", 240, "");
                     vlSelf->fpga_template_top_tb__DOT__monitor_handshake = 0U;
                 } else {
                     vlSelf->fpga_template_top_tb__DOT__ready_low_cycles = 2U;
@@ -85,12 +85,12 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
                                   -9);
                     }
                 } else {
-                    VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:247: Assertion failed in %Nfpga_template_top_tb: [%0t] TIMING ERROR: Ready should be HIGH in cycle 3 after handshake!\n",
+                    VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:250: Assertion failed in %Nfpga_template_top_tb: [%0t] TIMING ERROR: Ready should be HIGH in cycle 3 after handshake!\n",
                               64,VL_TIME_UNITED_Q(1000),
                               -9,vlSymsp->name(),64,
                               VL_TIME_UNITED_Q(1000),
                               -9);
-                    VL_STOP_MT("fpga_template_top_tb.sv", 247, "");
+                    VL_STOP_MT("fpga_template_top_tb.sv", 250, "");
                 }
                 vlSelf->fpga_template_top_tb__DOT__monitor_handshake = 0U;
             }
@@ -108,18 +108,18 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
                                                            nullptr, 
                                                            "@([changed] fpga_template_top_tb.btn_s1_resetb)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           273);
+                                                           276);
     }
     while (1U) {
         co_await vlSelf->__VtrigSched_h10a6e2e3__0.trigger(0U, 
                                                            nullptr, 
                                                            "@(posedge fpga_template_top_tb.buffer_full)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           276);
-        VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:277: Assertion failed in %Nfpga_template_top_tb: [%0t] BUFFER OVERFLOW DETECTED!\n",
+                                                           279);
+        VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:280: Assertion failed in %Nfpga_template_top_tb: [%0t] BUFFER OVERFLOW DETECTED!\n",
                   64,VL_TIME_UNITED_Q(1000),-9,vlSymsp->name(),
                   64,VL_TIME_UNITED_Q(1000),-9);
-        VL_STOP_MT("fpga_template_top_tb.sv", 277, "");
+        VL_STOP_MT("fpga_template_top_tb.sv", 280, "");
     }
 }
 
@@ -137,7 +137,7 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
                                                            nullptr, 
                                                            "@([changed] fpga_template_top_tb.btn_s1_resetb)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           294);
+                                                           297);
     }
     VL_WRITEF("[%0t] Test started\n",64,VL_TIME_UNITED_Q(1000),
               -9);
@@ -146,7 +146,7 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
                                                            nullptr, 
                                                            "@([changed] (32'sh50 <= fpga_template_top_tb.sample_count))", 
                                                            "fpga_template_top_tb.sv", 
-                                                           298);
+                                                           301);
     }
     fpga_template_top_tb__DOT____Vrepeat2 = 0x3e8U;
     while (VL_LTS_III(32, 0U, fpga_template_top_tb__DOT____Vrepeat2)) {
@@ -154,7 +154,7 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
                                                            nullptr, 
                                                            "@(posedge fpga_template_top_tb.clk)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           301);
+                                                           304);
         fpga_template_top_tb__DOT____Vrepeat2 = (fpga_template_top_tb__DOT____Vrepeat2 
                                                  - (IData)(1U));
     }
@@ -163,18 +163,18 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
               32,vlSelf->fpga_template_top_tb__DOT__buffer_swap_count,
               32,vlSelf->fpga_template_top_tb__DOT__handshake_count);
     if (VL_UNLIKELY(VL_GTS_III(32, 1U, vlSelf->fpga_template_top_tb__DOT__buffer_swap_count))) {
-        VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:316: Assertion failed in %Nfpga_template_top_tb: FAIL: No buffer swaps occurred!\n",
+        VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:319: Assertion failed in %Nfpga_template_top_tb: FAIL: No buffer swaps occurred!\n",
                   64,VL_TIME_UNITED_Q(1000),-9,vlSymsp->name());
-        VL_STOP_MT("fpga_template_top_tb.sv", 316, "");
+        VL_STOP_MT("fpga_template_top_tb.sv", 319, "");
     } else if (VL_UNLIKELY(VL_LTS_III(32, vlSelf->fpga_template_top_tb__DOT__handshake_count, vlSelf->fpga_template_top_tb__DOT__buffer_swap_count))) {
-        VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:318: Assertion failed in %Nfpga_template_top_tb: FAIL: VU meter did not consume data!\n",
+        VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:321: Assertion failed in %Nfpga_template_top_tb: FAIL: VU meter did not consume data!\n",
                   64,VL_TIME_UNITED_Q(1000),-9,vlSymsp->name());
-        VL_STOP_MT("fpga_template_top_tb.sv", 318, "");
+        VL_STOP_MT("fpga_template_top_tb.sv", 321, "");
     } else {
         VL_WRITEF("PASS: All major tests passed\n");
     }
     VL_WRITEF("\n");
-    VL_FINISH_MT("fpga_template_top_tb.sv", 324, "");
+    VL_FINISH_MT("fpga_template_top_tb.sv", 327, "");
 }
 
 VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__Vtiming__9(Vfpga_template_top_tb___024root* vlSelf) {
@@ -184,11 +184,11 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
     // Body
     co_await vlSelf->__VdlySched.delay(0xba43b7400ULL, 
                                        nullptr, "fpga_template_top_tb.sv", 
-                                       329);
-    VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:330: Assertion failed in %Nfpga_template_top_tb: TIMEOUT: Simulation ran too long!\n",
+                                       332);
+    VL_WRITEF("[%0t] %%Error: fpga_template_top_tb.sv:333: Assertion failed in %Nfpga_template_top_tb: TIMEOUT: Simulation ran too long!\n",
               64,VL_TIME_UNITED_Q(1000),-9,vlSymsp->name());
-    VL_STOP_MT("fpga_template_top_tb.sv", 330, "");
-    VL_FINISH_MT("fpga_template_top_tb.sv", 331, "");
+    VL_STOP_MT("fpga_template_top_tb.sv", 333, "");
+    VL_FINISH_MT("fpga_template_top_tb.sv", 334, "");
 }
 
 #ifdef VL_DEBUG

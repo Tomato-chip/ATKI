@@ -182,8 +182,11 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
                                              : (VL_GTS_III(32, 0xc8U, vlSelf->fpga_template_top_tb__DOT__sample_count)
                                                  ? 0x100000U
                                                  : 0x200000U))));
+        vlSelf->fpga_template_top_tb__DOT__left_sample 
+            = (0xffffffU & (vlSelf->fpga_template_top_tb__DOT__left_sample 
+                            + vlSelf->fpga_template_top_tb__DOT__sample_count));
         vlSelf->fpga_template_top_tb__DOT__right_sample 
-            = vlSelf->fpga_template_top_tb__DOT__left_sample;
+            = (0xffffffU & ((IData)(1U) + vlSelf->fpga_template_top_tb__DOT__left_sample));
         vlSelf->fpga_template_top_tb__DOT__sample_count 
             = ((IData)(1U) + vlSelf->fpga_template_top_tb__DOT__sample_count);
     }
@@ -200,14 +203,14 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
                                                            nullptr, 
                                                            "@([changed] fpga_template_top_tb.btn_s1_resetb)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           169);
+                                                           172);
     }
     while (1U) {
         co_await vlSelf->__VtrigSched_h21ee7aaa__0.trigger(0U, 
                                                            nullptr, 
                                                            "@(posedge fpga_template_top_tb.dut.sampler_to_ram_write_request_w)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           172);
+                                                           175);
         VL_WRITEF("[%0t] Sample %0d captured: L=0x%06x R=0x%06x\n",
                   64,VL_TIME_UNITED_Q(1000),-9,32,vlSelf->fpga_template_top_tb__DOT__sample_count,
                   24,vlSelf->fpga_template_top_tb__DOT__dut__DOT__sample_left,
@@ -226,14 +229,14 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
                                                            nullptr, 
                                                            "@([changed] fpga_template_top_tb.btn_s1_resetb)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           183);
+                                                           186);
     }
     while (1U) {
         co_await vlSelf->__VtrigSched_hbe0e6ec5__0.trigger(0U, 
                                                            nullptr, 
                                                            "@(posedge fpga_template_top_tb.dut.ram_to_6led_buffer_ready_w)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           186);
+                                                           189);
         vlSelf->fpga_template_top_tb__DOT__buffer_swap_count 
             = ((IData)(1U) + vlSelf->fpga_template_top_tb__DOT__buffer_swap_count);
         VL_WRITEF("[%0t] === Buffer swap %0d - Write buffer full, starting read phase ===\n         Write buffer was: RAM%0#, Read buffer now: RAM%0#\n",
@@ -254,14 +257,14 @@ VL_INLINE_OPT VlCoroutine Vfpga_template_top_tb___024root___eval_initial__TOP__V
                                                            nullptr, 
                                                            "@([changed] fpga_template_top_tb.btn_s1_resetb)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           259);
+                                                           262);
     }
     while (1U) {
         co_await vlSelf->__VtrigSched_h52ecb243__0.trigger(0U, 
                                                            nullptr, 
                                                            "@(posedge fpga_template_top_tb.clk)", 
                                                            "fpga_template_top_tb.sv", 
-                                                           262);
+                                                           265);
         if (VL_UNLIKELY(((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__debug_sample_led) 
                          != (IData)(vlSelf->fpga_template_top_tb__DOT__prev_leds)))) {
             VL_WRITEF("[%0t] VU LEDs changed: %06b (level=%0#)\n",
@@ -303,13 +306,13 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__0(Vfpga_t
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid = 0;
     CData/*0:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_in_progress;
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_in_progress = 0;
-    CData/*3:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_address;
+    CData/*4:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_address;
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_address = 0;
-    CData/*4:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count;
+    CData/*5:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count;
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count = 0;
-    CData/*3:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_address;
+    CData/*4:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_address;
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_address = 0;
-    CData/*4:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_count;
+    CData/*5:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_count;
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_count = 0;
     SData/*8:0*/ __Vdlyvdim0__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram0__DOT__mem__v0;
     __Vdlyvdim0__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram0__DOT__mem__v0 = 0;
@@ -325,7 +328,7 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__0(Vfpga_t
     __Vdlyvset__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram1__DOT__mem__v0 = 0;
     CData/*0:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__processing_delay_q;
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__processing_delay_q = 0;
-    CData/*3:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q;
+    IData/*19:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q;
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q = 0;
     CData/*0:0*/ __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_q;
     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_q = 0;
@@ -381,22 +384,22 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__0(Vfpga_t
             = vlSelf->fpga_template_top_tb__DOT__dut__DOT__sample_left;
         __Vdlyvset__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram1__DOT__mem__v0 = 1U;
         __Vdlyvdim0__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram1__DOT__mem__v0 
-            = (0xffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_address) 
-                        >> 5U));
+            = (0x1ffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_address) 
+                         >> 5U));
     }
     if (vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_write_enable) {
         __Vdlyvval__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram0__DOT__mem__v0 
             = vlSelf->fpga_template_top_tb__DOT__dut__DOT__sample_left;
         __Vdlyvset__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram0__DOT__mem__v0 = 1U;
         __Vdlyvdim0__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram0__DOT__mem__v0 
-            = (0xffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_address) 
-                        >> 5U));
+            = (0x1ffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_address) 
+                         >> 5U));
     }
     if (vlSelf->fpga_template_top_tb__DOT__btn_s1_resetb) {
         if (vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__sample_valid) {
             vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__level_q 
                 = ((vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__level_q 
-                    - VL_SHIFTR_III(32,32,32, vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__level_q, 0xbU)) 
+                    - VL_SHIFTR_III(32,32,32, vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__level_q, 0x14U)) 
                    + VL_SHIFTR_III(32,32,32, (0xffffffU 
                                               & (((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid) 
                                                   & (vlSelf->__VdfgTmp_hb1fddee5__0 
@@ -461,9 +464,9 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__0(Vfpga_t
                  & (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid))) {
                 if ((0xfU > (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_count))) {
                     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_address 
-                        = (0xfU & ((IData)(1U) + (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_address)));
+                        = (0x1fU & ((IData)(1U) + (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_address)));
                     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_count 
-                        = (0x1fU & ((IData)(1U) + (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_count)));
+                        = (0x3fU & ((IData)(1U) + (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_count)));
                 } else {
                     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_in_progress = 0U;
                     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_count = 0U;
@@ -473,9 +476,9 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__0(Vfpga_t
             if (vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_accepted) {
                 if ((0x10U > (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count))) {
                     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_address 
-                        = (0xfU & ((IData)(1U) + (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_address)));
+                        = (0x1fU & ((IData)(1U) + (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_address)));
                     __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count 
-                        = (0x1fU & ((IData)(1U) + (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count)));
+                        = (0x3fU & ((IData)(1U) + (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count)));
                 } else {
                     vlSelf->fpga_template_top_tb__DOT__buffer_full = 1U;
                 }
@@ -519,12 +522,12 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__0(Vfpga_t
             __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__left_done_q = 0U;
             __Vdly__fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__right_done_q = 0U;
         }
-        if ((9U == (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q))) {
+        if ((0x83d5fU == vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q)) {
             __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q = 0U;
             vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__tick = 1U;
         } else {
             __Vdly__fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q 
-                = (0xfU & ((IData)(1U) + (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q)));
+                = (0xfffffU & ((IData)(1U) + vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q));
             vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__tick = 0U;
         }
     } else {
@@ -561,14 +564,14 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__0(Vfpga_t
     if ((1U & (~ (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_write_enable)))) {
         vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_data_out 
             = vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram1__DOT__mem
-            [(0xffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_address) 
-                       >> 5U))];
+            [(0x1ffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_address) 
+                        >> 5U))];
     }
     if ((1U & (~ (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_write_enable)))) {
         vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_data_out 
             = vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__u_ram0__DOT__mem
-            [(0xffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_address) 
-                       >> 5U))];
+            [(0x1ffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_address) 
+                        >> 5U))];
     }
     vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__ws_d 
         = ((IData)(vlSelf->fpga_template_top_tb__DOT__btn_s1_resetb) 
@@ -716,9 +719,12 @@ VL_INLINE_OPT void Vfpga_template_top_tb___024root___nba_sequent__TOP__1(Vfpga_t
                     = (1U & (vlSelf->fpga_template_top_tb__DOT__left_shift_reg 
                              >> 0x18U));
             }
-        } else if (VL_LTES_III(32, 0x19U, vlSelf->fpga_template_top_tb__DOT__bit_counter)) {
+        } else if (VL_LTES_III(32, 0x1fU, vlSelf->fpga_template_top_tb__DOT__bit_counter)) {
             vlSelf->fpga_template_top_tb__DOT__bit_counter = 0U;
             vlSelf->fpga_template_top_tb__DOT__mic_sd_0 = 0U;
+        } else {
+            vlSelf->fpga_template_top_tb__DOT__bit_counter 
+                = ((IData)(1U) + vlSelf->fpga_template_top_tb__DOT__bit_counter);
         }
     } else {
         vlSelf->fpga_template_top_tb__DOT__bit_counter = 0U;

@@ -16,9 +16,9 @@
 
 module fpga_template_top_tb;
 
-    //==========================================================================
-    // Parameters
-    //==========================================================================
+//==========================================================================
+// Parameters
+//==========================================================================
     localparam CLK_PERIOD = 37.037;  // 27 MHz = 37.037ns period
     localparam real CLK_FREQ = 27.0e6;
 
@@ -26,9 +26,9 @@ module fpga_template_top_tb;
     localparam NUM_TEST_SAMPLES = 80;   // Test with 80 samples (5 buffer swaps)
     localparam RAM_DEPTH = 16;          // Must match ram_logic DEPTH parameter
 
-    //==========================================================================
-    // DUT signals
-    //==========================================================================
+//==========================================================================
+// DUT signals
+//==========================================================================
     logic        clk;
     logic [5:0]  debug_led;
     logic        btn_s1_resetb;
@@ -38,9 +38,9 @@ module fpga_template_top_tb;
     logic        mic_sd_0;
     logic        buffer_full;
 
-    //==========================================================================
-    // Test control signals
-    //==========================================================================
+//==========================================================================
+// Test control signals
+//==========================================================================
     int          sample_count;
     int          buffer_swap_count;
     int          handshake_count;
@@ -48,9 +48,9 @@ module fpga_template_top_tb;
     logic        monitor_handshake;
     logic [23:0] test_audio_value;
 
-    //==========================================================================
-    // Instantiate DUT
-    //==========================================================================
+//==========================================================================
+// Instantiate DUT
+//==========================================================================
     fpga_template_top dut (
         .clk            (clk),
         .debug_led      (debug_led),
@@ -62,17 +62,17 @@ module fpga_template_top_tb;
         .buffer_full    (buffer_full)
     );
 
-    //==========================================================================
-    // Clock generation - 27 MHz
-    //==========================================================================
+//==========================================================================
+// Clock generation - 27 MHz
+//==========================================================================
     initial begin
         clk = 0;
         forever #(CLK_PERIOD/2) clk = ~clk;
     end
 
-    //==========================================================================
-    // Reset generation
-    //==========================================================================
+//==========================================================================
+// Reset generation
+//==========================================================================
     initial begin
         btn_s1_resetb = 1'b0;  // Active low reset
         btn_s2 = 1'b0;
@@ -81,9 +81,9 @@ module fpga_template_top_tb;
         $display("[%0t] Reset released", $time);
     end
 
-    //==========================================================================
-    // Simulated I2S Microphone
-    //==========================================================================
+//==========================================================================
+// Simulated I2S Microphone
+//==========================================================================
     // Generate realistic I2S serial data stream
 
     int bit_counter;
@@ -117,7 +117,9 @@ module fpga_template_top_tb;
             else
                 left_sample = 24'h200000;  // Maximum level
 
-            right_sample = left_sample;  // Same for both channels
+            left_sample = left_sample + sample_count;  // Same for both channels
+            right_sample = left_sample + 1;  // Same for both channels
+
             sample_count++;
         end
     end
@@ -151,136 +153,137 @@ module fpga_template_top_tb;
                     mic_sd_0 = right_shift_reg[24];
                 end
                 bit_counter++;
-            end else if (bit_counter >= 25) begin
+            end else if (bit_counter >= 31) begin
                 // End of 25-bit word, wait for WS change
                 bit_counter = 0;
                 mic_sd_0 = 1'b0;
-            end
+            end else
+                bit_counter++;
         end
     end
 
-    //==========================================================================
-    // Monitors and Checkers
-    //==========================================================================
+//==========================================================================
+// Monitors and Checkers
+//==========================================================================
 
     // Monitor I2S sample capture
-    initial begin
-        sample_count = 0;
-        wait(btn_s1_resetb == 1'b1);
+        initial begin
+            sample_count = 0;
+            wait(btn_s1_resetb == 1'b1);
 
-        forever begin
-            @(posedge dut.u_sampler.ready_o);
-            $display("[%0t] Sample %0d captured: L=0x%06h R=0x%06h",
-                     $time, sample_count,
-                     dut.u_sampler.left_o,
-                     dut.u_sampler.right_o);
+            forever begin
+                @(posedge dut.u_sampler.ready_o);
+                $display("[%0t] Sample %0d captured: L=0x%06h R=0x%06h",
+                        $time, sample_count,
+                        dut.u_sampler.left_o,
+                        dut.u_sampler.right_o);
+            end
         end
-    end
 
     // Monitor RAM buffer swaps
-    initial begin
-        buffer_swap_count = 0;
-        wait(btn_s1_resetb == 1'b1);
+        initial begin
+            buffer_swap_count = 0;
+            wait(btn_s1_resetb == 1'b1);
 
-        forever begin
-            @(posedge dut.u_ram.buffer_ready_o);
-            buffer_swap_count++;
-            $display("[%0t] === Buffer swap %0d - Write buffer full, starting read phase ===",
-                     $time, buffer_swap_count);
-            $display("         Write buffer was: RAM%0d, Read buffer now: RAM%0d",
-                     dut.u_ram.write_buffer_sel, dut.u_ram.read_buffer_sel);
+            forever begin
+                @(posedge dut.u_ram.buffer_ready_o);
+                buffer_swap_count++;
+                $display("[%0t] === Buffer swap %0d - Write buffer full, starting read phase ===",
+                        $time, buffer_swap_count);
+                $display("         Write buffer was: RAM%0d, Read buffer now: RAM%0d",
+                        dut.u_ram.write_buffer_sel, dut.u_ram.read_buffer_sel);
+            end
         end
-    end
 
     // Monitor VU meter handshake timing - verify 2-cycle ready delay
-    logic prev_sample_valid;
-    initial begin
-        handshake_count = 0;
-        ready_low_cycles = 0;
-        monitor_handshake = 0;
-        prev_sample_valid = 0;
+        logic prev_sample_valid;
+        initial begin
+            handshake_count = 0;
+            ready_low_cycles = 0;
+            monitor_handshake = 0;
+            prev_sample_valid = 0;
 
-        wait(btn_s1_resetb == 1'b1);
-        @(posedge clk);  // Sync to clock
+            wait(btn_s1_resetb == 1'b1);
+            @(posedge clk);  // Sync to clock
 
-        forever begin
-            @(posedge clk);
-            #1;  // Wait for signals to settle
+            forever begin
+                @(posedge clk);
+                #1;  // Wait for signals to settle
 
-            // Detect rising edge of sample_valid (handshake acceptance)
-            if (dut.vu.sample_valid && !prev_sample_valid) begin
-                handshake_count++;
-                monitor_handshake = 1;
-                ready_low_cycles = 0;
-                if (handshake_count <= 5) begin // Only print first few to avoid spam
-                    $display("[%0t] VU Handshake %0d: Sample accepted", $time, handshake_count);
+                // Detect rising edge of sample_valid (handshake acceptance)
+                if (dut.vu.sample_valid && !prev_sample_valid) begin
+                    handshake_count++;
+                    monitor_handshake = 1;
+                    ready_low_cycles = 0;
+                    if (handshake_count <= 5) begin // Only print first few to avoid spam
+                        $display("[%0t] VU Handshake %0d: Sample accepted", $time, handshake_count);
+                    end
                 end
-            end
-            prev_sample_valid = dut.vu.sample_valid;
+                prev_sample_valid = dut.vu.sample_valid;
 
-            // Monitor the ready signal for 3 cycles after handshake starts
-            if (monitor_handshake) begin
-                // Check ready_q value AFTER the handshake cycle
-                if (ready_low_cycles == 0 && !prev_sample_valid) begin
-                    // First cycle after handshake - ready should be LOW
-                    if (!dut.vu.ram_ready_q) begin
-                        ready_low_cycles = 1;
-                    end else begin
-                        $error("[%0t] TIMING ERROR: Ready should be LOW in cycle 1 after handshake!",  $time);
-                        monitor_handshake = 0;
-                    end
-                end else if (ready_low_cycles == 1) begin
-                    // Second cycle after handshake - ready should still be LOW
-                    if (!dut.vu.ram_ready_q) begin
-                        ready_low_cycles = 2;
-                    end else begin
-                        $error("[%0t] TIMING ERROR: Ready should be LOW in cycle 2 after handshake!", $time);
-                        monitor_handshake = 0;
-                    end
-                end else if (ready_low_cycles == 2) begin
-                    // Third cycle after handshake - ready should be HIGH again
-                    if (dut.vu.ram_ready_q) begin
-                        if (handshake_count <= 5) begin
-                            $display("[%0t]    PASS: Correct 2-cycle handshake delay (ready LOW for 2 cycles)", $time);
+                // Monitor the ready signal for 3 cycles after handshake starts
+                if (monitor_handshake) begin
+                    // Check ready_q value AFTER the handshake cycle
+                    if (ready_low_cycles == 0 && !prev_sample_valid) begin
+                        // First cycle after handshake - ready should be LOW
+                        if (!dut.vu.ram_ready_q) begin
+                            ready_low_cycles = 1;
+                        end else begin
+                            $error("[%0t] TIMING ERROR: Ready should be LOW in cycle 1 after handshake!",  $time);
+                            monitor_handshake = 0;
                         end
-                    end else begin
-                        $error("[%0t] TIMING ERROR: Ready should be HIGH in cycle 3 after handshake!", $time);
+                    end else if (ready_low_cycles == 1) begin
+                        // Second cycle after handshake - ready should still be LOW
+                        if (!dut.vu.ram_ready_q) begin
+                            ready_low_cycles = 2;
+                        end else begin
+                            $error("[%0t] TIMING ERROR: Ready should be LOW in cycle 2 after handshake!", $time);
+                            monitor_handshake = 0;
+                        end
+                    end else if (ready_low_cycles == 2) begin
+                        // Third cycle after handshake - ready should be HIGH again
+                        if (dut.vu.ram_ready_q) begin
+                            if (handshake_count <= 5) begin
+                                $display("[%0t]    PASS: Correct 2-cycle handshake delay (ready LOW for 2 cycles)", $time);
+                            end
+                        end else begin
+                            $error("[%0t] TIMING ERROR: Ready should be HIGH in cycle 3 after handshake!", $time);
+                        end
+                        monitor_handshake = 0;
                     end
-                    monitor_handshake = 0;
                 end
             end
         end
-    end
 
     // Monitor VU meter LED outputs
-    logic [5:0] prev_leds;
-    initial begin
-        prev_leds = 6'b0;
-        wait(btn_s1_resetb == 1'b1);
+        logic [5:0] prev_leds;
+        initial begin
+            prev_leds = 6'b0;
+            wait(btn_s1_resetb == 1'b1);
 
-        forever begin
-            @(posedge clk);
-            if (dut.vu.leds_o != prev_leds) begin
-                $display("[%0t] VU LEDs changed: %06b (level=%0d)",
-                         $time, dut.vu.leds_o, dut.vu.level_q);
-                prev_leds = dut.vu.leds_o;
+            forever begin
+                @(posedge clk);
+                if (dut.vu.leds_o != prev_leds) begin
+                    $display("[%0t] VU LEDs changed: %06b (level=%0d)",
+                            $time, dut.vu.leds_o, dut.vu.level_q);
+                    prev_leds = dut.vu.leds_o;
+                end
             end
         end
-    end
 
     // Check for buffer overflows
-    initial begin
-        wait(btn_s1_resetb == 1'b1);
+        initial begin
+            wait(btn_s1_resetb == 1'b1);
 
-        forever begin
-            @(posedge buffer_full);
-            $error("[%0t] BUFFER OVERFLOW DETECTED!", $time);
+            forever begin
+                @(posedge buffer_full);
+                $error("[%0t] BUFFER OVERFLOW DETECTED!", $time);
+            end
         end
-    end
 
-    //==========================================================================
-    // Test sequence
-    //==========================================================================
+//==========================================================================
+// Test sequence
+//==========================================================================
     initial begin
         $display("=================================================================");
         $display("FPGA I2S Audio Capture System Testbench");
@@ -331,9 +334,9 @@ module fpga_template_top_tb;
         $finish;
     end
 
-    //==========================================================================
-    // Waveform dump for GTKWave
-    //==========================================================================
+//==========================================================================
+// Waveform dump for GTKWave
+//==========================================================================
     initial begin
         $dumpfile("fpga_template_top_tb.vcd");
         $dumpvars(0, fpga_template_top_tb);

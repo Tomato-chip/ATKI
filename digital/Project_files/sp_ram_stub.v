@@ -24,7 +24,7 @@ module SP (
 );
 
     // Parameters
-    parameter BIT_WIDTH = 16;           // 1, 2, 4, 8, 16, 32
+    parameter BIT_WIDTH = 32;           // 1, 2, 4, 8, 16, 32
     parameter READ_MODE = 1'b0;         // 0=BYPASS, 1=PIPELINE
     parameter WRITE_MODE = 2'b00;       // 00=NORMAL, 01=WRITE_THROUGH, 10=READ_BEFORE_WRITE
     parameter BLK_SEL = 3'b000;
@@ -41,7 +41,7 @@ module SP (
                            (BIT_WIDTH == 1)  ? 16384 : 1024;
 
     // Calculate address width
-    localparam ADDR_BITS = $clog2(MEM_DEPTH);
+    localparam ADDR_BITS = $clog2(MEM_DEPTH);       // BIT_WIDTH = 32 --> MEM_DEPTH = 512 --> ADDR_BITS = 9
 
     // Memory array
     reg [31:0] mem [0:MEM_DEPTH-1];
@@ -54,16 +54,16 @@ module SP (
     //   - WIDTH=32: {1'b0, addr[7:0], 5'b00000} -> extract from AD[12:5]
     //   - WIDTH=16: {2'b00, addr[9:0], 4'b0000} -> extract from AD[13:4]
     //   - WIDTH=8:  {1'b0, addr[10:0], 5'b00000} -> extract from AD[15:5] (impossible, use [13:5])
-    wire [ADDR_BITS-1:0] addr;
+    wire [ADDR_BITS-1:0] addr;  // addr = 9 bits
 
-    generate
-        if (BIT_WIDTH == 32) begin
-            assign addr = AD[12:5];  // Matches {1'b0, addr[7:0], 5'b00000}
-        end else if (BIT_WIDTH == 16) begin
+    generate    
+        if (BIT_WIDTH == 32) begin : gen_addr1
+            assign addr = AD[13:5];  // Matches {1'b0, addr[7:0], 5'b00000}
+        end else if (BIT_WIDTH == 16) begin : gen_addr2
             assign addr = AD[13:4];  // Matches {2'b00, addr[9:0], 4'b0000}
-        end else if (BIT_WIDTH == 8) begin
+        end else if (BIT_WIDTH == 8) begin : gen_addr3
             assign addr = AD[13:5];  // Matches {1'b0, addr[10:0], 5'b00000} (limited by 14-bit AD)
-        end else begin
+        end else begin  : gen_addr4
             assign addr = AD[ADDR_BITS-1:0];
         end
     endgenerate

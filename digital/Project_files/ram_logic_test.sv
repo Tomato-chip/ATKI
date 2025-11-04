@@ -24,7 +24,7 @@
 module ram_logic #(
     parameter int unsigned WIDTH = 32,          // Data width in bits
     parameter int unsigned DEPTH = 16,         // Buffer depth (samples per buffer)
-    parameter int unsigned ADDR_WIDTH = $clog2(DEPTH)  // Address width (auto-calculated)
+    parameter int unsigned ADDR_WIDTH = $clog2(WIDTH)  // Address width (auto-calculated)  log2(32) = 5     log2(16) = 4
 ) (
     // Clock and reset
     input  logic                    clk_i,
@@ -93,7 +93,7 @@ module ram_logic #(
         // Pack address into 14-bit format with lower bits zero-padded
         // Format: [unused bits][address][zero padding]
         if (WIDTH == 32) begin
-            return {1'b0, addr, 5'b00000};
+            return {4'b0000, addr, 5'b00000};  // addr = [4:0] 5 bits
         end else if (WIDTH == 16) begin
             return {2'b00, addr, 4'b0000};
         end else if (WIDTH == 8) begin

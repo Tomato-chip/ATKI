@@ -37,85 +37,86 @@ void Vfpga_template_top_tb___024root__trace_chg_0_sub_0(Vfpga_template_top_tb___
         bufp->chgIData(oldp+8,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__sample_right),24);
         bufp->chgCData(oldp+9,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__debug_sample_led),6);
         bufp->chgIData(oldp+10,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__sample_left),32);
-        bufp->chgBit(oldp+11,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__sampler_to_ram_write_request_w));
-        bufp->chgIData(oldp+12,(((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid)
+        bufp->chgIData(oldp+11,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__sample_right),32);
+        bufp->chgBit(oldp+12,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__sampler_to_ram_write_request_w));
+        bufp->chgIData(oldp+13,(((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid)
                                   ? vlSelf->__VdfgTmp_hb1fddee5__0
                                   : 0U)),32);
-        bufp->chgBit(oldp+13,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__ram_to_6led_read_valid_w));
-        bufp->chgBit(oldp+14,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__ram_ready_q));
-        bufp->chgBit(oldp+15,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__ram_to_6led_buffer_ready_w));
-        bufp->chgBit(oldp+16,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__frame_start_q));
-        bufp->chgCData(oldp+17,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_ctr_q),3);
-        bufp->chgBit(oldp+18,(((~ (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_q)) 
+        bufp->chgBit(oldp+14,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__ram_to_6led_read_valid_w));
+        bufp->chgBit(oldp+15,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__ram_ready_q));
+        bufp->chgBit(oldp+16,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__ram_to_6led_buffer_ready_w));
+        bufp->chgBit(oldp+17,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__frame_start_q));
+        bufp->chgCData(oldp+18,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_ctr_q),3);
+        bufp->chgBit(oldp+19,(((~ (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_q)) 
                                & (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_prev_q))));
-        bufp->chgBit(oldp+19,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_prev_q));
-        bufp->chgCData(oldp+20,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__ws_ctr_q),6);
-        bufp->chgIData(oldp+21,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_period_cycles),32);
-        bufp->chgIData(oldp+22,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_last_toggle_time),32);
-        bufp->chgBit(oldp+23,((0x10U > (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count))));
-        bufp->chgCData(oldp+24,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count),5);
-        bufp->chgCData(oldp+25,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_count),5);
-        bufp->chgCData(oldp+26,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_address),4);
-        bufp->chgCData(oldp+27,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_address),4);
-        bufp->chgBit(oldp+28,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_buffer_sel));
-        bufp->chgBit(oldp+29,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_sel));
-        bufp->chgBit(oldp+30,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid));
-        bufp->chgBit(oldp+31,((0x10U <= (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count))));
-        bufp->chgBit(oldp+32,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_in_progress));
-        bufp->chgBit(oldp+33,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_accepted));
-        bufp->chgBit(oldp+34,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__sample_valid));
-        bufp->chgSData(oldp+35,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_address),14);
-        bufp->chgSData(oldp+36,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_address),14);
-        bufp->chgBit(oldp+37,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_write_enable));
-        bufp->chgBit(oldp+38,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_write_enable));
-        bufp->chgSData(oldp+39,((0xffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_address) 
-                                          >> 5U))),9);
-        bufp->chgSData(oldp+40,((0xffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_address) 
-                                          >> 5U))),9);
-        bufp->chgBit(oldp+41,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__ws_d));
-        bufp->chgBit(oldp+42,(((~ (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_prev_q)) 
+        bufp->chgBit(oldp+20,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_prev_q));
+        bufp->chgCData(oldp+21,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__ws_ctr_q),6);
+        bufp->chgIData(oldp+22,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_period_cycles),32);
+        bufp->chgIData(oldp+23,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_last_toggle_time),32);
+        bufp->chgBit(oldp+24,((0x10U > (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count))));
+        bufp->chgCData(oldp+25,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count),6);
+        bufp->chgCData(oldp+26,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_count),6);
+        bufp->chgCData(oldp+27,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_address),5);
+        bufp->chgCData(oldp+28,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_address),5);
+        bufp->chgBit(oldp+29,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_buffer_sel));
+        bufp->chgBit(oldp+30,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_sel));
+        bufp->chgBit(oldp+31,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid));
+        bufp->chgBit(oldp+32,((0x10U <= (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_count))));
+        bufp->chgBit(oldp+33,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_in_progress));
+        bufp->chgBit(oldp+34,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__write_accepted));
+        bufp->chgBit(oldp+35,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__sample_valid));
+        bufp->chgSData(oldp+36,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_address),14);
+        bufp->chgSData(oldp+37,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_address),14);
+        bufp->chgBit(oldp+38,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_write_enable));
+        bufp->chgBit(oldp+39,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_write_enable));
+        bufp->chgSData(oldp+40,((0x1ffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_address) 
+                                           >> 5U))),9);
+        bufp->chgSData(oldp+41,((0x1ffU & ((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_address) 
+                                           >> 5U))),9);
+        bufp->chgBit(oldp+42,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__ws_d));
+        bufp->chgBit(oldp+43,(((~ (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_prev_q)) 
                                & (IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__sck_q))));
-        bufp->chgIData(oldp+43,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__shift25_q),25);
-        bufp->chgCData(oldp+44,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__cnt_q),6);
-        bufp->chgBit(oldp+45,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__left_done_q));
-        bufp->chgBit(oldp+46,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__right_done_q));
-        bufp->chgBit(oldp+47,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__channel_q));
-        bufp->chgIData(oldp+48,(vlSelf->fpga_template_top_tb__DOT__dut__DOT____Vcellinp__vu__ram_read_data_i),24);
-        bufp->chgBit(oldp+49,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__processing_delay_q));
-        bufp->chgIData(oldp+50,((0xffffffU & (((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid) 
+        bufp->chgIData(oldp+44,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__shift25_q),25);
+        bufp->chgCData(oldp+45,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__cnt_q),6);
+        bufp->chgBit(oldp+46,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__left_done_q));
+        bufp->chgBit(oldp+47,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__right_done_q));
+        bufp->chgBit(oldp+48,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__channel_q));
+        bufp->chgIData(oldp+49,(vlSelf->fpga_template_top_tb__DOT__dut__DOT____Vcellinp__vu__ram_read_data_i),24);
+        bufp->chgBit(oldp+50,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__processing_delay_q));
+        bufp->chgIData(oldp+51,((0xffffffU & (((IData)(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__read_buffer_valid) 
                                                & (vlSelf->__VdfgTmp_hb1fddee5__0 
                                                   >> 0x17U))
                                                ? ((IData)(1U) 
                                                   + 
                                                   (~ vlSelf->fpga_template_top_tb__DOT__dut__DOT____Vcellinp__vu__ram_read_data_i))
                                                : vlSelf->fpga_template_top_tb__DOT__dut__DOT____Vcellinp__vu__ram_read_data_i))),24);
-        bufp->chgIData(oldp+51,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__level_q),32);
-        bufp->chgCData(oldp+52,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q),4);
-        bufp->chgBit(oldp+53,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__tick));
-        bufp->chgCData(oldp+54,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__leds_next),6);
+        bufp->chgIData(oldp+52,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__level_q),32);
+        bufp->chgIData(oldp+53,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__div_q),20);
+        bufp->chgBit(oldp+54,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__tick));
+        bufp->chgCData(oldp+55,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__vu__DOT__leds_next),6);
     }
     if (VL_UNLIKELY(vlSelf->__Vm_traceActivity[3U])) {
-        bufp->chgBit(oldp+55,(vlSelf->fpga_template_top_tb__DOT__mic_sd_0));
-        bufp->chgIData(oldp+56,(vlSelf->fpga_template_top_tb__DOT__bit_counter),32);
-        bufp->chgIData(oldp+57,(vlSelf->fpga_template_top_tb__DOT__left_shift_reg),25);
-        bufp->chgIData(oldp+58,(vlSelf->fpga_template_top_tb__DOT__right_shift_reg),25);
+        bufp->chgBit(oldp+56,(vlSelf->fpga_template_top_tb__DOT__mic_sd_0));
+        bufp->chgIData(oldp+57,(vlSelf->fpga_template_top_tb__DOT__bit_counter),32);
+        bufp->chgIData(oldp+58,(vlSelf->fpga_template_top_tb__DOT__left_shift_reg),25);
+        bufp->chgIData(oldp+59,(vlSelf->fpga_template_top_tb__DOT__right_shift_reg),25);
     }
-    bufp->chgBit(oldp+59,(vlSelf->fpga_template_top_tb__DOT__clk));
-    bufp->chgBit(oldp+60,(vlSelf->fpga_template_top_tb__DOT__btn_s1_resetb));
-    bufp->chgBit(oldp+61,(vlSelf->fpga_template_top_tb__DOT__btn_s2));
-    bufp->chgBit(oldp+62,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__ws_q));
-    bufp->chgIData(oldp+63,(vlSelf->fpga_template_top_tb__DOT__sample_count),32);
-    bufp->chgIData(oldp+64,(vlSelf->fpga_template_top_tb__DOT__buffer_swap_count),32);
-    bufp->chgIData(oldp+65,(vlSelf->fpga_template_top_tb__DOT__handshake_count),32);
-    bufp->chgIData(oldp+66,(vlSelf->fpga_template_top_tb__DOT__ready_low_cycles),32);
-    bufp->chgBit(oldp+67,(vlSelf->fpga_template_top_tb__DOT__monitor_handshake));
-    bufp->chgIData(oldp+68,(vlSelf->fpga_template_top_tb__DOT__left_sample),24);
-    bufp->chgIData(oldp+69,(vlSelf->fpga_template_top_tb__DOT__right_sample),24);
-    bufp->chgBit(oldp+70,(vlSelf->fpga_template_top_tb__DOT__prev_sample_valid));
-    bufp->chgCData(oldp+71,(vlSelf->fpga_template_top_tb__DOT__prev_leds),6);
-    bufp->chgIData(oldp+72,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_data_out),32);
-    bufp->chgIData(oldp+73,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_data_out),32);
-    bufp->chgBit(oldp+74,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__ws_edge));
+    bufp->chgBit(oldp+60,(vlSelf->fpga_template_top_tb__DOT__clk));
+    bufp->chgBit(oldp+61,(vlSelf->fpga_template_top_tb__DOT__btn_s1_resetb));
+    bufp->chgBit(oldp+62,(vlSelf->fpga_template_top_tb__DOT__btn_s2));
+    bufp->chgBit(oldp+63,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_i2s_clock__DOT__ws_q));
+    bufp->chgIData(oldp+64,(vlSelf->fpga_template_top_tb__DOT__sample_count),32);
+    bufp->chgIData(oldp+65,(vlSelf->fpga_template_top_tb__DOT__buffer_swap_count),32);
+    bufp->chgIData(oldp+66,(vlSelf->fpga_template_top_tb__DOT__handshake_count),32);
+    bufp->chgIData(oldp+67,(vlSelf->fpga_template_top_tb__DOT__ready_low_cycles),32);
+    bufp->chgBit(oldp+68,(vlSelf->fpga_template_top_tb__DOT__monitor_handshake));
+    bufp->chgIData(oldp+69,(vlSelf->fpga_template_top_tb__DOT__left_sample),24);
+    bufp->chgIData(oldp+70,(vlSelf->fpga_template_top_tb__DOT__right_sample),24);
+    bufp->chgBit(oldp+71,(vlSelf->fpga_template_top_tb__DOT__prev_sample_valid));
+    bufp->chgCData(oldp+72,(vlSelf->fpga_template_top_tb__DOT__prev_leds),6);
+    bufp->chgIData(oldp+73,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram0_data_out),32);
+    bufp->chgIData(oldp+74,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_ram__DOT__ram1_data_out),32);
+    bufp->chgBit(oldp+75,(vlSelf->fpga_template_top_tb__DOT__dut__DOT__u_sampler__DOT__ws_edge));
 }
 
 void Vfpga_template_top_tb___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/) {

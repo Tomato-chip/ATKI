@@ -44,6 +44,8 @@ module fpga_template_top (
 //--------------------------------------------------------------------------------------------------------
     // Sampler -> RAM path (write interface)
     logic signed [31:0] sampler_to_ram_32_data_w;      // 32-bit data: {8'b0, sample_left[23:0]}
+    logic signed [31:0] sampler_test_32_data_w;      // 32-bit data: {8'b0, sample_left[23:0]}
+
     logic        sampler_to_ram_write_request_w; // Write valid from sampler
 
     // RAM -> VU Meter path (read interface)
@@ -54,6 +56,8 @@ module fpga_template_top (
 
     // Zero-pad 24-bit sample to 32-bit RAM word
     assign sampler_to_ram_32_data_w = {8'b00000000, sample_left};    // Pad to 32-bit
+    assign sampler_test_32_data_w = {8'b00000000, sample_right};    // Pad to 32-bit
+
 
 //--------------------------------------------------------------------------------------------------------
 
@@ -87,8 +91,10 @@ module fpga_template_top (
     vu_meter_6led vu (
         .clk_i               (clk),
         .rst_ni              (resetb),
-        .ram_read_data_i     (sample_right),       // From ram_logic.read_data_o
+
+        // .ram_read_data_i     (sampler_test_32_data_w[23:0]),       // test uden ram
         .ram_read_data_i     (ram_to_6led_32_data_w[23:0]),       // From ram_logic.read_data_o
+
         .ram_read_valid_i    (ram_to_6led_read_valid_w),          // From ram_logic.read_valid_o
         .ram_read_ready_o    (ram_to_6led_read_ready_w),          // To ram_logic.read_ready_i
         .ram_buffer_ready_i  (ram_to_6led_buffer_ready_w),        // From ram_logic.buffer_ready_o

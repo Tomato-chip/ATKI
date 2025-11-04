@@ -15,3 +15,13 @@ husk ADDR_WIDTH og ADDR_WIDTH-1 !!!!!
 
 
 read_buffer_valid er altid 1
+
+
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Problemet ligger i ram read out! og i VU der bliver ved med at hente data, efter 16 samples er beregnet.
+Sæt tiden ned på VU. og sørg for at den ikke bliver ved med at hente data fra ram, når der ikke er mere.
+Lad den eventuelt læse langsommere, eller gemme værdien på led.
