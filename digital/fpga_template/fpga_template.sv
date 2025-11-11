@@ -25,43 +25,33 @@ module fpga_template_top (
         output logic       i2s_sck,
         output logic       i2s_ws,
         input  logic       mic_sd_0,      // Mikrofon 0 + 1
-
         output logic       buffer_full,
-
     //---Analog VU Meter Output for Oscilloscope---
         output logic       vu_analog_out   // PWM output for scope viewing
-
     );
     logic resetb;
         assign resetb = ~btn_s1_resetb; 
 //--------------------------------------------------------------------------------------------------------
-//  Debug LED og registerbank 
+//  Debug LED og registerbank
 //--------------------------------------------------------------------------------------------------------
 
-    assign debug_led = ~debug_sample_led[5:0];
+    // Switch between VU meter LEDs, RAM debug LEDs, and VU debug using button 2
+    logic [5:0] ram_debug_leds;
+    logic [5:0] vu_debug_leds;
+    // assign debug_led =  ~debug_sample_led[5:0];
+    assign debug_led =  ~vu_debug_leds;  // Show VU meter debug
+
 
     logic signed [23:0] sample_left, sample_right;
-    logic [5:0]  debug_sample_led;
+    logic        [5:0]  debug_sample_led;
 //--------------------------------------------------------------------------------------------------------
 //  Inter-module wiring
 //--------------------------------------------------------------------------------------------------------
-    // Sampler -> RAM path (write interface)
-    logic signed [31:0] sampler_to_ram_32_data_w;      // 32-bit data: {8'b0, sample_left[23:0]}
-    logic signed [31:0] sampler_test_32_data_w;      // 32-bit data: {8'b0, sample_left[23:0]}
-
-    logic        sampler_to_ram_write_request_w; // Write valid from sampler
-
-    // RAM -> VU Meter path (read interface)
-    logic signed [31:0] ram_to_6led_32_data_w;         // 32-bit read data from RAM
-    logic        ram_to_6led_read_valid_w;      // Read data valid
-    logic        ram_to_6led_read_ready_w;      // VU meter ready to consume
-    logic        ram_to_6led_buffer_ready_w;    // Buffer swap signal
-
-    // Zero-pad 24-bit sample to 32-bit RAM word
-    assign sampler_to_ram_32_data_w = {8'b00000000, sample_left};    // Pad to 32-bit
-    assign sampler_test_32_data_w = {8'b00000000, sample_right};    // Pad to 32-bit
-
-
+    logic               sample_ready; // Write valid from sampler
+    logic signed [31:0] data_ram_o;         // 32-bit read data from RAM
+    logic               read_valid;      // Read data valid
+    logic               read_ready;      // VU meter ready to consume
+    logic               buffer_ready;    // Buffer swap signal
 //--------------------------------------------------------------------------------------------------------
 
     i2s_capture_24 u_sampler (
@@ -70,50 +60,38 @@ module fpga_template_top (
         .sck_i     (i2s_sck),           // input
         .ws_i      (i2s_ws),            // input
         .sd_i      (mic_sd_0),          // input
-        .left_o    (sample_left),  // output [23:0]
+        .left_o    (sample_left),       // output [23:0]
         .right_o   (sample_right),      // output [23:0]
-        .ready_o   (sampler_to_ram_write_request_w)        // output
+        .ready_o   (sample_ready)        // output
     );
-
-    // Ping-pong RAM buffer with corrected addressing
-    // Parameters: 32-bit width, 256 samples per buffer
-    ram_logic #(
-        .WIDTH      (32),
-        .DEPTH      (256),
-        .ADDR_WIDTH ($clog2(256))  // 8 bits for 256 samples
-    ) u_ram (
+assign buffer_full = sample_ready;
+    ram_logic u_ram (
         .clk_i              (clk),
         .rst_ni             (resetb),       // Active-low synchronous reset
-        .write_data_i       (sampler_to_ram_32_data_w),
-        .write_valid_i      (sampler_to_ram_write_request_w),       // Write request
+        .write_data_i       ({8'b00000000, sample_left}),
+        .write_valid_i      (sample_ready),       // Write request
         .write_ready_o      (),             // Ready to accept write
-        .read_data_o        (ram_to_6led_32_data_w),
-
-        .read_ready_i       (ram_to_6led_read_ready_w),             // Reader ready for data
-        // .read_ready_i       (sampler_to_ram_write_request_w),             // Reader ready for data
-
-        .read_valid_o       (ram_to_6led_read_valid_w),             // Read data valid
-        .buffer_ready_o     (ram_to_6led_buffer_ready_w),           // Pulse: full buffer ready for reading
-        .buffer_overflow_o  (buffer_full),   // Error: write to full system (drives top-level output)
+        .read_data_o        (data_ram_o),
+        .read_ready_i       (read_ready),             // Reader ready for data
+        .read_valid_o       (read_valid),             // Read data valid
+        .buffer_ready_o     (buffer_ready),           // Pulse: full buffer ready for reading
+        .buffer_overflow_o  (),   // Error: write to full system (drives top-level output)
         .write_count_o      (),              // Current write buffer fill level
-        .read_count_o       ()               // Current read buffer position
+        .read_count_o       (),              // Current read buffer position
+        .debug_leds_o       (ram_debug_leds) // Debug LED outputs
     );
 
     // VU-meter (RAM consumer mode only)
     vu_meter_6led vu (
         .clk_i               (clk),
         .rst_ni              (resetb),
-
-        // .ram_read_data_i     (sampler_test_32_data_w[23:0]),       // test uden ram
-        .ram_read_data_i     (ram_to_6led_32_data_w[23:0]),       // From ram_logic.read_data_o
-
-        // .ram_read_valid_i    (sampler_to_ram_write_request_w),          // From ram_logic.read_valid_o
-        .ram_read_valid_i    (ram_to_6led_read_valid_w),          // From ram_logic.read_valid_o
-
-        .ram_read_ready_o    (ram_to_6led_read_ready_w),          // To ram_logic.read_ready_i
-        .ram_buffer_ready_i  (ram_to_6led_buffer_ready_w),        // From ram_logic.buffer_ready_o
+        .ram_read_data_i     (data_ram_o[23:0]),       // From ram_logic.read_data_o
+        .ram_read_valid_i    (read_valid),          // From ram_logic.read_valid_o
+        .ram_read_ready_o    (read_ready),          // To ram_logic.read_ready_i
+        .ram_buffer_ready_i  (buffer_ready),        // From ram_logic.buffer_ready_o
         .leds_o              (debug_sample_led),                   // 6-LED output
-        .analog_out_o        (vu_analog_out)                       // PWM analog output for scope
+        .analog_out_o        (vu_analog_out),                      // PWM analog output for scope
+        .debug_o             (vu_debug_leds)                       // Debug output
     );
 
 //--------------------------------------------------------------------------------------------------------

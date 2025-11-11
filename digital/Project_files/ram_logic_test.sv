@@ -48,7 +48,8 @@ module ram_logic #(
     output logic                    buffer_ready_o,      // Pulse: full buffer ready
     output logic                    buffer_overflow_o,   // Error: write overflow
     output logic [ADDR_WIDTH:0]     write_count_o,       // Write buffer fill level
-    output logic [ADDR_WIDTH:0]     read_count_o         // Read buffer position
+    output logic [ADDR_WIDTH:0]     read_count_o,        // Read buffer position
+    output logic [5:0]              debug_leds_o         // Debug LED outputs
 );
 
     //==========================================================================
@@ -79,6 +80,10 @@ module ram_logic #(
     // Handshaking qualified signals (valid AND ready)
     logic                   write_accepted;     // Write transaction occurring
     logic                   read_accepted;      // Read transaction occurring
+
+    // Debug counters
+    logic [5:0]             write_valid_count_q;  // Counts write_valid pulses
+    logic [5:0]             read_accepted_count_q; // Counts read transactions
 
     // RAM interface signals (Gowin SP RAM uses 14-bit addresses)
     logic [13:0]            ram0_addr;          // Formatted address for RAM0
@@ -134,6 +139,22 @@ module ram_logic #(
     //==========================================================================
     assign write_count_o = write_count_q;  // Current fill level of write buffer
     assign read_count_o  = read_count_q;   // Current position in read buffer
+
+    //==========================================================================
+    // Debug LED Assignments
+    //==========================================================================
+    // LED[5]: write_buf_sel - Which RAM is being written (toggles on swap)
+    // LED[4]: read_buf_sel - Which RAM is being read (toggles on swap)
+    // LED[3:2]: state[1:0] - State machine (00=WRITING, 01=SWAP, 10=READING)
+    // LED[1]: write_count >= DEPTH/2 (buffer half full)
+    // LED[0]: read_count >= DEPTH/2 (read half complete)
+    assign debug_leds_o = {
+        write_buf_sel_q,
+        read_buf_sel_q,
+        state_q[1:0],
+        (write_count_q >= (DEPTH/2)),
+        (read_count_q >= (DEPTH/2))
+    };
 
     //==========================================================================
     // State Machine - Combinational Logic
@@ -193,7 +214,18 @@ module ram_logic #(
             buffer_ready_o      <= 1'b0;
             buffer_overflow_o   <= 1'b0;
             read_valid_o        <= 1'b0;
+
+            // Reset debug counters
+            write_valid_count_q <= '0;
+            read_accepted_count_q <= '0;
         end else begin
+            // Increment debug counters
+            if (write_valid_i) begin
+                write_valid_count_q <= write_valid_count_q + 1'b1;
+            end
+            if (read_accepted) begin
+                read_accepted_count_q <= read_accepted_count_q + 1'b1;
+            end
             // Update state
             state_q <= state_d;
 

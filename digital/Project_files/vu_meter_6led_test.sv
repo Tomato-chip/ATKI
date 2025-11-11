@@ -4,6 +4,9 @@
 // Consumes samples from ram_logic via ready/valid handshake
 // ===============================================================
 module vu_meter_6led #(
+  // Buffer size (must match ram_logic DEPTH parameter)
+  parameter int BUFFER_DEPTH   = 16,        // Number of samples per buffer
+
   // Leaky integrator parameters
   parameter int DECAY_SHIFT    = 14,        // Decay rate: higher = slower decay (12-16 recommended)
   parameter int SCALE_SHIFT    = 2,         // Sensitivity: higher = less sensitive (0-4 recommended)
@@ -26,14 +29,15 @@ module vu_meter_6led #(
   input  logic signed [23:0] ram_read_data_i,   // Sample data from RAM
   input  logic               ram_read_valid_i,  // Valid signal from RAM
   output logic               ram_read_ready_o,  // Ready signal to RAM
-
   input  logic               ram_buffer_ready_i, // Buffer ready indicator (optional monitoring)
-
   // LED outputs
   output logic [5:0]         leds_o,            // LED control signals
 
   // Analog output for oscilloscope (PWM)
-  output logic               analog_out_o       // PWM output representing audio level
+  output logic               analog_out_o,      // PWM output representing audio level
+
+  // Debug outputs
+  output logic [5:0]         debug_o            // Debug signals
 );
 
   //==========================================================================
@@ -42,17 +46,21 @@ module vu_meter_6led #(
 
   // Processing state machine
   typedef enum logic [1:0] {
-    IDLE,       // Ready to accept new sample
-    COMPUTE,    // Computing magnitude and updating level
-    SETTLE      // Allowing computation to settle
+    WAIT_BUFFER, // Wait for ram_buffer_ready_i pulse
+    READING,     // Reading all samples from buffer and finding peak
+    COMPUTE,     // Update leaky integrator with peak value
+    SETTLE       // Allowing computation to settle
   } state_t;
 
   state_t state_q, state_d;
 
-  // Sample processing
-  logic signed [23:0] sample_q;          // Registered input sample
-  logic        [23:0] magnitude;         // Absolute value of sample
+  // Buffer reading
+  logic [$clog2(BUFFER_DEPTH):0] sample_count_q, sample_count_d; // Count samples read
   logic               sample_accepted;   // Handshake occurred
+
+  // Peak detection
+  logic        [23:0] magnitude;         // Absolute value of current sample
+  logic        [23:0] peak_magnitude_q, peak_magnitude_d; // Maximum magnitude in buffer
 
   // Level tracking
   logic        [31:0] level_q, level_d;  // Leaky integrator output
@@ -65,58 +73,81 @@ module vu_meter_6led #(
   // Ready/valid handshake
   //==========================================================================
   assign sample_accepted = ram_read_valid_i && ram_read_ready_o;
-  assign ram_read_ready_o = (state_q == IDLE);
+  assign ram_read_ready_o = (state_q == READING); // Ready to read in READING state
 
   //==========================================================================
   // Magnitude calculation (absolute value)
   //==========================================================================
   always_comb begin
-    magnitude = sample_q[23] ? (~sample_q + 24'b1) : sample_q;
+    magnitude = ram_read_data_i[23] ? (~ram_read_data_i + 24'b1) : ram_read_data_i;
   end
 
   //==========================================================================
-  // State machine for sample processing
+  // State machine for buffer reading and peak detection
   //==========================================================================
   always_comb begin
     // Default: maintain state
     state_d = state_q;
     level_d = level_q;
+    sample_count_d = sample_count_q;
+    peak_magnitude_d = peak_magnitude_q;
 
     case (state_q)
-      IDLE: begin
+      WAIT_BUFFER: begin
+        // Wait for buffer_ready pulse indicating new buffer is available
+        if (ram_buffer_ready_i) begin
+          // New buffer ready, start reading
+          state_d = READING;
+          sample_count_d = '0;
+          peak_magnitude_d = '0; // Reset peak for new buffer
+        end
+      end
+
+      READING: begin
+        // Read all samples from buffer and track peak magnitude
         if (sample_accepted) begin
-          // Sample handshake occurred, start processing
-          state_d = COMPUTE;
+          // Update peak if current magnitude is larger
+          if (magnitude > peak_magnitude_q) begin
+            peak_magnitude_d = magnitude;
+          end
+
+          // Increment sample counter
+          sample_count_d = sample_count_q + 1'b1;
+
+          // Check if all samples read
+          if (sample_count_q >= BUFFER_DEPTH - 1) begin
+            state_d = COMPUTE;
+          end
         end
       end
 
       COMPUTE: begin
-        // Update leaky integrator: decay old level, add new scaled magnitude
-        level_d = level_q - (level_q >> DECAY_SHIFT) + (magnitude >> SCALE_SHIFT);
+        // Update leaky integrator with peak magnitude from buffer
+        level_d = level_q - (level_q >> DECAY_SHIFT) + (peak_magnitude_q >> SCALE_SHIFT);
         state_d = SETTLE;
       end
 
       SETTLE: begin
-        // Allow computation to settle, then return to idle
-        state_d = IDLE;
+        // Allow computation to settle, then wait for next buffer
+        state_d = WAIT_BUFFER;
       end
 
-      default: state_d = IDLE;
+      default: state_d = WAIT_BUFFER;
     endcase
   end
 
-  // State and level register
+  // State and level registers
   always_ff @(posedge clk_i) begin
     if (!rst_ni) begin
-      state_q  <= IDLE;
-      level_q  <= 32'd0;
-      sample_q <= 24'd0;
+      state_q          <= WAIT_BUFFER;
+      level_q          <= 32'd0;
+      sample_count_q   <= '0;
+      peak_magnitude_q <= '0;
     end else begin
-      state_q <= state_d;
-      level_q <= level_d;
-      if (sample_accepted) begin
-        sample_q <= ram_read_data_i;
-      end
+      state_q          <= state_d;
+      level_q          <= level_d;
+      sample_count_q   <= sample_count_d;
+      peak_magnitude_q <= peak_magnitude_d;
     end
   end
 
@@ -211,5 +242,21 @@ module vu_meter_6led #(
       analog_out_o <= (pwm_counter_q < pwm_duty_cycle);
     end
   end
+
+  //==========================================================================
+  // Debug Output
+  //==========================================================================
+  // LED[5]: ram_buffer_ready_i - Buffer ready pulse
+  // LED[4]: ram_read_valid_i - Data available from RAM
+  // LED[3]: ram_read_ready_o - VU meter ready to read
+  // LED[2]: sample_accepted - Read transaction
+  // LED[1:0]: state_q[1:0] - State machine
+  assign debug_o = {
+    ram_buffer_ready_i,
+    ram_read_valid_i,
+    ram_read_ready_o,
+    sample_accepted,
+    state_q[1:0]
+  };
 
 endmodule
