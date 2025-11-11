@@ -72,7 +72,13 @@ module fpga_template_top (
         .ready_o   (sampler_to_ram_write_request_w)        // output
     );
 
-    ram_logic u_ram (
+    // Ping-pong RAM buffer with corrected addressing
+    // Parameters: 32-bit width, 256 samples per buffer
+    ram_logic #(
+        .WIDTH      (32),
+        .DEPTH      (256),
+        .ADDR_WIDTH ($clog2(256))  // 8 bits for 256 samples
+    ) u_ram (
         .clk_i              (clk),
         .rst_ni             (resetb),       // Active-low synchronous reset
         .write_data_i       (sampler_to_ram_32_data_w),

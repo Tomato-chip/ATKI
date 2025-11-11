@@ -1,121 +1,161 @@
 // ===============================================================
 // vu_meter_6led.sv
-// Enkel 6-LED VU-meter for én I2S-kanal (24-bit PCM)
-// Bruges sammen med i2s_capture_24 (clk_i = 27 MHz, strobe = ready_o)
-// Eller med ram_logic via ready/valid handshake
+// 6-LED VU-meter for 24-bit PCM audio samples
+// Consumes samples from ram_logic via ready/valid handshake
 // ===============================================================
 module vu_meter_6led #(
-  parameter bit SELECT_LEFT    = 1'b1,   // 1=venstre, 0=højre
-  parameter int DECAY_SHIFT    = 14,     // større = langsommere fald (12..13 = mere træg)
-  parameter int SCALE_SHIFT    = 2,      // større = mindre følsom; justér 8..12 (REDUCED from 10 for more sensitivity)
-  // faste tærskler — hæv/sænk hvis for mange/få LED'er tænder
-  parameter int unsigned TH1   = 24'd500,    // Lowered from 1000
-  parameter int unsigned TH2   = 24'd2000,   // Lowered from 3000
-  parameter int unsigned TH3   = 24'd6000,   // Lowered from 9000
-  parameter int unsigned TH4   = 24'd15000,  // Lowered from 20000
-  parameter int unsigned TH5   = 24'd35000,  // Lowered from 40000
-  parameter int unsigned TH6   = 24'd70000,  // Lowered from 80000
-  // LED-opdatering ~50 Hz ved 27 MHz: 27e6 / 540000 ≈ 50
-  parameter int LED_DIV        = 2700000
-  // RAM consumer mode enable (always true - direct mode removed)
-  // parameter bit USE_RAM_IF     = 1'b1    // 1=use RAM handshake, 0=use direct sample_valid
+  // Leaky integrator parameters
+  parameter int DECAY_SHIFT    = 14,        // Decay rate: higher = slower decay (12-16 recommended)
+  parameter int SCALE_SHIFT    = 2,         // Sensitivity: higher = less sensitive (0-4 recommended)
+
+  // LED threshold levels (32-bit to match level_q width)
+  parameter int unsigned TH1   = 32'd500,   // LED 1 threshold
+  parameter int unsigned TH2   = 32'd2000,  // LED 2 threshold
+  parameter int unsigned TH3   = 32'd6000,  // LED 3 threshold
+  parameter int unsigned TH4   = 32'd15000, // LED 4 threshold
+  parameter int unsigned TH5   = 32'd35000, // LED 5 threshold
+  parameter int unsigned TH6   = 32'd70000, // LED 6 threshold
+
+  // LED refresh rate: ~50 Hz at 27 MHz clock
+  parameter int LED_DIV        = 540000     // 27e6 / 540000 = 50 Hz
 )(
-  input  logic               clk_i,          // 27 MHz (samme som i2s_capture_24.clk_i)
-  input  logic               rst_ni,
-  input  logic signed [23:0] ram_read_data_i,  // From ram_logic.read_data_o
-  input  logic               ram_read_valid_i, // From ram_logic.read_valid_o
-  output logic               ram_read_ready_o, // To ram_logic.read_ready_i
-  input  logic               ram_buffer_ready_i, // From ram_logic.buffer_ready_o (optional)
-  output logic [5:0]         leds_o
+  input  logic               clk_i,             // System clock (27 MHz)
+  input  logic               rst_ni,            // Active-low reset
+
+  // RAM consumer interface (ready/valid handshake)
+  input  logic signed [23:0] ram_read_data_i,   // Sample data from RAM
+  input  logic               ram_read_valid_i,  // Valid signal from RAM
+  output logic               ram_read_ready_o,  // Ready signal to RAM
+
+  input  logic               ram_buffer_ready_i, // Buffer ready indicator (optional monitoring)
+
+  // LED outputs
+  output logic [5:0]         leds_o             // LED control signals
 );
 
   //==========================================================================
-  // Sample source selection and handshaking
+  // Internal signals
   //==========================================================================
-  logic signed [23:0] sample;
-  logic               sample_valid;
-  logic               ram_read_accepted;
-  logic               ram_ready_q;         // Registered ready signal
-  logic               processing_delay_q;  // Ensures 2-cycle processing time
 
-  // generate
-  //   if (USE_RAM_IF) begin : gen_ram_mode
-      // RAM consumer mode: use ready/valid handshake with flow control
-      // Ready signal indicates we can accept a new sample
-      assign ram_read_ready_o = ram_ready_q;
-      assign ram_read_accepted = ram_read_valid_i && ram_read_ready_o;
+  // Processing state machine
+  typedef enum logic [1:0] {
+    IDLE,       // Ready to accept new sample
+    COMPUTE,    // Computing magnitude and updating level
+    SETTLE      // Allowing computation to settle
+  } state_t;
 
-      // In RAM mode, interpret ram_read_data_i as a single channel sample
-      // (Assumes ram_logic stores either left or right channel, selected externally)
-      assign sample = ram_read_data_i;
-      assign sample_valid = ram_read_accepted;
+  state_t state_q, state_d;
 
-  //   end else begin : gen_direct_mode
-  //     // Direct sample mode: use original interface
-  //     assign ram_read_ready_o = 1'b0;  // Not using RAM interface
-  //     assign sample = (SELECT_LEFT ? left_sample_i : right_sample_i);
-  //     assign sample_valid = sample_valid_i;
-  //   end
-  // endgenerate
+  // Sample processing
+  logic signed [23:0] sample_q;          // Registered input sample
+  logic        [23:0] magnitude;         // Absolute value of sample
+  logic               sample_accepted;   // Handshake occurred
 
-  // Absolutværdi (unsigned)
-  logic [23:0] mag;
-  always_comb mag = sample[23] ? (~sample + 1'b1) : sample;
+  // Level tracking
+  logic        [31:0] level_q, level_d;  // Leaky integrator output
 
-  // Leaky integrator (glidende middel)
-  logic [31:0] level_q;
+  // LED update control
+  logic [$clog2(LED_DIV)-1:0] refresh_counter_q;
+  logic                        led_update_tick;
 
-  // Ready/valid flow control for RAM mode
-  // We need 2 cycles to compute and settle the level update
+  //==========================================================================
+  // Ready/valid handshake
+  //==========================================================================
+  assign sample_accepted = ram_read_valid_i && ram_read_ready_o;
+  assign ram_read_ready_o = (state_q == IDLE);
+
+  //==========================================================================
+  // Magnitude calculation (absolute value)
+  //==========================================================================
+  always_comb begin
+    magnitude = sample_q[23] ? (~sample_q + 24'b1) : sample_q;
+  end
+
+  //==========================================================================
+  // State machine for sample processing
+  //==========================================================================
+  always_comb begin
+    // Default: maintain state
+    state_d = state_q;
+    level_d = level_q;
+
+    case (state_q)
+      IDLE: begin
+        if (sample_accepted) begin
+          // Sample handshake occurred, start processing
+          state_d = COMPUTE;
+        end
+      end
+
+      COMPUTE: begin
+        // Update leaky integrator: decay old level, add new scaled magnitude
+        level_d = level_q - (level_q >> DECAY_SHIFT) + (magnitude >> SCALE_SHIFT);
+        state_d = SETTLE;
+      end
+
+      SETTLE: begin
+        // Allow computation to settle, then return to idle
+        state_d = IDLE;
+      end
+
+      default: state_d = IDLE;
+    endcase
+  end
+
+  // State and level register
   always_ff @(posedge clk_i) begin
     if (!rst_ni) begin
-      level_q <= 32'd0;
-      ram_ready_q <= 1'b1;           // Start ready
-      processing_delay_q <= 1'b0;
+      state_q  <= IDLE;
+      level_q  <= 32'd0;
+      sample_q <= 24'd0;
     end else begin
-      if (sample_valid) begin
-        // Accept sample: start computation, enter processing state
-        level_q <= level_q - (level_q >> DECAY_SHIFT)
-                            + (mag >> SCALE_SHIFT);
-        ram_ready_q <= 1'b0;
-        processing_delay_q <= 1'b1;   // Mark as processing
-      end else if (processing_delay_q) begin
-        // Still processing: wait one more cycle for computation to settle
-        ram_ready_q <= 1'b0;
-        processing_delay_q <= 1'b0;   // Clear delay next cycle
-      end else begin
-        // Done processing: ready for next sample
-        ram_ready_q <= 1'b1;
+      state_q <= state_d;
+      level_q <= level_d;
+      if (sample_accepted) begin
+        sample_q <= ram_read_data_i;
       end
     end
   end
 
-  // ~50 Hz LED-opdatering (for at undgå flimren)
-  logic [$clog2(LED_DIV)-1:0] div_q;
-  logic tick;
+  //==========================================================================
+  // LED refresh rate divider (~50 Hz to prevent flicker)
+  //==========================================================================
   always_ff @(posedge clk_i) begin
     if (!rst_ni) begin
-      div_q <= '0; tick <= 1'b0;
-    end else if (div_q == LED_DIV-1) begin
-      div_q <= '0; tick <= 1'b1;
+      refresh_counter_q <= '0;
+      led_update_tick   <= 1'b0;
     end else begin
-      div_q <= div_q + 1'b1; tick <= 1'b0;
+      if (refresh_counter_q == LED_DIV - 1) begin
+        refresh_counter_q <= '0;
+        led_update_tick   <= 1'b1;
+      end else begin
+        refresh_counter_q <= refresh_counter_q + 1'b1;
+        led_update_tick   <= 1'b0;
+      end
     end
   end
 
-  // Sammenlign mod tærskler kun ved tick
-  logic [5:0] leds_next;
+  //==========================================================================
+  // LED threshold comparison and output
+  //==========================================================================
+  logic [5:0] leds_d;
+
   always_comb begin
-    leds_next[0] = (level_q > TH1);
-    leds_next[1] = (level_q > TH2);
-    leds_next[2] = (level_q > TH3);
-    leds_next[3] = (level_q > TH4);
-    leds_next[4] = (level_q > TH5);
-    leds_next[5] = (level_q > TH6);
+    leds_d[0] = (level_q >= TH1);
+    leds_d[1] = (level_q >= TH2);
+    leds_d[2] = (level_q >= TH3);
+    leds_d[3] = (level_q >= TH4);
+    leds_d[4] = (level_q >= TH5);
+    leds_d[5] = (level_q >= TH6);
   end
 
+  // Update LED outputs only on refresh tick to reduce flicker
   always_ff @(posedge clk_i) begin
-    if (!rst_ni)        leds_o <= 6'b0;
-    else if (tick)      leds_o <= leds_next;
+    if (!rst_ni) begin
+      leds_o <= 6'b0;
+    end else if (led_update_tick) begin
+      leds_o <= leds_d;
+    end
   end
+
 endmodule

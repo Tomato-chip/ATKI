@@ -1,5 +1,6 @@
 #==============================================================================
 # Makefile for FPGA I2S Audio Capture System Simulation
+# Updated to use corrected ram_logic with bug fixes
 #==============================================================================
 
 # Verilator settings
@@ -17,8 +18,8 @@ SRC_FILES = \
 	i2s_capture_24_test.sv \
 	i2s_clock_gen_test.sv \
 	ram_logic_test.sv \
-	vu_meter_6led_test.sv \
-	sp_ram_stub.v
+	gowin_sp_ram_model.sv \
+	vu_meter_6led_test.sv
 
 # Output directory
 OBJ_DIR = obj_dir
