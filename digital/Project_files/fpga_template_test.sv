@@ -26,11 +26,14 @@ module fpga_template_top (
         output logic       i2s_ws,
         input  logic       mic_sd_0,      // Mikrofon 0 + 1
 
-        output logic       buffer_full
+        output logic       buffer_full,
+
+    //---Analog VU Meter Output for Oscilloscope---
+        output logic       vu_analog_out   // PWM output for scope viewing
 
     );
     logic resetb;
-        assign resetb = btn_s1_resetb; 
+        assign resetb = ~btn_s1_resetb; 
 //--------------------------------------------------------------------------------------------------------
 //  Debug LED og registerbank 
 //--------------------------------------------------------------------------------------------------------
@@ -109,7 +112,8 @@ module fpga_template_top (
 
         .ram_read_ready_o    (ram_to_6led_read_ready_w),          // To ram_logic.read_ready_i
         .ram_buffer_ready_i  (ram_to_6led_buffer_ready_w),        // From ram_logic.buffer_ready_o
-        .leds_o              (debug_sample_led)                    // 6-LED output
+        .leds_o              (debug_sample_led),                   // 6-LED output
+        .analog_out_o        (vu_analog_out)                       // PWM analog output for scope
     );
 
 //--------------------------------------------------------------------------------------------------------

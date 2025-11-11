@@ -26,7 +26,10 @@ module fpga_template_top (
         output logic       i2s_ws,
         input  logic       mic_sd_0,      // Mikrofon 0 + 1
 
-        output logic       buffer_full
+        output logic       buffer_full,
+
+    //---Analog VU Meter Output for Oscilloscope---
+        output logic       vu_analog_out   // PWM output for scope viewing
 
     );
     logic resetb;
@@ -37,14 +40,15 @@ module fpga_template_top (
 
     assign debug_led = ~debug_sample_led[5:0];
 
-    logic signed [23:0] sample_left;
-    logic        [23:0] sample_right;
+    logic signed [23:0] sample_left, sample_right;
     logic [5:0]  debug_sample_led;
 //--------------------------------------------------------------------------------------------------------
 //  Inter-module wiring
 //--------------------------------------------------------------------------------------------------------
     // Sampler -> RAM path (write interface)
     logic signed [31:0] sampler_to_ram_32_data_w;      // 32-bit data: {8'b0, sample_left[23:0]}
+    logic signed [31:0] sampler_test_32_data_w;      // 32-bit data: {8'b0, sample_left[23:0]}
+
     logic        sampler_to_ram_write_request_w; // Write valid from sampler
 
     // RAM -> VU Meter path (read interface)
@@ -55,6 +59,8 @@ module fpga_template_top (
 
     // Zero-pad 24-bit sample to 32-bit RAM word
     assign sampler_to_ram_32_data_w = {8'b00000000, sample_left};    // Pad to 32-bit
+    assign sampler_test_32_data_w = {8'b00000000, sample_right};    // Pad to 32-bit
+
 
 //--------------------------------------------------------------------------------------------------------
 
@@ -69,7 +75,13 @@ module fpga_template_top (
         .ready_o   (sampler_to_ram_write_request_w)        // output
     );
 
-    ram_logic u_ram (
+    // Ping-pong RAM buffer with corrected addressing
+    // Parameters: 32-bit width, 256 samples per buffer
+    ram_logic #(
+        .WIDTH      (32),
+        .DEPTH      (256),
+        .ADDR_WIDTH ($clog2(256))  // 8 bits for 256 samples
+    ) u_ram (
         .clk_i              (clk),
         .rst_ni             (resetb),       // Active-low synchronous reset
         .write_data_i       (sampler_to_ram_32_data_w),
@@ -79,7 +91,7 @@ module fpga_template_top (
 
         .read_ready_i       (ram_to_6led_read_ready_w),             // Reader ready for data
         // .read_ready_i       (sampler_to_ram_write_request_w),             // Reader ready for data
-        
+
         .read_valid_o       (ram_to_6led_read_valid_w),             // Read data valid
         .buffer_ready_o     (ram_to_6led_buffer_ready_w),           // Pulse: full buffer ready for reading
         .buffer_overflow_o  (buffer_full),   // Error: write to full system (drives top-level output)
@@ -91,12 +103,17 @@ module fpga_template_top (
     vu_meter_6led vu (
         .clk_i               (clk),
         .rst_ni              (resetb),
-        // .ram_read_data_i     (sample_right),       // From ram_logic.read_data_o
+
+        // .ram_read_data_i     (sampler_test_32_data_w[23:0]),       // test uden ram
         .ram_read_data_i     (ram_to_6led_32_data_w[23:0]),       // From ram_logic.read_data_o
+
+        // .ram_read_valid_i    (sampler_to_ram_write_request_w),          // From ram_logic.read_valid_o
         .ram_read_valid_i    (ram_to_6led_read_valid_w),          // From ram_logic.read_valid_o
+
         .ram_read_ready_o    (ram_to_6led_read_ready_w),          // To ram_logic.read_ready_i
         .ram_buffer_ready_i  (ram_to_6led_buffer_ready_w),        // From ram_logic.buffer_ready_o
-        .leds_o              (debug_sample_led)                    // 6-LED output
+        .leds_o              (debug_sample_led),                   // 6-LED output
+        .analog_out_o        (vu_analog_out)                       // PWM analog output for scope
     );
 
 //--------------------------------------------------------------------------------------------------------

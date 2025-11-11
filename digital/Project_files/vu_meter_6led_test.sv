@@ -30,7 +30,10 @@ module vu_meter_6led #(
   input  logic               ram_buffer_ready_i, // Buffer ready indicator (optional monitoring)
 
   // LED outputs
-  output logic [5:0]         leds_o             // LED control signals
+  output logic [5:0]         leds_o,            // LED control signals
+
+  // Analog output for oscilloscope (PWM)
+  output logic               analog_out_o       // PWM output representing audio level
 );
 
   //==========================================================================
@@ -155,6 +158,57 @@ module vu_meter_6led #(
       leds_o <= 6'b0;
     end else if (led_update_tick) begin
       leds_o <= leds_d;
+    end
+  end
+
+  //==========================================================================
+  // PWM Analog Output for Oscilloscope
+  //==========================================================================
+  // PWM Parameters:
+  // - PWM frequency: 27 MHz / 1024 = ~26.4 kHz (above audio range)
+  // - Resolution: 10 bits (1024 steps)
+  // - Output range maps level_q (0-100000) to duty cycle (0-100%)
+  //
+  // The oscilloscope will show:
+  // - Low audio levels: low average voltage (e.g., 0.5V at 3.3V logic)
+  // - High audio levels: high average voltage (e.g., 3.0V at 3.3V logic)
+  // - Set scope to AC coupling and add averaging/filtering for best viewing
+  //==========================================================================
+
+  localparam int PWM_BITS = 10;                    // 10-bit PWM resolution
+  localparam int PWM_MAX = (1 << PWM_BITS) - 1;    // 1023
+  localparam int LEVEL_MAX = 100000;                // Maximum expected level value
+
+  logic [PWM_BITS-1:0] pwm_counter_q;              // PWM counter (0-1023)
+  logic [PWM_BITS-1:0] pwm_duty_cycle;             // Scaled duty cycle value
+
+  // Scale level_q (0-100000) down to PWM range (0-1023)
+  // duty_cycle = (level_q * 1024) / 100000
+  // Simplified: duty_cycle = level_q >> 6  (approx divide by 64, gives ~1562 max)
+  // Better scaling: Clamp to LEVEL_MAX then scale
+  logic [31:0] level_clamped;
+  assign level_clamped = (level_q > LEVEL_MAX) ? LEVEL_MAX : level_q;
+
+  // Scale: multiply by 1024, then divide by 100000
+  // To avoid overflow: (level_clamped * 1024) / 100000 ≈ level_clamped / 98
+  // More accurate: use shift and add: level * 1024 / 100000 ≈ level * 10 / 1000 ≈ level / 100
+  always_comb begin
+    // Simple scaling: divide level by ~100 to get 0-1023 range
+    // level_clamped / 100 ≈ level_clamped >> 7 (divide by 128, close enough)
+    pwm_duty_cycle = level_clamped[PWM_BITS+6:7];  // Take bits [16:7] for 10-bit result
+  end
+
+  // PWM counter and comparator
+  always_ff @(posedge clk_i) begin
+    if (!rst_ni) begin
+      pwm_counter_q <= '0;
+      analog_out_o  <= 1'b0;
+    end else begin
+      // Increment PWM counter
+      pwm_counter_q <= pwm_counter_q + 1'b1;
+
+      // Generate PWM output: high when counter < duty_cycle
+      analog_out_o <= (pwm_counter_q < pwm_duty_cycle);
     end
   end
 
