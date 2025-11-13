@@ -83,7 +83,10 @@ module fpga_template_top (
 		.debug_leds_o(ram_debug_leds)
 	);
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:85:5
-	vu_meter_6led vu(
+	vu_meter_6led #(
+		.DECAY_SHIFT(10),
+		.SCALE_SHIFT(4)
+	) vu(
 		.clk_i(clk),
 		.rst_ni(resetb),
 		.ram_read_data_i(data_ram_o[23:0]),
@@ -94,7 +97,7 @@ module fpga_template_top (
 		.analog_out_o(vu_analog_out),
 		.debug_o(vu_debug_leds)
 	);
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:102:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:105:5
 	i2s_clock_gen u_i2s_clock(
 		.clk_i(clk),
 		.rst_ni(resetb),

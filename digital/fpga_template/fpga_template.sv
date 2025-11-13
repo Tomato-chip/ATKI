@@ -38,8 +38,8 @@ module fpga_template_top (
     // Switch between VU meter LEDs, RAM debug LEDs, and VU debug using button 2
     logic [5:0] ram_debug_leds;
     logic [5:0] vu_debug_leds;
-    // assign debug_led =  ~debug_sample_led[5:0];
-    assign debug_led =  ~vu_debug_leds;  // Show VU meter debug
+    // assign debug_led =  ~debug_sample_led[5:0];  // Show VU meter output
+    assign debug_led =  ~vu_debug_leds;  // Show debug: state machine
 
 
     logic signed [23:0] sample_left, sample_right;
@@ -82,7 +82,10 @@ assign buffer_full = sample_ready;
     );
 
     // VU-meter (RAM consumer mode only)
-    vu_meter_6led vu (
+    vu_meter_6led #(
+        .DECAY_SHIFT(10),    // Moderate decay for 3.3kHz update rate
+        .SCALE_SHIFT(4)      // Moderate sensitivity - divide peak by 16
+    ) vu (
         .clk_i               (clk),
         .rst_ni              (resetb),
         .ram_read_data_i     (data_ram_o[23:0]),       // From ram_logic.read_data_o

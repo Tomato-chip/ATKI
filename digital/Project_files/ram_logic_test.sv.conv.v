@@ -221,7 +221,7 @@ module ram_logic (
 							buffer_overflow_o <= 1'b1;
 					end
 				end
-				if (read_accepted && (state_q == 2'd2)) begin
+				if (read_accepted) begin
 					begin
 						// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:269:21
 						if (read_count_q < (DEPTH - 1)) begin
@@ -273,8 +273,8 @@ module ram_logic (
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:316:5
 	assign ram1_we = write_accepted && (write_buf_sel_q == 1'b1);
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:324:5
-	assign read_data_o = (state_q == 2'd2 ? (read_buf_sel_q == 1'b0 ? ram0_dout : ram1_dout) : {WIDTH {1'sb0}});
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:338:5
+	assign read_data_o = (read_buf_sel_q == 1'b0 ? ram0_dout : ram1_dout);
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:336:5
 	SP pingpong_buffer_ram0(
 		.CLK(clk_i),
 		.CE(1'b1),
@@ -286,15 +286,15 @@ module ram_logic (
 		.DI(write_data_i),
 		.DO(ram0_dout)
 	);
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:349:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:347:5
 	defparam pingpong_buffer_ram0.BIT_WIDTH = WIDTH;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:350:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:348:5
 	defparam pingpong_buffer_ram0.READ_MODE = 1'b0;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:351:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:349:5
 	defparam pingpong_buffer_ram0.WRITE_MODE = 2'b00;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:352:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:350:5
 	defparam pingpong_buffer_ram0.BLK_SEL = 3'b000;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:360:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:358:5
 	SP pingpong_buffer_ram1(
 		.CLK(clk_i),
 		.CE(1'b1),
@@ -306,13 +306,13 @@ module ram_logic (
 		.DI(write_data_i),
 		.DO(ram1_dout)
 	);
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:371:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:369:5
 	defparam pingpong_buffer_ram1.BIT_WIDTH = WIDTH;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:372:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:370:5
 	defparam pingpong_buffer_ram1.READ_MODE = 1'b0;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:373:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:371:5
 	defparam pingpong_buffer_ram1.WRITE_MODE = 2'b00;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:374:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:372:5
 	defparam pingpong_buffer_ram1.BLK_SEL = 3'b000;
 	initial _sv2v_0 = 0;
 endmodule

@@ -265,7 +265,7 @@ module ram_logic #(
                 //==============================================================
                 // Read Path Management
                 //==============================================================
-                if (read_accepted && (state_q == READING)) begin
+                if (read_accepted) begin
                     if (read_count_q < DEPTH - 1) begin
                         read_addr_q  <= read_addr_q + 1'b1;     // Next read location
                         read_count_q <= read_count_q + 1'b1;    // Increment read count
@@ -319,11 +319,9 @@ module ram_logic #(
     // RAM Output Multiplexing
     //
     // Selects data from the currently active read buffer (RAM0 or RAM1)
-    // based on read_buf_sel_q. Returns zero when not in reading state.
+    // based on read_buf_sel_q. Data is always available; read_valid_o controls validity.
     //==========================================================================
-    assign read_data_o = (state_q == READING) ?
-                         ((read_buf_sel_q == 1'b0) ? ram0_dout : ram1_dout) :
-                         '0;
+    assign read_data_o = (read_buf_sel_q == 1'b0) ? ram0_dout : ram1_dout;
 
     //==========================================================================
     // RAM Instantiation - Buffer 0

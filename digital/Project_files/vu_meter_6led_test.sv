@@ -73,7 +73,9 @@ module vu_meter_6led #(
   // Ready/valid handshake
   //==========================================================================
   assign sample_accepted = ram_read_valid_i && ram_read_ready_o;
-  assign ram_read_ready_o = (state_q == READING); // Ready to read in READING state
+  // Always ready to read - let RAM control flow with read_valid
+  // This ensures we never miss samples due to state machine timing
+  assign ram_read_ready_o = 1'b1;
 
   //==========================================================================
   // Magnitude calculation (absolute value)
@@ -96,25 +98,23 @@ module vu_meter_6led #(
       WAIT_BUFFER: begin
         // Wait for buffer_ready pulse indicating new buffer is available
         if (ram_buffer_ready_i) begin
-          // New buffer ready, start reading
+          // New buffer starting, reset counters and peak
           state_d = READING;
           sample_count_d = '0;
-          peak_magnitude_d = '0; // Reset peak for new buffer
+          peak_magnitude_d = '0;
         end
       end
 
       READING: begin
-        // Read all samples from buffer and track peak magnitude
+        // Read exactly BUFFER_DEPTH samples and track peak magnitude
         if (sample_accepted) begin
-          // Update peak if current magnitude is larger
-          if (magnitude > peak_magnitude_q) begin
-            peak_magnitude_d = magnitude;
-          end
+          // Always update peak - use ternary to select max
+          peak_magnitude_d = (magnitude > peak_magnitude_q) ? magnitude : peak_magnitude_q;
 
           // Increment sample counter
           sample_count_d = sample_count_q + 1'b1;
 
-          // Check if all samples read
+          // After reading exactly BUFFER_DEPTH samples, compute VU level
           if (sample_count_q >= BUFFER_DEPTH - 1) begin
             state_d = COMPUTE;
           end
@@ -246,17 +246,15 @@ module vu_meter_6led #(
   //==========================================================================
   // Debug Output
   //==========================================================================
-  // LED[5]: ram_buffer_ready_i - Buffer ready pulse
-  // LED[4]: ram_read_valid_i - Data available from RAM
-  // LED[3]: ram_read_ready_o - VU meter ready to read
-  // LED[2]: sample_accepted - Read transaction
-  // LED[1:0]: state_q[1:0] - State machine
+  // LED[5:4]: state_q[1:0] (00=WAIT, 01=READING, 10=COMPUTE, 11=SETTLE)
+  // LED[3]: ram_buffer_ready_i
+  // LED[2]: sample_accepted
+  // LED[1:0]: sample_count_q[1:0] (low bits)
   assign debug_o = {
+    state_q[1:0],
     ram_buffer_ready_i,
-    ram_read_valid_i,
-    ram_read_ready_o,
     sample_accepted,
-    state_q[1:0]
+    sample_count_q[1:0]
   };
 
 endmodule
