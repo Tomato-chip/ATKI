@@ -1,0 +1,232 @@
+#!/usr/bin/env python3
+"""
+svgen - SystemVerilog Generator CLI
+
+Command-line tool for generating and testing SystemVerilog modules using AI.
+"""
+
+import sys
+import argparse
+from pathlib import Path
+
+# Add parent directory to path to import sv_agent
+sys.path.insert(0, str(Path(__file__).parent))
+
+from sv_agent import SystemVerilogAgent, check_simulator_available
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Generate and test SystemVerilog modules using AI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Generate and test a counter
+  svgen "Create an 8-bit up/down counter with enable"
+
+  # Use specific simulator
+  svgen -s iverilog "Create a FIFO with 16 entries"
+
+  # Provide detailed specification
+  svgen "Create a PWM controller with:
+    - 8-bit duty cycle input
+    - Configurable frequency
+    - Active-low reset"
+
+  # Just generate without testing
+  svgen --no-test "Create a shift register"
+
+  # Use custom module name
+  svgen -n my_counter "Create a simple counter"
+"""
+    )
+
+    parser.add_argument(
+        "specification",
+        type=str,
+        help="Natural language specification of the module to generate"
+    )
+
+    parser.add_argument(
+        "-s", "--simulator",
+        choices=["verilator", "iverilog"],
+        default="verilator",
+        help="Simulator to use (default: verilator)"
+    )
+
+    parser.add_argument(
+        "-n", "--name",
+        type=str,
+        help="Custom module name (overrides auto-detected name)"
+    )
+
+    parser.add_argument(
+        "--no-test",
+        action="store_true",
+        help="Generate module and testbench without running simulation"
+    )
+
+    parser.add_argument(
+        "--api-key",
+        type=str,
+        help="Anthropic API key (defaults to ANTHROPIC_API_KEY env var)"
+    )
+
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Verbose output"
+    )
+
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Check available simulators and exit"
+    )
+
+    args = parser.parse_args()
+
+    # Check simulators if requested
+    if args.check:
+        print("Checking available simulators...")
+        print()
+        for sim in ["verilator", "iverilog"]:
+            available, version = check_simulator_available(sim)
+            if available:
+                print(f"✓ {sim}: {version}")
+            else:
+                print(f"✗ {sim}: Not found")
+        return 0
+
+    # Check if API key is available
+    import os
+    api_key = args.api_key or os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        print("Error: API key required!")
+        print("Set ANTHROPIC_API_KEY environment variable or use --api-key option")
+        print()
+        print("Get your API key from: https://console.anthropic.com/")
+        return 1
+
+    # Check if selected simulator is available
+    if not args.no_test:
+        available, version = check_simulator_available(args.simulator)
+        if not available:
+            print(f"Error: {args.simulator} not found!")
+            print()
+            print("Install it with:")
+            if args.simulator == "verilator":
+                print("  sudo apt-get install verilator")
+            elif args.simulator == "iverilog":
+                print("  sudo apt-get install iverilog")
+            print()
+            print("Or use --no-test to skip simulation")
+            return 1
+
+        if args.verbose:
+            print(f"Using {args.simulator}: {version}")
+            print()
+
+    # Initialize agent
+    try:
+        agent = SystemVerilogAgent(api_key=api_key)
+    except Exception as e:
+        print(f"Error initializing agent: {e}")
+        return 1
+
+    # Generate module
+    if args.no_test:
+        # Just generate, don't test
+        print(f"\n{'='*70}")
+        print("SystemVerilog Agent - Generate Only")
+        print(f"{'='*70}\n")
+
+        print("Step 1: Generating module...")
+        try:
+            result = agent.generate_module(args.specification)
+            module_code = result["code"]
+            module_name = result["module_name"]
+
+            if args.name:
+                module_code = module_code.replace(
+                    f"module {module_name}",
+                    f"module {args.name}",
+                    1
+                )
+                module_name = args.name
+
+            print(f"✓ Generated module: {module_name}")
+
+            # Save module
+            module_file = f"{module_name}.sv"
+            module_path = agent.generated_dir / module_file
+            module_path.write_text(module_code)
+            print(f"✓ Saved to: {module_path}")
+
+            # Generate testbench
+            print("\nStep 2: Generating testbench...")
+            tb_code = agent.generate_testbench(module_code, module_name)
+            print(f"✓ Generated testbench")
+
+            # Save testbench
+            tb_file = f"{module_name}_tb.sv"
+            tb_path = agent.sim_generated_dir / tb_file
+            tb_path.write_text(tb_code)
+            print(f"✓ Saved to: {tb_path}")
+
+            print(f"\n{'='*70}")
+            print("Generation complete!")
+            print(f"{'='*70}\n")
+            print(f"Module:     {module_path}")
+            print(f"Testbench:  {tb_path}")
+            print()
+            print(f"To test manually:")
+            print(f"  cd sim")
+            print(f"  verilator --binary --trace generated/{tb_file} ../digital/generated/{module_file}")
+            print()
+
+        except Exception as e:
+            print(f"\nError: {e}")
+            if args.verbose:
+                import traceback
+                traceback.print_exc()
+            return 1
+
+    else:
+        # Full workflow: generate and test
+        try:
+            result = agent.create_and_test(
+                specification=args.specification,
+                module_name=args.name,
+                simulator=args.simulator
+            )
+
+            if result["success"]:
+                print(f"✓ Success! Module '{result['module_name']}' created and tested")
+                print()
+                print(f"Files created:")
+                print(f"  Module:     {result['module_file']}")
+                print(f"  Testbench:  {result['tb_file']}")
+                if result['simulation'].get('vcd_file'):
+                    print(f"  Waveform:   {result['simulation']['vcd_file']}")
+                print()
+                return 0
+            else:
+                print(f"✗ Failed at stage: {result.get('stage', 'unknown')}")
+                if 'error' in result:
+                    print(f"Error: {result['error']}")
+                return 1
+
+        except KeyboardInterrupt:
+            print("\n\nInterrupted by user")
+            return 130
+        except Exception as e:
+            print(f"\nError: {e}")
+            if args.verbose:
+                import traceback
+                traceback.print_exc()
+            return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
