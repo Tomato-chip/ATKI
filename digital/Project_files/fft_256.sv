@@ -62,7 +62,7 @@ module fft_256 #(
     logic [8:0] input_count;        // Input sample counter (needs to count to 256)
     logic [8:0] output_count;       // Output sample counter (needs to count to 256)
     logic [3:0] stage;              // Current FFT stage (needs to hold 0-8)
-    logic [7:0] butterfly_idx;      // Butterfly index within stage
+    logic [8:0] butterfly_idx;      // Butterfly index within stage (needs to count to 256)
     logic [7:0] group_size, group_idx, bf_pos, idx_a, idx_b;  // Butterfly index calculation
 
     // Butterfly computation signals
@@ -72,7 +72,18 @@ module fft_256 #(
     logic signed [DATA_WIDTH-1:0] bf_out_b_real, bf_out_b_imag;
     logic signed [DATA_WIDTH-1:0] twiddle_real, twiddle_imag;
     logic [7:0] twiddle_idx;
-    logic butterfly_valid;
+
+    // Pipeline registers for proper timing (2-cycle pipeline: address -> twiddle -> butterfly)
+    logic signed [DATA_WIDTH-1:0] bf_in_a_real_d, bf_in_a_imag_d;
+    logic signed [DATA_WIDTH-1:0] bf_in_b_real_d, bf_in_b_imag_d;
+    logic [7:0] idx_a_d, idx_b_d;
+    logic [3:0] stage_d;
+    logic bf_valid, bf_valid_d;
+
+    // Debug cycle counter
+    `ifndef SYNTHESIS
+    integer cycle_count = 0;
+    `endif
 
     // Bit-reversal function
     function automatic logic [7:0] bit_reverse(input logic [7:0] in);
@@ -89,13 +100,17 @@ module fft_256 #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
             state <= IDLE;
+            `ifndef SYNTHESIS
+            cycle_count <= 0;
+            `endif
         end else begin
             state <= next_state;
-            // Debug output
             `ifndef SYNTHESIS
+            cycle_count <= cycle_count + 1;
+            // Debug output
             if (state != next_state) begin
-                $display("FFT: State transition %s -> %s (stage=%0d, butterfly_idx=%0d)",
-                         state.name(), next_state.name(), stage, butterfly_idx);
+                $display("FFT: Cycle %0d: State transition %s -> %s (stage=%0d, butterfly_idx=%0d)",
+                         cycle_count, state.name(), next_state.name(), stage, butterfly_idx);
             end
             `endif
         end
@@ -155,15 +170,16 @@ module fft_256 #(
             if ((state == LOADING || state == IDLE) && valid_i) begin
                 buffer_real[input_count] <= data_real_i;
                 buffer_imag[input_count] <= data_imag_i;
+
+                `ifndef SYNTHESIS
+                if (input_count < 4 || input_count >= FFT_SIZE - 2) begin
+                    $display("FFT: Loading [%0d] = %0d", input_count, data_real_i);
+                end
+                `endif
+
                 input_count <= input_count + 1;
             end else if (state == IDLE && !valid_i) begin
                 input_count <= 0;
-            end else if (state == OUTPUTTING && next_state == IDLE) begin
-                // Clear buffers when transitioning from OUTPUTTING to IDLE
-                for (int i = 0; i < FFT_SIZE; i++) begin
-                    buffer_real[i] <= 0;
-                    buffer_imag[i] <= 0;
-                end
             end
         end
     end
@@ -183,68 +199,124 @@ module fft_256 #(
                 rev_idx = bit_reverse(i[7:0]);
                 buffer_real_tmp[i] <= buffer_real[rev_idx];
                 buffer_imag_tmp[i] <= buffer_imag[rev_idx];
+
+                `ifndef SYNTHESIS
+                if (i < 4) begin
+                    $display("FFT: Bit-reverse [%0d] <- [%0d], value=%0d", i, rev_idx, buffer_real[rev_idx]);
+                end
+                `endif
             end
         end
     end
 
     // ========================================================================
-    // FFT Stage Processing
+    // FFT Stage Processing - Address Generation
     // ========================================================================
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
             stage <= 0;
             butterfly_idx <= 0;
+            bf_in_a_real <= 0;
+            bf_in_a_imag <= 0;
+            bf_in_b_real <= 0;
+            bf_in_b_imag <= 0;
+            twiddle_idx <= 0;
+            idx_a <= 0;
+            idx_b <= 0;
+            bf_valid <= 0;
         end else begin
             if (state == PROCESSING) begin
                 // Check if all stages completed
                 if (stage >= STAGES) begin
                     // All stages done, FSM will transition to OUTPUTTING
-                    // Hold counters steady
                     stage <= STAGES;
                     butterfly_idx <= 0;
+                    bf_valid <= 0;
                 end else if (butterfly_idx < (FFT_SIZE >> 1)) begin
                     // Process butterflies in current stage
                     group_size = 1 << (stage + 1);
                     group_idx = butterfly_idx / (group_size >> 1);
                     bf_pos = butterfly_idx % (group_size >> 1);
-                    idx_a = group_idx * group_size + bf_pos;
-                    idx_b = idx_a + (group_size >> 1);
+                    idx_a <= group_idx * group_size + bf_pos;
+                    idx_b <= (group_idx * group_size + bf_pos) + (group_size >> 1);
 
-                    // Read butterfly inputs
+                    // Read butterfly inputs (Stage 1 of pipeline)
                     if (stage == 0) begin
-                        bf_in_a_real <= buffer_real_tmp[idx_a];
-                        bf_in_a_imag <= buffer_imag_tmp[idx_a];
-                        bf_in_b_real <= buffer_real_tmp[idx_b];
-                        bf_in_b_imag <= buffer_imag_tmp[idx_b];
+                        bf_in_a_real <= buffer_real_tmp[group_idx * group_size + bf_pos];
+                        bf_in_a_imag <= buffer_imag_tmp[group_idx * group_size + bf_pos];
+                        bf_in_b_real <= buffer_real_tmp[(group_idx * group_size + bf_pos) + (group_size >> 1)];
+                        bf_in_b_imag <= buffer_imag_tmp[(group_idx * group_size + bf_pos) + (group_size >> 1)];
                     end else begin
-                        bf_in_a_real <= buffer_real[idx_a];
-                        bf_in_a_imag <= buffer_imag[idx_a];
-                        bf_in_b_real <= buffer_real[idx_b];
-                        bf_in_b_imag <= buffer_imag[idx_b];
+                        bf_in_a_real <= buffer_real[group_idx * group_size + bf_pos];
+                        bf_in_a_imag <= buffer_imag[group_idx * group_size + bf_pos];
+                        bf_in_b_real <= buffer_real[(group_idx * group_size + bf_pos) + (group_size >> 1)];
+                        bf_in_b_imag <= buffer_imag[(group_idx * group_size + bf_pos) + (group_size >> 1)];
                     end
 
-                    // Twiddle factor index
+                    // Twiddle factor index (ROM will register and output next cycle)
                     twiddle_idx <= (bf_pos * (FFT_SIZE >> (stage + 1)));
 
+                    `ifndef SYNTHESIS
+                    if (stage == 0 && butterfly_idx <= 5) begin
+                        $display("FFT: Cycle %0d: Addr gen bf_idx=%0d -> idx_a=%0d, idx_b=%0d",
+                                 cycle_count, butterfly_idx, group_idx * group_size + bf_pos,
+                                 (group_idx * group_size + bf_pos) + (group_size >> 1));
+                    end
+                    `endif
+
+                    bf_valid <= 1;
                     butterfly_idx <= butterfly_idx + 1;
                 end else begin
-                    // All butterflies in current stage processed, move to next stage
-                    butterfly_idx <= 0;
-                    if (stage < STAGES - 1) begin
-                        stage <= stage + 1;
+                    // All butterflies in current stage processed, wait for pipeline to flush
+                    bf_valid <= 0;
+                    // Wait 2 more cycles for pipeline to complete before advancing stage
+                    if (butterfly_idx == (FFT_SIZE >> 1) + 2) begin
+                        butterfly_idx <= 0;
+                        if (stage < STAGES - 1) begin
+                            stage <= stage + 1;
+                        end else begin
+                            stage <= STAGES; // Signal completion
+                        end
                     end else begin
-                        stage <= STAGES; // Signal completion
+                        butterfly_idx <= butterfly_idx + 1;
                     end
                 end
             end else if (state == IDLE || state == BIT_REVERSE) begin
                 stage <= 0;
                 butterfly_idx <= 0;
+                bf_valid <= 0;
             end
         end
     end
 
     // ========================================================================
-    // Butterfly Computation (Radix-2 DIT)
+    // Pipeline Stage 2 - Delay registers to match twiddle ROM latency
+    // ========================================================================
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+            bf_in_a_real_d <= 0;
+            bf_in_a_imag_d <= 0;
+            bf_in_b_real_d <= 0;
+            bf_in_b_imag_d <= 0;
+            idx_a_d <= 0;
+            idx_b_d <= 0;
+            stage_d <= 0;
+            bf_valid_d <= 0;
+        end else begin
+            // Delay inputs by one cycle to align with twiddle ROM output
+            bf_in_a_real_d <= bf_in_a_real;
+            bf_in_a_imag_d <= bf_in_a_imag;
+            bf_in_b_real_d <= bf_in_b_real;
+            bf_in_b_imag_d <= bf_in_b_imag;
+            idx_a_d <= idx_a;
+            idx_b_d <= idx_b;
+            stage_d <= stage;
+            bf_valid_d <= bf_valid;
+        end
+    end
+
+    // ========================================================================
+    // Butterfly Computation (Radix-2 DIT) - Stage 3 (Combinational)
     // ========================================================================
     // Butterfly equations:
     //   A' = A + W * B
@@ -253,43 +325,48 @@ module fft_256 #(
 
     always_comb begin
         // Complex multiplication: (b_real + j*b_imag) * (w_real + j*w_imag)
+        // Using delayed inputs which are now aligned with twiddle ROM outputs
         logic signed [2*DATA_WIDTH-1:0] mult_real, mult_imag;
         logic signed [DATA_WIDTH-1:0] wb_real, wb_imag;
 
-        mult_real = (bf_in_b_real * twiddle_real - bf_in_b_imag * twiddle_imag);
-        mult_imag = (bf_in_b_real * twiddle_imag + bf_in_b_imag * twiddle_real);
+        mult_real = (bf_in_b_real_d * twiddle_real - bf_in_b_imag_d * twiddle_imag);
+        mult_imag = (bf_in_b_real_d * twiddle_imag + bf_in_b_imag_d * twiddle_real);
 
         // Scale back to DATA_WIDTH (Q1.23 format)
+        // Q1.23 * Q1.23 = Q2.46 (2 integer bits, 46 fractional bits)
+        // Extract bits [46:23] to get Q1.23 (1 integer bit, 23 fractional bits)
         wb_real = mult_real[2*DATA_WIDTH-2 -: DATA_WIDTH];
         wb_imag = mult_imag[2*DATA_WIDTH-2 -: DATA_WIDTH];
 
         // Butterfly outputs
-        bf_out_a_real = bf_in_a_real + wb_real;
-        bf_out_a_imag = bf_in_a_imag + wb_imag;
-        bf_out_b_real = bf_in_a_real - wb_real;
-        bf_out_b_imag = bf_in_a_imag - wb_imag;
+        bf_out_a_real = bf_in_a_real_d + wb_real;
+        bf_out_a_imag = bf_in_a_imag_d + wb_imag;
+        bf_out_b_real = bf_in_a_real_d - wb_real;
+        bf_out_b_imag = bf_in_a_imag_d - wb_imag;
     end
 
+    // ========================================================================
     // Write butterfly results back to buffer
-    always_ff @(posedge clk_i) begin
-        if (state == PROCESSING && butterfly_idx > 0 && stage < STAGES) begin
-            group_size = 1 << (stage + 1);
-            group_idx = (butterfly_idx - 1) / (group_size >> 1);
-            bf_pos = (butterfly_idx - 1) % (group_size >> 1);
-            idx_a = group_idx * group_size + bf_pos;
-            idx_b = idx_a + (group_size >> 1);
+    // ========================================================================
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+            // Initialize to prevent 'x' propagation
+        end else begin
+            if (state == PROCESSING && bf_valid_d && stage_d < STAGES) begin
+                buffer_real[idx_a_d] <= bf_out_a_real;
+                buffer_imag[idx_a_d] <= bf_out_a_imag;
+                buffer_real[idx_b_d] <= bf_out_b_real;
+                buffer_imag[idx_b_d] <= bf_out_b_imag;
 
-            buffer_real[idx_a] <= bf_out_a_real;
-            buffer_imag[idx_a] <= bf_out_a_imag;
-            buffer_real[idx_b] <= bf_out_b_real;
-            buffer_imag[idx_b] <= bf_out_b_imag;
-
-            `ifndef SYNTHESIS
-            if (stage == 0 && butterfly_idx <= 3) begin
-                $display("FFT: Writing stage=%0d, bf=%0d: [%0d]=%0d, [%0d]=%0d",
-                         stage, butterfly_idx-1, idx_a, bf_out_a_real, idx_b, bf_out_b_real);
+                `ifndef SYNTHESIS
+                if (stage_d == 0 && idx_a_d <= 6) begin
+                    $display("FFT: Cycle %0d: Writing stage=%0d, bf_idx=%0d: [%0d]=%0d+j%0d, [%0d]=%0d+j%0d (bf_in_a=%0d, bf_in_b=%0d, tw=%0d+j%0d)",
+                             cycle_count, stage_d, butterfly_idx, idx_a_d, bf_out_a_real, bf_out_a_imag,
+                             idx_b_d, bf_out_b_real, bf_out_b_imag,
+                             bf_in_a_real_d, bf_in_b_real_d, twiddle_real, twiddle_imag);
+                end
+                `endif
             end
-            `endif
         end
     end
 
