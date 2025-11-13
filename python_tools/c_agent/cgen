@@ -1,0 +1,254 @@
+#!/usr/bin/env python3
+"""
+cgen - Embedded C Code Generator CLI
+
+Command-line tool for generating and testing embedded C modules using AI.
+"""
+
+import sys
+import argparse
+from pathlib import Path
+
+# Add parent directory to path to import c_agent
+sys.path.insert(0, str(Path(__file__).parent))
+
+from c_agent import EmbeddedCAgent, check_compiler_available
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Generate and test embedded C modules using AI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Generate a ring buffer implementation
+  cgen "Create a ring buffer for uint8_t data with 256 bytes"
+
+  # Generate for ARM Cortex-M
+  cgen -t cortex-m "Create a GPIO driver for LED control"
+
+  # Use specific compiler
+  cgen -c arm-none-eabi-gcc "Create a UART driver"
+
+  # Just generate without testing
+  cgen --no-test "Create a CRC16 calculation module"
+
+  # Custom module name
+  cgen -n my_buffer "Create a circular buffer"
+
+  # Multi-line specification
+  cgen "Create a debounce module with:
+    - Configurable debounce time
+    - Support for multiple buttons
+    - Callback on button press"
+"""
+    )
+
+    parser.add_argument(
+        "specification",
+        type=str,
+        help="Natural language specification of the module to generate"
+    )
+
+    parser.add_argument(
+        "-t", "--target",
+        choices=["generic", "cortex-m", "avr"],
+        default="generic",
+        help="Target platform (default: generic)"
+    )
+
+    parser.add_argument(
+        "-c", "--compiler",
+        choices=["gcc", "clang", "arm-none-eabi-gcc", "avr-gcc"],
+        default="gcc",
+        help="Compiler to use (default: gcc)"
+    )
+
+    parser.add_argument(
+        "-n", "--name",
+        type=str,
+        help="Custom module name (overrides auto-detected name)"
+    )
+
+    parser.add_argument(
+        "--no-test",
+        action="store_true",
+        help="Generate module and tests without compiling/running"
+    )
+
+    parser.add_argument(
+        "--api-key",
+        type=str,
+        help="Anthropic API key (defaults to ANTHROPIC_API_KEY env var)"
+    )
+
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Verbose output"
+    )
+
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Check available compilers and exit"
+    )
+
+    args = parser.parse_args()
+
+    # Check compilers if requested
+    if args.check:
+        print("Checking available compilers...")
+        print()
+        for compiler in ["gcc", "clang", "arm-none-eabi-gcc", "avr-gcc"]:
+            available, version = check_compiler_available(compiler)
+            if available:
+                print(f"✓ {compiler}: {version}")
+            else:
+                print(f"✗ {compiler}: Not found")
+        return 0
+
+    # Check if API key is available
+    import os
+    api_key = args.api_key or os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        print("Error: API key required!")
+        print("Set ANTHROPIC_API_KEY environment variable or use --api-key option")
+        print()
+        print("Get your API key from: https://console.anthropic.com/")
+        return 1
+
+    # Check if selected compiler is available
+    if not args.no_test:
+        available, version = check_compiler_available(args.compiler)
+        if not available:
+            print(f"Error: {args.compiler} not found!")
+            print()
+            print("Install it with:")
+            if args.compiler == "gcc":
+                print("  sudo apt-get install gcc")
+            elif args.compiler == "clang":
+                print("  sudo apt-get install clang")
+            elif args.compiler == "arm-none-eabi-gcc":
+                print("  sudo apt-get install gcc-arm-none-eabi")
+            elif args.compiler == "avr-gcc":
+                print("  sudo apt-get install gcc-avr")
+            print()
+            print("Or use --no-test to skip compilation")
+            return 1
+
+        if args.verbose:
+            print(f"Using {args.compiler}: {version}")
+            print(f"Target: {args.target}")
+            print()
+
+    # Initialize agent
+    try:
+        agent = EmbeddedCAgent(api_key=api_key)
+    except Exception as e:
+        print(f"Error initializing agent: {e}")
+        return 1
+
+    # Generate module
+    if args.no_test:
+        # Just generate, don't test
+        print(f"\n{'='*70}")
+        print("Embedded C Agent - Generate Only")
+        print(f"{'='*70}\n")
+
+        print("Step 1: Generating C module...")
+        try:
+            result = agent.generate_module(args.specification, args.target)
+            header_code = result["header"]
+            source_code = result["source"]
+            module_name = result["module_name"]
+
+            if args.name:
+                header_code = header_code.replace(module_name, args.name)
+                header_code = header_code.replace(module_name.upper(), args.name.upper())
+                source_code = source_code.replace(module_name, args.name)
+                module_name = args.name
+
+            print(f"✓ Generated module: {module_name}")
+
+            # Save files
+            module_dir = agent.generated_dir / module_name
+            module_dir.mkdir(exist_ok=True)
+
+            header_file = module_dir / f"{module_name}.h"
+            source_file = module_dir / f"{module_name}.c"
+
+            header_file.write_text(header_code)
+            source_file.write_text(source_code)
+
+            print(f"✓ Saved header: {header_file}")
+            print(f"✓ Saved source: {source_file}")
+
+            # Generate tests
+            print("\nStep 2: Generating unit tests...")
+            test_code = agent.generate_test(header_code, source_code, module_name)
+            print(f"✓ Generated tests")
+
+            # Save test
+            test_file = agent.tests_dir / f"test_{module_name}.c"
+            test_file.write_text(test_code)
+            print(f"✓ Saved test: {test_file}")
+
+            print(f"\n{'='*70}")
+            print("Generation complete!")
+            print(f"{'='*70}\n")
+            print(f"Header:  {header_file}")
+            print(f"Source:  {source_file}")
+            print(f"Test:    {test_file}")
+            print()
+            print(f"To compile manually:")
+            print(f"  {args.compiler} {source_file} {test_file} -I {module_dir.parent} -o test_{module_name}")
+            print()
+
+        except Exception as e:
+            print(f"\nError: {e}")
+            if args.verbose:
+                import traceback
+                traceback.print_exc()
+            return 1
+
+    else:
+        # Full workflow: generate and test
+        try:
+            result = agent.create_and_test(
+                specification=args.specification,
+                module_name=args.name,
+                target=args.target,
+                compiler=args.compiler
+            )
+
+            if result["success"]:
+                print(f"✓ Success! Module '{result['module_name']}' created and tested")
+                print()
+                print(f"Files created:")
+                print(f"  Header:  {result['header_file']}")
+                print(f"  Source:  {result['source_file']}")
+                print(f"  Test:    {result['test_file']}")
+                if 'binary' in result['test_result']:
+                    print(f"  Binary:  {result['test_result']['binary']}")
+                print()
+                return 0
+            else:
+                print(f"✗ Failed at stage: {result.get('stage', 'unknown')}")
+                if 'error' in result:
+                    print(f"Error: {result['error']}")
+                return 1
+
+        except KeyboardInterrupt:
+            print("\n\nInterrupted by user")
+            return 130
+        except Exception as e:
+            print(f"\nError: {e}")
+            if args.verbose:
+                import traceback
+                traceback.print_exc()
+            return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
