@@ -192,18 +192,21 @@ module fft_256_tb;
     // Send input samples to FFT
     task send_fft_input();
         input_idx = 0;
-        valid_i = 1;
+        valid_i = 0;  // Start with valid_i low
 
         for (int i = 0; i < FFT_SIZE; i++) begin
-            @(posedge clk);
+            // Wait for ready
             while (!ready_o) @(posedge clk);
 
+            // Set data and valid BEFORE clock edge
             data_real_i = input_buffer[i];
             data_imag_i = 0; // Real signal only
             valid_i = 1;
+
+            // Now wait for clock edge so data is stable when FFT samples
+            @(posedge clk);
         end
 
-        @(posedge clk);
         valid_i = 0;
         data_real_i = 0;
     endtask
@@ -237,22 +240,32 @@ module fft_256_tb;
         max_magnitude = 0;
         max_bin = 0;
 
-        for (int i = 0; i < 32; i++) begin // Show first 32 bins
+        // First show bins 0-31 always for debugging
+        for (int i = 0; i < 32; i++) begin
             // Calculate magnitude (approximation to save time)
             magnitude_sq = longint'(output_real[i]) * longint'(output_real[i]) +
                           longint'(output_imag[i]) * longint'(output_imag[i]);
             magnitude = $sqrt(real'(magnitude_sq));
 
-            // Track maximum
+            // Track maximum over all 256 bins
             if (magnitude > max_magnitude) begin
                 max_magnitude = magnitude;
                 max_bin = i;
             end
 
-            // Display significant bins
-            if (magnitude > 10000000) begin // Threshold for display
-                $display("%3d | %12d | %12d | %12.0f",
-                         i, output_real[i], output_imag[i], magnitude);
+            // Display first 32 bins
+            $display("%3d | %12d | %12d | %12.0f",
+                     i, output_real[i], output_imag[i], magnitude);
+        end
+
+        // Check the rest for maximum
+        for (int i = 32; i < FFT_SIZE; i++) begin
+            magnitude_sq = longint'(output_real[i]) * longint'(output_real[i]) +
+                          longint'(output_imag[i]) * longint'(output_imag[i]);
+            magnitude = $sqrt(real'(magnitude_sq));
+            if (magnitude > max_magnitude) begin
+                max_magnitude = magnitude;
+                max_bin = i;
             end
         end
 

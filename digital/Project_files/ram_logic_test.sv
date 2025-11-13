@@ -8,7 +8,7 @@
     //
     // Features:
     //   - Dual-buffer architecture (write to one while reading from the other)
-    //   - Configurable data width and buffer depth
+    //   - Configurable data width and buffer depth (default: 256 samples for FFT)
     //   - Independent read/write handshaking interfaces (ready/valid protocol)
     //   - Buffer overflow protection with error signaling
     //   - Automatic buffer swapping when write buffer fills to DEPTH samples
@@ -34,7 +34,7 @@
 //==============================================================================
 module ram_logic #(
     parameter int unsigned WIDTH = 32,          // Data width in bits
-    parameter int unsigned DEPTH = 16,          // Number of samples per buffer
+    parameter int unsigned DEPTH = 256,         // Number of samples per buffer
     parameter int unsigned ADDR_WIDTH = $clog2(DEPTH)  // Address bits needed
 ) (
     input  logic                    clk_i,          // System clock

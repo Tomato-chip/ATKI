@@ -18,7 +18,7 @@ module ram_logic_tb;
     // Parameters
     //==========================================================================
     localparam int WIDTH = 32;
-    localparam int DEPTH = 16;
+    localparam int DEPTH = 256;      // 256 samples per buffer (for FFT)
     localparam int ADDR_WIDTH = $clog2(DEPTH);
 
     localparam int CLK_PERIOD = 10;  // 100 MHz
@@ -442,7 +442,7 @@ module ram_logic_tb;
     // Timeout Watchdog
     //==========================================================================
     initial begin
-        #1000000;  // 1ms timeout
+        #10000000;  // 10ms timeout (increased for 256-sample buffers)
         $display("ERROR: Simulation timeout!");
         $finish;
     end

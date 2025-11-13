@@ -59,10 +59,11 @@ module fft_256 #(
     logic signed [DATA_WIDTH-1:0] buffer_imag_tmp [0:FFT_SIZE-1];
 
     // Control signals
-    logic [7:0] input_count;        // Input sample counter
-    logic [7:0] output_count;       // Output sample counter
-    logic [2:0] stage;              // Current FFT stage
+    logic [8:0] input_count;        // Input sample counter (needs to count to 256)
+    logic [8:0] output_count;       // Output sample counter (needs to count to 256)
+    logic [3:0] stage;              // Current FFT stage (needs to hold 0-8)
     logic [7:0] butterfly_idx;      // Butterfly index within stage
+    logic [7:0] group_size, group_idx, bf_pos, idx_a, idx_b;  // Butterfly index calculation
 
     // Butterfly computation signals
     logic signed [DATA_WIDTH-1:0] bf_in_a_real, bf_in_a_imag;
@@ -90,6 +91,13 @@ module fft_256 #(
             state <= IDLE;
         end else begin
             state <= next_state;
+            // Debug output
+            `ifndef SYNTHESIS
+            if (state != next_state) begin
+                $display("FFT: State transition %s -> %s (stage=%0d, butterfly_idx=%0d)",
+                         state.name(), next_state.name(), stage, butterfly_idx);
+            end
+            `endif
         end
     end
 
@@ -107,7 +115,7 @@ module fft_256 #(
             end
 
             LOADING: begin
-                if (input_count == FFT_SIZE - 1 && valid_i) begin
+                if (input_count >= FFT_SIZE) begin
                     next_state = BIT_REVERSE;
                 end
             end
@@ -143,12 +151,19 @@ module fft_256 #(
                 buffer_imag[i] <= 0;
             end
         end else begin
-            if (state == LOADING && valid_i) begin
+            // Load data in LOADING state, or in IDLE state if valid_i asserts (immediate start)
+            if ((state == LOADING || state == IDLE) && valid_i) begin
                 buffer_real[input_count] <= data_real_i;
                 buffer_imag[input_count] <= data_imag_i;
                 input_count <= input_count + 1;
-            end else if (state == IDLE) begin
+            end else if (state == IDLE && !valid_i) begin
                 input_count <= 0;
+            end else if (state == OUTPUTTING && next_state == IDLE) begin
+                // Clear buffers when transitioning from OUTPUTTING to IDLE
+                for (int i = 0; i < FFT_SIZE; i++) begin
+                    buffer_real[i] <= 0;
+                    buffer_imag[i] <= 0;
+                end
             end
         end
     end
@@ -164,7 +179,8 @@ module fft_256 #(
             end
         end else if (state == BIT_REVERSE) begin
             for (int i = 0; i < FFT_SIZE; i++) begin
-                logic [7:0] rev_idx = bit_reverse(i[7:0]);
+                logic [7:0] rev_idx;
+                rev_idx = bit_reverse(i[7:0]);
                 buffer_real_tmp[i] <= buffer_real[rev_idx];
                 buffer_imag_tmp[i] <= buffer_imag[rev_idx];
             end
@@ -180,14 +196,19 @@ module fft_256 #(
             butterfly_idx <= 0;
         end else begin
             if (state == PROCESSING) begin
-                // Process butterflies in current stage
-                if (butterfly_idx < (FFT_SIZE >> 1)) begin
-                    // Compute butterfly
-                    logic [7:0] group_size = 1 << (stage + 1);
-                    logic [7:0] group_idx = butterfly_idx / (group_size >> 1);
-                    logic [7:0] bf_pos = butterfly_idx % (group_size >> 1);
-                    logic [7:0] idx_a = group_idx * group_size + bf_pos;
-                    logic [7:0] idx_b = idx_a + (group_size >> 1);
+                // Check if all stages completed
+                if (stage >= STAGES) begin
+                    // All stages done, FSM will transition to OUTPUTTING
+                    // Hold counters steady
+                    stage <= STAGES;
+                    butterfly_idx <= 0;
+                end else if (butterfly_idx < (FFT_SIZE >> 1)) begin
+                    // Process butterflies in current stage
+                    group_size = 1 << (stage + 1);
+                    group_idx = butterfly_idx / (group_size >> 1);
+                    bf_pos = butterfly_idx % (group_size >> 1);
+                    idx_a = group_idx * group_size + bf_pos;
+                    idx_b = idx_a + (group_size >> 1);
 
                     // Read butterfly inputs
                     if (stage == 0) begin
@@ -207,7 +228,7 @@ module fft_256 #(
 
                     butterfly_idx <= butterfly_idx + 1;
                 end else begin
-                    // Move to next stage
+                    // All butterflies in current stage processed, move to next stage
                     butterfly_idx <= 0;
                     if (stage < STAGES - 1) begin
                         stage <= stage + 1;
@@ -233,13 +254,14 @@ module fft_256 #(
     always_comb begin
         // Complex multiplication: (b_real + j*b_imag) * (w_real + j*w_imag)
         logic signed [2*DATA_WIDTH-1:0] mult_real, mult_imag;
+        logic signed [DATA_WIDTH-1:0] wb_real, wb_imag;
 
         mult_real = (bf_in_b_real * twiddle_real - bf_in_b_imag * twiddle_imag);
         mult_imag = (bf_in_b_real * twiddle_imag + bf_in_b_imag * twiddle_real);
 
         // Scale back to DATA_WIDTH (Q1.23 format)
-        logic signed [DATA_WIDTH-1:0] wb_real = mult_real[2*DATA_WIDTH-2 -: DATA_WIDTH];
-        logic signed [DATA_WIDTH-1:0] wb_imag = mult_imag[2*DATA_WIDTH-2 -: DATA_WIDTH];
+        wb_real = mult_real[2*DATA_WIDTH-2 -: DATA_WIDTH];
+        wb_imag = mult_imag[2*DATA_WIDTH-2 -: DATA_WIDTH];
 
         // Butterfly outputs
         bf_out_a_real = bf_in_a_real + wb_real;
@@ -250,17 +272,24 @@ module fft_256 #(
 
     // Write butterfly results back to buffer
     always_ff @(posedge clk_i) begin
-        if (state == PROCESSING && butterfly_idx > 0) begin
-            logic [7:0] group_size = 1 << (stage + 1);
-            logic [7:0] group_idx = (butterfly_idx - 1) / (group_size >> 1);
-            logic [7:0] bf_pos = (butterfly_idx - 1) % (group_size >> 1);
-            logic [7:0] idx_a = group_idx * group_size + bf_pos;
-            logic [7:0] idx_b = idx_a + (group_size >> 1);
+        if (state == PROCESSING && butterfly_idx > 0 && stage < STAGES) begin
+            group_size = 1 << (stage + 1);
+            group_idx = (butterfly_idx - 1) / (group_size >> 1);
+            bf_pos = (butterfly_idx - 1) % (group_size >> 1);
+            idx_a = group_idx * group_size + bf_pos;
+            idx_b = idx_a + (group_size >> 1);
 
             buffer_real[idx_a] <= bf_out_a_real;
             buffer_imag[idx_a] <= bf_out_a_imag;
             buffer_real[idx_b] <= bf_out_b_real;
             buffer_imag[idx_b] <= bf_out_b_imag;
+
+            `ifndef SYNTHESIS
+            if (stage == 0 && butterfly_idx <= 3) begin
+                $display("FFT: Writing stage=%0d, bf=%0d: [%0d]=%0d, [%0d]=%0d",
+                         stage, butterfly_idx-1, idx_a, bf_out_a_real, idx_b, bf_out_b_real);
+            end
+            `endif
         end
     end
 
@@ -304,7 +333,7 @@ module fft_256 #(
     // ========================================================================
     // Control Outputs
     // ========================================================================
-    assign ready_o = (state == IDLE) || (state == LOADING && input_count < FFT_SIZE);
+    assign ready_o = (state == IDLE) || (state == LOADING);
     assign busy_o = (state != IDLE);
 
 endmodule

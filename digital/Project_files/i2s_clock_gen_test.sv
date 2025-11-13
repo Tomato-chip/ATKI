@@ -149,6 +149,8 @@ module i2s_clock_gen #(
     end
   end
 
+  // SVA: Disabled for iverilog - not fully supported
+  `ifdef ASSERTIONS_ENABLED
   // SVA: SCK period matches SCK_DIV (half-period check)
   property sck_half_period_check;
     @(posedge clk_i) disable iff (!rst_ni)
@@ -200,6 +202,7 @@ module i2s_clock_gen #(
 
   assert_frame_start:       assert property (frame_start_check)
     else $error("Frame start pulse at wrong time");
+  `endif // ASSERTIONS_ENABLED
 
   `endif // SYNTHESIS
 
