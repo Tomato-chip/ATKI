@@ -258,11 +258,19 @@ module fft_256_tb;
                      i, output_real[i], output_imag[i], magnitude);
         end
 
-        // Check the rest for maximum
+        // Check the rest for maximum and display significant bins
+        $display("\nOther significant bins:");
         for (int i = 32; i < FFT_SIZE; i++) begin
             magnitude_sq = longint'(output_real[i]) * longint'(output_real[i]) +
                           longint'(output_imag[i]) * longint'(output_imag[i]);
             magnitude = $sqrt(real'(magnitude_sq));
+
+            // Display bins with magnitude > 100000
+            if (magnitude > 100000.0) begin
+                $display("%3d | %12d | %12d | %12.0f",
+                         i, output_real[i], output_imag[i], magnitude);
+            end
+
             if (magnitude > max_magnitude) begin
                 max_magnitude = magnitude;
                 max_bin = i;

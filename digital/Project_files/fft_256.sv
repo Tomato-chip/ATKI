@@ -241,12 +241,15 @@ module fft_256 #(
                     idx_b <= (group_idx * group_size + bf_pos) + (group_size >> 1);
 
                     // Read butterfly inputs (Stage 1 of pipeline)
-                    if (stage == 0) begin
+                    // Use ping-pong buffering: even stages read from tmp, odd stages read from main
+                    if (stage[0] == 0) begin
+                        // Even stages (0, 2, 4, 6): read from tmp buffer
                         bf_in_a_real <= buffer_real_tmp[group_idx * group_size + bf_pos];
                         bf_in_a_imag <= buffer_imag_tmp[group_idx * group_size + bf_pos];
                         bf_in_b_real <= buffer_real_tmp[(group_idx * group_size + bf_pos) + (group_size >> 1)];
                         bf_in_b_imag <= buffer_imag_tmp[(group_idx * group_size + bf_pos) + (group_size >> 1)];
                     end else begin
+                        // Odd stages (1, 3, 5, 7): read from main buffer
                         bf_in_a_real <= buffer_real[group_idx * group_size + bf_pos];
                         bf_in_a_imag <= buffer_imag[group_idx * group_size + bf_pos];
                         bf_in_b_real <= buffer_real[(group_idx * group_size + bf_pos) + (group_size >> 1)];
@@ -269,12 +272,27 @@ module fft_256 #(
                 end else begin
                     // All butterflies in current stage processed, wait for pipeline to flush
                     bf_valid <= 0;
-                    // Wait 2 more cycles for pipeline to complete before advancing stage
-                    if (butterfly_idx == (FFT_SIZE >> 1) + 2) begin
+                    // Wait 3 more cycles for pipeline to complete before advancing stage
+                    // This ensures all writes from previous stage are complete
+                    if (butterfly_idx == (FFT_SIZE >> 1) + 3) begin
                         butterfly_idx <= 0;
                         if (stage < STAGES - 1) begin
+                            `ifndef SYNTHESIS
+                            $display("FFT: Cycle %0d: Stage %0d -> %0d transition", cycle_count, stage, stage + 1);
+                            // Print first few output values of this stage
+                            if (stage[0] == 0) begin
+                                $display("  Stage %0d output (in main buffer): [0]=%0d, [1]=%0d, [16]=%0d",
+                                         stage, buffer_real[0], buffer_real[1], buffer_real[16]);
+                            end else begin
+                                $display("  Stage %0d output (in tmp buffer): [0]=%0d, [1]=%0d, [16]=%0d",
+                                         stage, buffer_real_tmp[0], buffer_real_tmp[1], buffer_real_tmp[16]);
+                            end
+                            `endif
                             stage <= stage + 1;
                         end else begin
+                            `ifndef SYNTHESIS
+                            $display("FFT: Cycle %0d: All stages complete", cycle_count);
+                            `endif
                             stage <= STAGES; // Signal completion
                         end
                     end else begin
@@ -338,25 +356,36 @@ module fft_256 #(
         wb_real = mult_real[2*DATA_WIDTH-2 -: DATA_WIDTH];
         wb_imag = mult_imag[2*DATA_WIDTH-2 -: DATA_WIDTH];
 
-        // Butterfly outputs
-        bf_out_a_real = bf_in_a_real_d + wb_real;
-        bf_out_a_imag = bf_in_a_imag_d + wb_imag;
-        bf_out_b_real = bf_in_a_real_d - wb_real;
-        bf_out_b_imag = bf_in_a_imag_d - wb_imag;
+        // Butterfly outputs with scaling (divide by 2 to prevent overflow)
+        // This is a simple scaling approach - divide by 2 at each stage
+        bf_out_a_real = (bf_in_a_real_d + wb_real) >>> 1;
+        bf_out_a_imag = (bf_in_a_imag_d + wb_imag) >>> 1;
+        bf_out_b_real = (bf_in_a_real_d - wb_real) >>> 1;
+        bf_out_b_imag = (bf_in_a_imag_d - wb_imag) >>> 1;
     end
 
     // ========================================================================
-    // Write butterfly results back to buffer
+    // Write butterfly results back to buffer (ping-pong)
     // ========================================================================
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
             // Initialize to prevent 'x' propagation
         end else begin
             if (state == PROCESSING && bf_valid_d && stage_d < STAGES) begin
-                buffer_real[idx_a_d] <= bf_out_a_real;
-                buffer_imag[idx_a_d] <= bf_out_a_imag;
-                buffer_real[idx_b_d] <= bf_out_b_real;
-                buffer_imag[idx_b_d] <= bf_out_b_imag;
+                // Ping-pong buffering: even stages write to main, odd stages write to tmp
+                if (stage_d[0] == 0) begin
+                    // Even stages (0, 2, 4, 6): write to main buffer
+                    buffer_real[idx_a_d] <= bf_out_a_real;
+                    buffer_imag[idx_a_d] <= bf_out_a_imag;
+                    buffer_real[idx_b_d] <= bf_out_b_real;
+                    buffer_imag[idx_b_d] <= bf_out_b_imag;
+                end else begin
+                    // Odd stages (1, 3, 5, 7): write to tmp buffer
+                    buffer_real_tmp[idx_a_d] <= bf_out_a_real;
+                    buffer_imag_tmp[idx_a_d] <= bf_out_a_imag;
+                    buffer_real_tmp[idx_b_d] <= bf_out_b_real;
+                    buffer_imag_tmp[idx_b_d] <= bf_out_b_imag;
+                end
 
                 `ifndef SYNTHESIS
                 if (stage_d == 0 && idx_a_d <= 6) begin
@@ -392,8 +421,19 @@ module fft_256 #(
         end else begin
             if (state == OUTPUTTING) begin
                 if (ready_i || !valid_o) begin
-                    data_real_o <= buffer_real[output_count];
-                    data_imag_o <= buffer_imag[output_count];
+                    // Output from correct buffer based on LAST stage number
+                    // STAGES=8 means stages 0-7, last is 7 (odd)
+                    // Odd last stage writes to tmp, even last stage writes to main
+                    // Check if (STAGES-1) is odd: if STAGES is even, last stage is odd
+                    if (STAGES[0] == 0) begin
+                        // STAGES is even, so last stage (STAGES-1) is odd: output from tmp buffer
+                        data_real_o <= buffer_real_tmp[output_count];
+                        data_imag_o <= buffer_imag_tmp[output_count];
+                    end else begin
+                        // STAGES is odd, so last stage (STAGES-1) is even: output from main buffer
+                        data_real_o <= buffer_real[output_count];
+                        data_imag_o <= buffer_imag[output_count];
+                    end
                     valid_o <= 1;
 
                     if (output_count < FFT_SIZE - 1) begin
