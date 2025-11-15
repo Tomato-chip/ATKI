@@ -1,71 +1,46 @@
-// ============================================================================
-// fft_256 - 256-Point FFT with 24-bit Fixed-Point Precision
-// ============================================================================
-// Radix-2 Decimation-In-Time (DIT) FFT implementation
-//
-// Features:
-//   - 256-point FFT (8 stages)
-//   - 24-bit signed fixed-point arithmetic (Q1.23 format)
-//   - Pipelined butterfly operations
-//   - Streaming input/output with valid/ready handshaking
-//   - Full complex output (real and imaginary)
-//
-// Timing:
-//   - Input: 256 samples (streamed)
-//   - Processing: ~512 cycles for 8 stages
-//   - Output: 256 frequency bins (streamed)
-//
-// ============================================================================
-
 module fft_256 #(
-    parameter int DATA_WIDTH = 24,      // Bit width for real/imaginary parts
-    parameter int FFT_SIZE = 256,       // FFT length
-    parameter int STAGES = 8            // log2(256) = 8
+    parameter int DATA_WIDTH = 24,
+    parameter int FFT_SIZE = 256,
+    parameter int STAGES = 8
 ) (
-    input  logic                    clk_i,
-    input  logic                    rst_ni,
-
-    // Input stream (time-domain samples)
-    input  logic signed [DATA_WIDTH-1:0] data_real_i,    // Real input
-    input  logic signed [DATA_WIDTH-1:0] data_imag_i,    // Imaginary input (0 for real signals)
-    input  logic                         valid_i,         // Input valid
-    output logic                         ready_o,         // Ready to accept input
-
-    // Output stream (frequency-domain bins)
-    output logic signed [DATA_WIDTH-1:0] data_real_o,    // Real output
-    output logic signed [DATA_WIDTH-1:0] data_imag_o,    // Imaginary output
-    output logic                         valid_o,         // Output valid
-    input  logic                         ready_i,         // Consumer ready
-
-    // Status
-    output logic                         busy_o           // FFT computation in progress
+    input  logic                         clk_i,
+    input  logic                         rst_ni,
+    input  logic signed [DATA_WIDTH-1:0] data_real_i,
+    input  logic signed [DATA_WIDTH-1:0] data_imag_i,
+    input  logic                         valid_i,
+    output logic                         ready_o,
+    output logic signed [DATA_WIDTH-1:0] data_real_o,
+    output logic signed [DATA_WIDTH-1:0] data_imag_o,
+    output logic                         valid_o,
+    input  logic                         ready_i,
+    output logic                         busy_o
 );
 
-    // FSM States
+    localparam int BUTTERFLY_LATENCY = 3;
+
     typedef enum logic [2:0] {
-        IDLE,           // Waiting for input
-        LOADING,        // Loading input samples
-        BIT_REVERSE,    // Bit-reversal reordering
-        PROCESSING,     // FFT computation stages
-        OUTPUTTING      // Streaming results
+        IDLE,
+        LOADING,
+        BIT_REVERSE,
+        PROCESSING,
+        OUTPUTTING
     } state_t;
 
     state_t state, next_state;
 
-    // Memory for ping-pong buffering
     logic signed [DATA_WIDTH-1:0] buffer_real [0:FFT_SIZE-1];
     logic signed [DATA_WIDTH-1:0] buffer_imag [0:FFT_SIZE-1];
     logic signed [DATA_WIDTH-1:0] buffer_real_tmp [0:FFT_SIZE-1];
     logic signed [DATA_WIDTH-1:0] buffer_imag_tmp [0:FFT_SIZE-1];
 
-    // Control signals
-    logic [8:0] input_count;        // Input sample counter (needs to count to 256)
-    logic [8:0] output_count;       // Output sample counter (needs to count to 256)
-    logic [3:0] stage;              // Current FFT stage (needs to hold 0-8)
-    logic [8:0] butterfly_idx;      // Butterfly index within stage (needs to count to 256)
-    logic [7:0] group_size, group_idx, bf_pos, idx_a, idx_b;  // Butterfly index calculation
+    logic [8:0] input_count;
+    logic [8:0] output_count;
+    logic [8:0] bit_reverse_count;
+    logic [3:0] stage;
+    logic [8:0] butterfly_idx;
+    logic [7:0] idx_a, idx_b;
+    logic [8:0] group_size, group_idx, bf_pos;
 
-    // Butterfly computation signals
     logic signed [DATA_WIDTH-1:0] bf_in_a_real, bf_in_a_imag;
     logic signed [DATA_WIDTH-1:0] bf_in_b_real, bf_in_b_imag;
     logic signed [DATA_WIDTH-1:0] bf_out_a_real, bf_out_a_imag;
@@ -73,19 +48,16 @@ module fft_256 #(
     logic signed [DATA_WIDTH-1:0] twiddle_real, twiddle_imag;
     logic [7:0] twiddle_idx;
 
-    // Pipeline registers for proper timing (2-cycle pipeline: address -> twiddle -> butterfly)
     logic signed [DATA_WIDTH-1:0] bf_in_a_real_d, bf_in_a_imag_d;
     logic signed [DATA_WIDTH-1:0] bf_in_b_real_d, bf_in_b_imag_d;
     logic [7:0] idx_a_d, idx_b_d;
     logic [3:0] stage_d;
     logic bf_valid, bf_valid_d;
 
-    // Debug cycle counter
     `ifndef SYNTHESIS
     integer cycle_count = 0;
     `endif
 
-    // Bit-reversal function
     function automatic logic [7:0] bit_reverse(input logic [7:0] in);
         logic [7:0] out;
         for (int i = 0; i < 8; i++) begin
@@ -94,9 +66,6 @@ module fft_256 #(
         return out;
     endfunction
 
-    // ========================================================================
-    // FSM - State Register
-    // ========================================================================
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
             state <= IDLE;
@@ -107,7 +76,6 @@ module fft_256 #(
             state <= next_state;
             `ifndef SYNTHESIS
             cycle_count <= cycle_count + 1;
-            // Debug output
             if (state != next_state) begin
                 $display("FFT: Cycle %0d: State transition %s -> %s (stage=%0d, butterfly_idx=%0d)",
                          cycle_count, state.name(), next_state.name(), stage, butterfly_idx);
@@ -116,9 +84,6 @@ module fft_256 #(
         end
     end
 
-    // ========================================================================
-    // FSM - Next State Logic
-    // ========================================================================
     always_comb begin
         next_state = state;
 
@@ -136,7 +101,9 @@ module fft_256 #(
             end
 
             BIT_REVERSE: begin
-                next_state = PROCESSING;
+                if (bit_reverse_count >= FFT_SIZE - 1) begin
+                    next_state = PROCESSING;
+                end
             end
 
             PROCESSING: begin
@@ -155,18 +122,19 @@ module fft_256 #(
         endcase
     end
 
-    // ========================================================================
-    // Input Loading
-    // ========================================================================
+    initial begin
+        for (int i = 0; i < FFT_SIZE; i++) begin
+            buffer_real[i] = 0;
+            buffer_imag[i] = 0;
+            buffer_real_tmp[i] = 0;
+            buffer_imag_tmp[i] = 0;
+        end
+    end
+
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
             input_count <= 0;
-            for (int i = 0; i < FFT_SIZE; i++) begin
-                buffer_real[i] <= 0;
-                buffer_imag[i] <= 0;
-            end
         end else begin
-            // Load data in LOADING state, or in IDLE state if valid_i asserts (immediate start)
             if ((state == LOADING || state == IDLE) && valid_i) begin
                 buffer_real[input_count] <= data_real_i;
                 buffer_imag[input_count] <= data_imag_i;
@@ -184,34 +152,35 @@ module fft_256 #(
         end
     end
 
-    // ========================================================================
-    // Bit-Reversal Reordering
-    // ========================================================================
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
-            for (int i = 0; i < FFT_SIZE; i++) begin
-                buffer_real_tmp[i] <= 0;
-                buffer_imag_tmp[i] <= 0;
-            end
-        end else if (state == BIT_REVERSE) begin
-            for (int i = 0; i < FFT_SIZE; i++) begin
+            bit_reverse_count <= 0;
+        end else begin
+            if (state == IDLE) begin
+                bit_reverse_count <= 0;
+            end else if (state == BIT_REVERSE && bit_reverse_count < FFT_SIZE) begin
                 logic [7:0] rev_idx;
-                rev_idx = bit_reverse(i[7:0]);
-                buffer_real_tmp[i] <= buffer_real[rev_idx];
-                buffer_imag_tmp[i] <= buffer_imag[rev_idx];
+                rev_idx = bit_reverse(bit_reverse_count[7:0]);
+                buffer_real_tmp[bit_reverse_count] <= buffer_real[rev_idx];
+                buffer_imag_tmp[bit_reverse_count] <= buffer_imag[rev_idx];
 
                 `ifndef SYNTHESIS
-                if (i < 4) begin
-                    $display("FFT: Bit-reverse [%0d] <- [%0d], value=%0d", i, rev_idx, buffer_real[rev_idx]);
+                if (bit_reverse_count < 4) begin
+                    $display("FFT: Bit-reverse [%0d] <- [%0d], value=%0d", bit_reverse_count, rev_idx, buffer_real[rev_idx]);
                 end
                 `endif
+
+                bit_reverse_count <= bit_reverse_count + 1;
             end
         end
     end
 
-    // ========================================================================
-    // FFT Stage Processing - Address Generation
-    // ========================================================================
+    always_comb begin
+        group_size = 1 << (stage + 1);
+        group_idx = butterfly_idx / (group_size >> 1);
+        bf_pos = butterfly_idx % (group_size >> 1);
+    end
+
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
             stage <= 0;
@@ -226,37 +195,26 @@ module fft_256 #(
             bf_valid <= 0;
         end else begin
             if (state == PROCESSING) begin
-                // Check if all stages completed
                 if (stage >= STAGES) begin
-                    // All stages done, FSM will transition to OUTPUTTING
                     stage <= STAGES;
                     butterfly_idx <= 0;
                     bf_valid <= 0;
                 end else if (butterfly_idx < (FFT_SIZE >> 1)) begin
-                    // Process butterflies in current stage
-                    group_size = 1 << (stage + 1);
-                    group_idx = butterfly_idx / (group_size >> 1);
-                    bf_pos = butterfly_idx % (group_size >> 1);
                     idx_a <= group_idx * group_size + bf_pos;
                     idx_b <= (group_idx * group_size + bf_pos) + (group_size >> 1);
 
-                    // Read butterfly inputs (Stage 1 of pipeline)
-                    // Use ping-pong buffering: even stages read from tmp, odd stages read from main
                     if (stage[0] == 0) begin
-                        // Even stages (0, 2, 4, 6): read from tmp buffer
                         bf_in_a_real <= buffer_real_tmp[group_idx * group_size + bf_pos];
                         bf_in_a_imag <= buffer_imag_tmp[group_idx * group_size + bf_pos];
                         bf_in_b_real <= buffer_real_tmp[(group_idx * group_size + bf_pos) + (group_size >> 1)];
                         bf_in_b_imag <= buffer_imag_tmp[(group_idx * group_size + bf_pos) + (group_size >> 1)];
                     end else begin
-                        // Odd stages (1, 3, 5, 7): read from main buffer
                         bf_in_a_real <= buffer_real[group_idx * group_size + bf_pos];
                         bf_in_a_imag <= buffer_imag[group_idx * group_size + bf_pos];
                         bf_in_b_real <= buffer_real[(group_idx * group_size + bf_pos) + (group_size >> 1)];
                         bf_in_b_imag <= buffer_imag[(group_idx * group_size + bf_pos) + (group_size >> 1)];
                     end
 
-                    // Twiddle factor index (ROM will register and output next cycle)
                     twiddle_idx <= (bf_pos * (FFT_SIZE >> (stage + 1)));
 
                     `ifndef SYNTHESIS
@@ -270,16 +228,12 @@ module fft_256 #(
                     bf_valid <= 1;
                     butterfly_idx <= butterfly_idx + 1;
                 end else begin
-                    // All butterflies in current stage processed, wait for pipeline to flush
                     bf_valid <= 0;
-                    // Wait 3 more cycles for pipeline to complete before advancing stage
-                    // This ensures all writes from previous stage are complete
-                    if (butterfly_idx == (FFT_SIZE >> 1) + 3) begin
+                    if (butterfly_idx == (FFT_SIZE >> 1) + BUTTERFLY_LATENCY) begin
                         butterfly_idx <= 0;
                         if (stage < STAGES - 1) begin
                             `ifndef SYNTHESIS
                             $display("FFT: Cycle %0d: Stage %0d -> %0d transition", cycle_count, stage, stage + 1);
-                            // Print first few output values of this stage
                             if (stage[0] == 0) begin
                                 $display("  Stage %0d output (in main buffer): [0]=%0d, [1]=%0d, [16]=%0d",
                                          stage, buffer_real[0], buffer_real[1], buffer_real[16]);
@@ -293,7 +247,7 @@ module fft_256 #(
                             `ifndef SYNTHESIS
                             $display("FFT: Cycle %0d: All stages complete", cycle_count);
                             `endif
-                            stage <= STAGES; // Signal completion
+                            stage <= STAGES; 
                         end
                     end else begin
                         butterfly_idx <= butterfly_idx + 1;
@@ -307,9 +261,6 @@ module fft_256 #(
         end
     end
 
-    // ========================================================================
-    // Pipeline Stage 2 - Delay registers to match twiddle ROM latency
-    // ========================================================================
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
             bf_in_a_real_d <= 0;
@@ -321,7 +272,6 @@ module fft_256 #(
             stage_d <= 0;
             bf_valid_d <= 0;
         end else begin
-            // Delay inputs by one cycle to align with twiddle ROM output
             bf_in_a_real_d <= bf_in_a_real;
             bf_in_a_imag_d <= bf_in_a_imag;
             bf_in_b_real_d <= bf_in_b_real;
@@ -333,54 +283,32 @@ module fft_256 #(
         end
     end
 
-    // ========================================================================
-    // Butterfly Computation (Radix-2 DIT) - Stage 3 (Combinational)
-    // ========================================================================
-    // Butterfly equations:
-    //   A' = A + W * B
-    //   B' = A - W * B
-    // Where W is the twiddle factor e^(-j*2*pi*k/N)
-
     always_comb begin
-        // Complex multiplication: (b_real + j*b_imag) * (w_real + j*w_imag)
-        // Using delayed inputs which are now aligned with twiddle ROM outputs
         logic signed [2*DATA_WIDTH-1:0] mult_real, mult_imag;
         logic signed [DATA_WIDTH-1:0] wb_real, wb_imag;
 
         mult_real = (bf_in_b_real_d * twiddle_real - bf_in_b_imag_d * twiddle_imag);
         mult_imag = (bf_in_b_real_d * twiddle_imag + bf_in_b_imag_d * twiddle_real);
 
-        // Scale back to DATA_WIDTH (Q1.23 format)
-        // Q1.23 * Q1.23 = Q2.46 (2 integer bits, 46 fractional bits)
-        // Extract bits [46:23] to get Q1.23 (1 integer bit, 23 fractional bits)
         wb_real = mult_real[2*DATA_WIDTH-2 -: DATA_WIDTH];
         wb_imag = mult_imag[2*DATA_WIDTH-2 -: DATA_WIDTH];
 
-        // Butterfly outputs with scaling (divide by 2 to prevent overflow)
-        // This is a simple scaling approach - divide by 2 at each stage
         bf_out_a_real = (bf_in_a_real_d + wb_real) >>> 1;
         bf_out_a_imag = (bf_in_a_imag_d + wb_imag) >>> 1;
         bf_out_b_real = (bf_in_a_real_d - wb_real) >>> 1;
         bf_out_b_imag = (bf_in_a_imag_d - wb_imag) >>> 1;
     end
 
-    // ========================================================================
-    // Write butterfly results back to buffer (ping-pong)
-    // ========================================================================
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
-            // Initialize to prevent 'x' propagation
         end else begin
             if (state == PROCESSING && bf_valid_d && stage_d < STAGES) begin
-                // Ping-pong buffering: even stages write to main, odd stages write to tmp
                 if (stage_d[0] == 0) begin
-                    // Even stages (0, 2, 4, 6): write to main buffer
                     buffer_real[idx_a_d] <= bf_out_a_real;
                     buffer_imag[idx_a_d] <= bf_out_a_imag;
                     buffer_real[idx_b_d] <= bf_out_b_real;
                     buffer_imag[idx_b_d] <= bf_out_b_imag;
                 end else begin
-                    // Odd stages (1, 3, 5, 7): write to tmp buffer
                     buffer_real_tmp[idx_a_d] <= bf_out_a_real;
                     buffer_imag_tmp[idx_a_d] <= bf_out_a_imag;
                     buffer_real_tmp[idx_b_d] <= bf_out_b_real;
@@ -399,9 +327,6 @@ module fft_256 #(
         end
     end
 
-    // ========================================================================
-    // Twiddle Factor ROM
-    // ========================================================================
     fft_twiddle_256 u_twiddle (
         .clk_i(clk_i),
         .addr_i(twiddle_idx),
@@ -409,9 +334,6 @@ module fft_256 #(
         .sin_o(twiddle_imag)
     );
 
-    // ========================================================================
-    // Output Streaming
-    // ========================================================================
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
             output_count <= 0;
@@ -421,16 +343,10 @@ module fft_256 #(
         end else begin
             if (state == OUTPUTTING) begin
                 if (ready_i || !valid_o) begin
-                    // Output from correct buffer based on LAST stage number
-                    // STAGES=8 means stages 0-7, last is 7 (odd)
-                    // Odd last stage writes to tmp, even last stage writes to main
-                    // Check if (STAGES-1) is odd: if STAGES is even, last stage is odd
                     if (STAGES[0] == 0) begin
-                        // STAGES is even, so last stage (STAGES-1) is odd: output from tmp buffer
                         data_real_o <= buffer_real_tmp[output_count];
                         data_imag_o <= buffer_imag_tmp[output_count];
                     end else begin
-                        // STAGES is odd, so last stage (STAGES-1) is even: output from main buffer
                         data_real_o <= buffer_real[output_count];
                         data_imag_o <= buffer_imag[output_count];
                     end
@@ -447,9 +363,6 @@ module fft_256 #(
         end
     end
 
-    // ========================================================================
-    // Control Outputs
-    // ========================================================================
     assign ready_o = (state == IDLE) || (state == LOADING);
     assign busy_o = (state != IDLE);
 
