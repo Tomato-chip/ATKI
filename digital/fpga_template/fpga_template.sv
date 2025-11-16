@@ -16,8 +16,7 @@
 // import fpga_template_pkg::*; 
 
 module fpga_template_top (
-    input   clk,
-
+        input   clk,
     //---Debug---------
         output  [5:0] debug_led,
         input   btn_s1_resetb,     // Button 1 input
@@ -25,7 +24,7 @@ module fpga_template_top (
     //---I2S sampler outputs MIC---
         output logic       i2s_sck,
         output logic       i2s_ws,
-        input  logic       mic_sd_0,      // Mikrofon 0 + 1
+        // input  logic       mic_sd_0,      // Mikrofon 0 + 1 (now driven by pcm_rom)
         output logic       buffer_full,
     //---Analog VU Meter Output for Oscilloscope---
         output logic       vu_analog_out,  // PWM output for scope viewing
@@ -48,11 +47,27 @@ module fpga_template_top (
 
     logic signed [23:0] sample_left, sample_right;
     logic        [5:0]  debug_sample_led;
+    logic               mic_sd_0;         // Internal I²S data from pcm_rom
+//--------------------------------------------------------------------------------------------------------
+//  PCM ROM for Test Input (I²S Microphone Emulator)
+//--------------------------------------------------------------------------------------------------------
+
+    pcm_rom #(
+        .WIDTH(24),
+        .ADDR_WIDTH(8)
+    ) u_pcm_rom (
+        .clk_i  (clk),
+        .rst_ni (resetb),
+        .sck_i  (i2s_sck),
+        .ws_i   (i2s_ws),
+        .sd_o   (mic_sd_0)
+    );
+
 //--------------------------------------------------------------------------------------------------------
 //  Inter-module wiring
 //--------------------------------------------------------------------------------------------------------
     logic               sample_ready; // Write valid from sampler
-    logic signed [31:0] data_ram_o;         // 32-bit read data from RAM
+    logic signed [35:0] data_ram_o;         // 36-bit read data from RAM
     logic               read_valid;      // Read data valid
     logic               read_ready;      // VU meter ready to consume
     logic               buffer_ready;    // Buffer swap signal
@@ -66,13 +81,15 @@ module fpga_template_top (
         .sd_i      (mic_sd_0),          // input
         .left_o    (sample_left),       // output [23:0]
         .right_o   (sample_right),      // output [23:0]
-        .ready_o   (sample_ready)        // output
+        .ready_o   (sample_ready)       // output
     );
-assign buffer_full = sample_ready;
+
+    assign buffer_full = sample_ready;
+
     ram_logic u_ram (
         .clk_i              (clk),
         .rst_ni             (resetb),       // Active-low synchronous reset
-        .write_data_i       ({8'b00000000, sample_left}),
+        .write_data_i       ({sample_right[23:6], sample_left[23:6]}),      // bruger kun MSB 18bit 
         .write_valid_i      (sample_ready),       // Write request
         .write_ready_o      (),             // Ready to accept write
         .read_data_o        (data_ram_o),
@@ -88,22 +105,22 @@ assign buffer_full = sample_ready;
 //--------------------------------------------------------------------------------------------------------
 // FFT Module Integration
 //--------------------------------------------------------------------------------------------------------
-    logic signed [23:0] fft_data_real_o;
-    logic signed [23:0] fft_data_imag_o;
+    logic signed [17:0] fft_data_real_o;
+    logic signed [17:0] fft_data_imag_o;
     logic               fft_valid_o;
     logic               fft_ready_i;
     logic               fft_busy_o;
 
     // FFT reads from RAM buffer
     fft_256 #(
-        .DATA_WIDTH(24),
+        .DATA_WIDTH(18),
         .FFT_SIZE(256),
         .STAGES(8)
     ) u_fft (
         .clk_i          (clk),
         .rst_ni         (resetb),
-        .data_real_i    (data_ram_o[23:0]),  // Connect to RAM output
-        .data_imag_i    (24'sd0),             // Real signal only
+        .data_real_i    (data_ram_o[17:0]),   // Connect to RAM output (Only LEFT sample)
+        .data_imag_i    (18'sd0),             // Real signal only
         .valid_i        (read_valid),         // RAM read valid
         .ready_o        (read_ready),         // FFT ready for input
         .data_real_o    (fft_data_real_o),    // Frequency bin real part

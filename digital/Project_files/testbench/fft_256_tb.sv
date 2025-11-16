@@ -13,7 +13,7 @@ module fft_256_tb;
 
     // Parameters
     parameter int CLK_PERIOD = 10;  // 100 MHz clock
-    parameter int DATA_WIDTH = 24;
+    parameter int DATA_WIDTH = 18;
     parameter int FFT_SIZE = 256;
     parameter real PI = 3.14159265359;
 
@@ -96,7 +96,7 @@ module fft_256_tb;
         $display("============================================");
 
         // Generate sine wave at bin 16
-        generate_sine_wave(16, 8388607/4); // Quarter amplitude
+        generate_sine_wave(16, 131071/4); // Quarter amplitude for 18-bit
 
         // Send input samples
         send_fft_input();
@@ -119,7 +119,7 @@ module fft_256_tb;
 
         // Generate DC signal
         for (int i = 0; i < FFT_SIZE; i++) begin
-            input_buffer[i] = 24'sd4194303; // Half max amplitude
+            input_buffer[i] = 18'sd65535; // Half max amplitude for 18-bit
         end
 
         // Send input samples
@@ -142,7 +142,7 @@ module fft_256_tb;
         $display("============================================");
 
         // Generate two-tone signal
-        generate_two_tone(16, 64, 8388607/8, 8388607/8);
+        generate_two_tone(16, 64, 131071/8, 131071/8); // For 18-bit
 
         // Send input samples
         send_fft_input();

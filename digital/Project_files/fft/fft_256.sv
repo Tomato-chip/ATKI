@@ -1,5 +1,5 @@
 module fft_256 #(
-    parameter int DATA_WIDTH = 24,
+    parameter int DATA_WIDTH = 18,
     parameter int FFT_SIZE = 256,
     parameter int STAGES = 8
 ) (
