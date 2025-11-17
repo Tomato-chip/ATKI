@@ -33,7 +33,7 @@
     //
 //==============================================================================
 module ram_logic #(
-    parameter int unsigned WIDTH = 32,          // Data width in bits
+    parameter int unsigned WIDTH = 36,          // Data width in bits
     parameter int unsigned DEPTH = 16,          // Number of samples per buffer
     parameter int unsigned ADDR_WIDTH = $clog2(DEPTH)  // Address bits needed
 ) (
@@ -115,7 +115,12 @@ module ram_logic #(
         end else if (WIDTH == 16) begin
             return {2'b00, addr, 4'b0000};     // addr positioned at [11:4]
         end else if (WIDTH == 8) begin
+            return {1'b0, addr, 5'b00000};     // addr positioned at [12:5]    
+            // 18Kbits:
+        end else if (WIDTH == 36) begin
             return {1'b0, addr, 5'b00000};     // addr positioned at [12:5]
+        end else if (WIDTH == 18) begin
+            return {2'b00, addr, 4'b0000};     // addr positioned at [11:4]
         end else begin
             return {addr, (14-ADDR_WIDTH)'('0)};  // Generic case
         end

@@ -16,7 +16,7 @@ module ram_logic (
 );
 	reg _sv2v_0;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:36:15
-	parameter [31:0] WIDTH = 32;
+	parameter [31:0] WIDTH = 36;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:37:15
 	parameter [31:0] DEPTH = 16;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:38:15
@@ -102,179 +102,185 @@ module ram_logic (
 		else if (WIDTH == 8)
 			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:118:13
 			format_gowin_sp_ram_address = {1'b0, addr, 5'b00000};
+		else if (WIDTH == 36)
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:121:13
+			format_gowin_sp_ram_address = {1'b0, addr, 5'b00000};
+		else if (WIDTH == 18)
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:123:13
+			format_gowin_sp_ram_address = {2'b00, addr, 4'b0000};
 		else
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:120:13
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:125:13
 			format_gowin_sp_ram_address = {addr, sv2v_cast_19EF5(1'sb0)};
 	endfunction
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:128:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:133:5
 	assign write_accepted = write_valid_i && write_ready_o;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:129:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:134:5
 	assign read_accepted = read_ready_i && read_valid_o;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:135:5
-	assign write_ready_o = write_count_q < DEPTH;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:140:5
+	assign write_ready_o = write_count_q < DEPTH;
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:145:5
 	assign write_count_o = write_count_q;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:141:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:146:5
 	assign read_count_o = read_count_q;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:151:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:156:5
 	assign debug_leds_o = {write_buf_sel_q, read_buf_sel_q, state_q[1:0], write_count_q >= (DEPTH / 2), read_count_q >= (DEPTH / 2)};
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:164:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:169:5
 	always @(*) begin
 		if (_sv2v_0)
 			;
-		// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:166:9
+		// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:171:9
 		state_d = state_q;
-		// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:168:9
+		// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:173:9
 		case (state_q)
 			2'd0:
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:171:17
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:176:17
 				if (write_count_q == DEPTH)
-					// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:173:21
+					// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:178:21
 					state_d = 2'd1;
 			2'd1:
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:180:17
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:185:17
 				state_d = 2'd2;
 			2'd2:
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:186:17
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:191:17
 				if (write_count_q == DEPTH)
-					// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:187:21
+					// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:192:21
 					state_d = 2'd1;
 			default:
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:191:22
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:196:22
 				state_d = 2'd0;
 		endcase
 	end
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:200:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:205:5
 	always @(posedge clk_i)
-		// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:201:9
+		// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:206:9
 		if (!rst_ni) begin
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:203:13
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:208:13
 			state_q <= 2'd0;
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:204:13
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:209:13
 			write_addr_q <= 1'sb0;
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:205:13
-			read_addr_q <= 1'sb0;
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:206:13
-			write_count_q <= 1'sb0;
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:207:13
-			read_count_q <= 1'sb0;
 			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:210:13
-			write_buf_sel_q <= 1'b0;
+			read_addr_q <= 1'sb0;
 			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:211:13
-			read_buf_sel_q <= 1'b1;
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:214:13
-			buffer_ready_o <= 1'b0;
+			write_count_q <= 1'sb0;
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:212:13
+			read_count_q <= 1'sb0;
 			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:215:13
-			buffer_overflow_o <= 1'b0;
+			write_buf_sel_q <= 1'b0;
 			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:216:13
-			read_valid_o <= 1'b0;
+			read_buf_sel_q <= 1'b1;
 			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:219:13
-			write_valid_count_q <= 1'sb0;
+			buffer_ready_o <= 1'b0;
 			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:220:13
+			buffer_overflow_o <= 1'b0;
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:221:13
+			read_valid_o <= 1'b0;
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:224:13
+			write_valid_count_q <= 1'sb0;
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:225:13
 			read_accepted_count_q <= 1'sb0;
 		end
 		else begin
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:223:13
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:228:13
 			if (write_valid_i)
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:224:17
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:229:17
 				write_valid_count_q <= write_valid_count_q + 1'b1;
 			if (read_accepted)
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:227:17
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:232:17
 				read_accepted_count_q <= read_accepted_count_q + 1'b1;
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:230:13
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:235:13
 			state_q <= state_d;
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:233:13
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:238:13
 			buffer_ready_o <= 1'b0;
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:234:13
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:239:13
 			buffer_overflow_o <= 1'b0;
 			if (state_q == 2'd1) begin
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:241:17
-				buffer_ready_o <= 1'b1;
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:242:17
-				read_buf_sel_q <= write_buf_sel_q;
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:243:17
-				write_buf_sel_q <= ~write_buf_sel_q;
 				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:246:17
-				write_addr_q <= 1'sb0;
+				buffer_ready_o <= 1'b1;
 				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:247:17
-				write_count_q <= 1'sb0;
+				read_buf_sel_q <= write_buf_sel_q;
 				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:248:17
+				write_buf_sel_q <= ~write_buf_sel_q;
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:251:17
+				write_addr_q <= 1'sb0;
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:252:17
+				write_count_q <= 1'sb0;
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:253:17
 				read_addr_q <= 1'sb0;
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:249:17
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:254:17
 				read_count_q <= 1'sb0;
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:250:17
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:255:17
 				read_valid_o <= 1'b1;
 			end
 			else begin
-				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:255:17
+				// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:260:17
 				if (write_accepted) begin
 					begin
-						// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:256:21
+						// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:261:21
 						if (write_count_q < DEPTH) begin
-							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:257:25
+							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:262:25
 							write_addr_q <= write_addr_q + 1'b1;
-							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:258:25
+							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:263:25
 							write_count_q <= write_count_q + 1'b1;
 						end
 						else
-							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:261:25
+							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:266:25
 							buffer_overflow_o <= 1'b1;
 					end
 				end
 				if (read_accepted && (state_q == 2'd2)) begin
 					begin
-						// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:269:21
+						// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:274:21
 						if (read_count_q < (DEPTH - 1)) begin
-							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:270:25
+							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:275:25
 							read_addr_q <= read_addr_q + 1'b1;
-							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:271:25
+							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:276:25
 							read_count_q <= read_count_q + 1'b1;
-							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:272:25
+							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:277:25
 							read_valid_o <= 1'b1;
 						end
 						else begin
-							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:275:25
+							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:280:25
 							read_addr_q <= 1'sb0;
-							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:276:25
+							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:281:25
 							read_count_q <= 1'sb0;
-							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:277:25
+							// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:282:25
 							read_valid_o <= 1'b0;
 						end
 					end
 				end
 				else if (state_q == 2'd2)
-					// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:281:21
+					// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:286:21
 					read_valid_o <= (read_count_q < DEPTH ? 1'b1 : 1'b0);
 				else
-					// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:284:21
+					// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:289:21
 					read_valid_o <= 1'b0;
 			end
 		end
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:297:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:302:5
 	always @(*) begin
 		if (_sv2v_0)
 			;
-		// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:298:9
+		// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:303:9
 		if (write_buf_sel_q == 1'b0) begin
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:300:13
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:305:13
 			ram0_addr = format_gowin_sp_ram_address(write_addr_q);
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:301:13
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:306:13
 			ram1_addr = format_gowin_sp_ram_address(read_addr_q);
 		end
 		else begin
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:304:13
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:309:13
 			ram0_addr = format_gowin_sp_ram_address(read_addr_q);
-			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:305:13
+			// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:310:13
 			ram1_addr = format_gowin_sp_ram_address(write_addr_q);
 		end
 	end
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:315:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:320:5
 	assign ram0_we = write_accepted && (write_buf_sel_q == 1'b0);
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:316:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:321:5
 	assign ram1_we = write_accepted && (write_buf_sel_q == 1'b1);
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:324:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:329:5
 	assign read_data_o = (state_q == 2'd2 ? (read_buf_sel_q == 1'b0 ? ram0_dout : ram1_dout) : {WIDTH {1'sb0}});
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:338:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:343:5
 	SP pingpong_buffer_ram0(
 		.CLK(clk_i),
 		.CE(1'b1),
@@ -286,15 +292,15 @@ module ram_logic (
 		.DI(write_data_i),
 		.DO(ram0_dout)
 	);
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:349:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:354:5
 	defparam pingpong_buffer_ram0.BIT_WIDTH = WIDTH;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:350:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:355:5
 	defparam pingpong_buffer_ram0.READ_MODE = 1'b0;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:351:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:356:5
 	defparam pingpong_buffer_ram0.WRITE_MODE = 2'b00;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:352:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:357:5
 	defparam pingpong_buffer_ram0.BLK_SEL = 3'b000;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:360:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:365:5
 	SP pingpong_buffer_ram1(
 		.CLK(clk_i),
 		.CE(1'b1),
@@ -306,13 +312,13 @@ module ram_logic (
 		.DI(write_data_i),
 		.DO(ram1_dout)
 	);
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:371:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:376:5
 	defparam pingpong_buffer_ram1.BIT_WIDTH = WIDTH;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:372:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:377:5
 	defparam pingpong_buffer_ram1.READ_MODE = 1'b0;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:373:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:378:5
 	defparam pingpong_buffer_ram1.WRITE_MODE = 2'b00;
-	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:374:5
+	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:379:5
 	defparam pingpong_buffer_ram1.BLK_SEL = 3'b000;
 	initial _sv2v_0 = 0;
 endmodule

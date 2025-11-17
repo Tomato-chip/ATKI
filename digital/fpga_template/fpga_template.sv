@@ -48,7 +48,8 @@ module fpga_template_top (
 //  Inter-module wiring
 //--------------------------------------------------------------------------------------------------------
     logic               sample_ready; // Write valid from sampler
-    logic signed [31:0] data_ram_o;         // 32-bit read data from RAM
+    // logic signed [31:0] data_ram_o;         // 32-bit read data from RAM
+    logic signed [35:0] data_ram_o;         // 32-bit read data from RAM
     logic               read_valid;      // Read data valid
     logic               read_ready;      // VU meter ready to consume
     logic               buffer_ready;    // Buffer swap signal
@@ -68,7 +69,8 @@ assign buffer_full = sample_ready;
     ram_logic u_ram (
         .clk_i              (clk),
         .rst_ni             (resetb),       // Active-low synchronous reset
-        .write_data_i       ({8'b00000000, sample_left}),
+        // .write_data_i       ({8'b00000000, sample_left}),
+        .write_data_i       ({sample_right[23:6], sample_left[23:6]}),
         .write_valid_i      (sample_ready),       // Write request
         .write_ready_o      (),             // Ready to accept write
         .read_data_o        (data_ram_o),
