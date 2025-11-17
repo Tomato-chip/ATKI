@@ -41,12 +41,15 @@
     // for (genvar i = 0; i < 6; i++)
     //     assign debug_led[i] = (i <= steps);    // evt. inverter hvis aktiv lav
 
-    // assign debug_led = ~debug_sample_led[5:0];
+    assign debug_led = ~debug_sample_led[5:0];
     assign sampler_cfg.chanel0_lsb = debug_sample_l[7:0];
     assign sampler_cfg.chanel1_lsb = debug_sample_l[15:8];
     assign sampler_cfg.chanel2_lsb = debug_sample_l[23:16];
 
-
+    logic [5:0] ram_debug_leds;
+    logic [5:0] vu_debug_leds;
+    // assign debug_led =  ~debug_sample_led[5:0];  // Show VU meter output
+    assign debug_led =  ~vu_debug_leds;  // Show debug: state machine
 
 
 //--------------------------------------------------------------------------------------------------------
@@ -120,80 +123,97 @@
             .debug_leds_o       (ram_debug_leds) // Debug LED outputs
         );
 
-    //--------------------------------------------------------------------------------------------------------
-    // FFT Module Integration
-    //--------------------------------------------------------------------------------------------------------
-        logic signed [17:0] fft_data_real_o;
-        logic signed [17:0] fft_data_imag_o;
-        logic               fft_valid_o;
-        logic               fft_ready_i;
-        logic               fft_busy_o;
 
-        // FFT reads from RAM buffer
-        fft_256 #(
-            .DATA_WIDTH(18),
-            .FFT_SIZE(256),
-            .STAGES(8)
-        ) u_fft (
-            .clk_i          (clk),
-            .rst_ni         (resetb),
-            .data_real_i    (data_ram_o[17:0]),   // Connect to RAM output (Only LEFT sample)
-            .data_imag_i    (18'sd0),             // Real signal only
-            .valid_i        (read_valid),         // RAM read valid
-            .ready_o        (read_ready),         // FFT ready for input
-            .data_real_o    (fft_data_real_o),    // Frequency bin real part
-            .data_imag_o    (fft_data_imag_o),    // Frequency bin imaginary part
-            .valid_o        (fft_valid_o),        // Output valid
-            .ready_i        (fft_ready_i),        // Consumer ready
-            .busy_o         (fft_busy_o)          // FFT busy computing
-        );
 
-        assign fft_busy = fft_busy_o;
-        assign fft_output_valid = fft_valid_o;
 
-        // FFT Output Consumer: Peak Detection
-        logic [7:0] current_bin;
-        logic [47:0] max_magnitude;
-        logic [7:0] peak_bin;
-        logic [5:0] fft_debug_leds;
 
-        always_ff @(posedge clk or negedge resetb) begin
-            if (!resetb) begin
-                current_bin <= 0;
-                max_magnitude <= 0;
-                peak_bin <= 0;
-                fft_ready_i <= 1;
-            end else begin
-                if (fft_valid_o && fft_ready_i) begin
-                    // Calculate magnitude squared (real^2 + imag^2)
-                    logic [47:0] mag_sq;
-                    mag_sq = (fft_data_real_o * fft_data_real_o) +
-                            (fft_data_imag_o * fft_data_imag_o);
+            // VU-meter (RAM consumer mode only)
+    vu_meter_6led vu (
+        .clk_i               (clk),
+        .rst_ni              (resetb),
+        .ram_read_data_i     (data_ram_o[17:0]),       // From ram_logic.read_data_o
+        .ram_read_valid_i    (read_valid),          // From ram_logic.read_valid_o
+        .ram_read_ready_o    (read_ready),          // To ram_logic.read_ready_i
+        .ram_buffer_ready_i  (buffer_ready),        // From ram_logic.buffer_ready_o
+        .leds_o              (debug_sample_led),                   // 6-LED output
+        .analog_out_o        (vu_analog_out),                      // PWM analog output for scope
+        .debug_o             (vu_debug_leds)                       // Debug output
+    );
 
-                    // Track maximum (peak detection)
-                    if (current_bin < 128) begin // Only check first half (Nyquist)
-                        if (mag_sq > max_magnitude) begin
-                            max_magnitude <= mag_sq;
-                            peak_bin <= current_bin;
-                        end
-                        current_bin <= current_bin + 1;
-                    end else begin
-                        // End of FFT frame - reset for next buffer
-                        current_bin <= 0;
-                        max_magnitude <= 0;
-                    end
-                end
-            end
-        end
 
-        // Display peak bin on LEDs (scaled to 6 LEDs)
-        assign fft_debug_leds = peak_bin[7:2]; // Divide by 4 to fit in 6 bits
 
-        // Update debug LED display
-        assign vu_debug_leds = fft_debug_leds;
+    // //--------------------------------------------------------------------------------------------------------
+    // // FFT Module Integration
+    // //--------------------------------------------------------------------------------------------------------
+    //     logic signed [17:0] fft_data_real_o;
+    //     logic signed [17:0] fft_data_imag_o;
+    //     logic               fft_valid_o;
+    //     logic               fft_ready_i;
+    //     logic               fft_busy_o;
 
-        // VU meter analog output placeholder
-        assign vu_analog_out = 1'b0;
+    //     // FFT reads from RAM buffer
+    //     fft_256 #(
+    //         .DATA_WIDTH(18),
+    //         .FFT_SIZE(256),
+    //         .STAGES(8)
+    //     ) u_fft (
+    //         .clk_i          (clk),
+    //         .rst_ni         (resetb),
+    //         .data_real_i    (data_ram_o[17:0]),   // Connect to RAM output (Only LEFT sample)
+    //         .data_imag_i    (18'sd0),             // Real signal only
+    //         .valid_i        (read_valid),         // RAM read valid
+    //         .ready_o        (read_ready),         // FFT ready for input
+    //         .data_real_o    (fft_data_real_o),    // Frequency bin real part
+    //         .data_imag_o    (fft_data_imag_o),    // Frequency bin imaginary part
+    //         .valid_o        (fft_valid_o),        // Output valid
+    //         .ready_i        (fft_ready_i),        // Consumer ready
+    //         .busy_o         (fft_busy_o)          // FFT busy computing
+    //     );
+
+    //     assign fft_busy = fft_busy_o;
+    //     assign fft_output_valid = fft_valid_o;
+
+    //     // FFT Output Consumer: Peak Detection
+    //     logic [7:0] current_bin;
+    //     logic [47:0] max_magnitude;
+    //     logic [7:0] peak_bin;
+    //     logic [5:0] fft_debug_leds;
+
+    //     always_ff @(posedge clk or negedge resetb) begin
+    //         if (!resetb) begin
+    //             current_bin <= 0;
+    //             max_magnitude <= 0;
+    //             peak_bin <= 0;
+    //             fft_ready_i <= 1;
+    //         end else begin
+    //             if (fft_valid_o && fft_ready_i) begin
+    //                 // Calculate magnitude squared (real^2 + imag^2)
+    //                 logic [47:0] mag_sq;
+    //                 mag_sq = (fft_data_real_o * fft_data_real_o) +
+    //                         (fft_data_imag_o * fft_data_imag_o);
+
+    //                 // Track maximum (peak detection)
+    //                 if (current_bin < 128) begin // Only check first half (Nyquist)
+    //                     if (mag_sq > max_magnitude) begin
+    //                         max_magnitude <= mag_sq;
+    //                         peak_bin <= current_bin;
+    //                     end
+    //                     current_bin <= current_bin + 1;
+    //                 end else begin
+    //                     // End of FFT frame - reset for next buffer
+    //                     current_bin <= 0;
+    //                     max_magnitude <= 0;
+    //                 end
+    //             end
+    //         end
+    //     end
+
+    //     // Display peak bin on LEDs (scaled to 6 LEDs)
+    //     assign fft_debug_leds = peak_bin[7:2]; // Divide by 4 to fit in 6 bits
+
+    //     // Update debug LED display
+    //     assign vu_debug_leds = fft_debug_leds;
+
 
     //--------------------------------------------------------------------------------------------------------
     // Clock Generator
