@@ -31,12 +31,28 @@ PKG 		= $(WS)/digital/rb_$(PROJ)/rb_$(PROJ)_struct.svh
 $(OBJ):
 	mkdir -p $@
 
-SRC_jesper = \
-	digital/clk_generator/i2s_clock_gen.sv \
-	digital/sampler/i2s_capture_24.sv \
-	digital/sampler/activity_envelope_led6.sv \
-	digital/sampler/vu_meter_6led.sv 
+SRC_RAM = \
+	digital/ram/ram_logic_test.sv
 
+SRC_SAMPLER = \
+	digital/sampler/i2s_capture_24_test.sv 
+
+SRC_FFT = \
+	digital/fft/fft_256.sv \
+	digital/fft/fft_twiddle_256.sv
+
+SRC_CLK = \
+	digital/clk_generator/i2s_clock_gen_test.sv
+
+SRC_DUMMY_PCM = \
+	digital/sampler/dummy_pcm/pcm_rom.v 
+
+SRC_jesper = \
+	 $(SRC_CLK) \
+	 $(SRC_RAM) \
+	 $(SRC_SAMPLER) \
+	 $(SRC_FFT) \
+	 $(SRC_DUMMY_PCM) 
 
 SRC_I2C = \
 	digital/i2c_if/i2c_if.v \
@@ -72,7 +88,7 @@ test:
 
 conv2v: $(SRC_SV)
 	$(foreach s,$(SRC_SV), \
-	  $(shell sv2v -v -I$(WS)/digital --siloed -D$(BOARD_DEFINE) $(PKG) $(s) > $(s).conv.v) \
+	  $(shell sv2v -v -I$(WS)/digital --siloed -D$(BOARD_DEFINE) -DSYNTHESIS $(PKG) $(s) > $(s).conv.v) \
 	  $(info Converting systemverilog $(s) : ))
 
 $(OBJ)/$(PROJ).json: conv2v $(SRC) | $(OBJ) 

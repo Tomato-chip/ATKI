@@ -1,0 +1,203 @@
+VCD info: dumpfile fft_256_tb.vcd opened for output.
+============================================
+Test 1: Single Frequency Sine Wave (Bin 16)
+============================================
+FFT: Loading [0] = 0
+FFT: Loading [1] = 802545
+FFT: Cycle 6: State transition IDLE -> LOADING (stage=0, butterfly_idx=0)
+FFT: Loading [2] = 1482910
+FFT: Loading [3] = 1937515
+FFT: Loading [254] = -1482910
+FFT: Loading [255] = -802545
+FFT: Cycle 261: State transition LOADING -> BIT_REVERSE (stage=0, butterfly_idx=0)
+FFT: Cycle 262: State transition BIT_REVERSE -> PROCESSING (stage=0, butterfly_idx=0)
+FFT: Bit-reverse [0] <- [0], value=0
+FFT: Bit-reverse [1] <- [128], value=0
+FFT: Bit-reverse [2] <- [64], value=0
+FFT: Bit-reverse [3] <- [192], value=0
+FFT: Cycle 263: Addr gen bf_idx=0 -> idx_a=0, idx_b=1
+FFT: Cycle 264: Addr gen bf_idx=1 -> idx_a=2, idx_b=3
+FFT: Cycle 265: Addr gen bf_idx=2 -> idx_a=4, idx_b=5
+FFT: Cycle 265: Writing stage=0, bf_idx=2: [0]=0+j0, [1]=0+j0 (bf_in_a=0, bf_in_b=0, tw=8388607+j0)
+FFT: Cycle 266: Writing stage=0, bf_idx=3: [2]=0+j0, [3]=0+j0 (bf_in_a=0, bf_in_b=0, tw=8388607+j0)
+FFT: Cycle 266: Addr gen bf_idx=3 -> idx_a=6, idx_b=7
+FFT: Cycle 267: Addr gen bf_idx=4 -> idx_a=8, idx_b=9
+FFT: Cycle 267: Writing stage=0, bf_idx=4: [4]=0+j0, [5]=0+j0 (bf_in_a=0, bf_in_b=0, tw=8388607+j0)
+FFT: Cycle 268: Writing stage=0, bf_idx=5: [6]=0+j0, [7]=0+j0 (bf_in_a=0, bf_in_b=0, tw=8388607+j0)
+FFT: Cycle 268: Addr gen bf_idx=5 -> idx_a=10, idx_b=11
+FFT: Cycle 1311: State transition PROCESSING -> OUTPUTTING (stage=8, butterfly_idx=0)
+FFT: Cycle 1567: State transition OUTPUTTING -> IDLE (stage=8, butterfly_idx=0)
+
+Test 1 - Sine Wave Bin 16 - Spectrum Analysis:
+Bin | Real         | Imaginary    | Magnitude
+----|--------------|--------------|------------
+  0 |          -46 |            0 |           46
+  1 |            0 |          -12 |           12
+  2 |            0 |           -6 |            6
+  3 |            0 |           -3 |            3
+  4 |            0 |           -3 |            3
+  5 |            0 |            3 |            3
+  6 |            0 |           -3 |            3
+  7 |            0 |           -3 |            3
+  8 |            0 |            0 |            0
+  9 |            3 |            0 |            3
+ 10 |            2 |           -2 |            3
+ 11 |            0 |           -3 |            3
+ 12 |            0 |           -1 |            1
+ 13 |            4 |            0 |            4
+ 14 |            0 |           -1 |            1
+ 15 |            0 |           -1 |            1
+ 16 |     -5868168 |      1563201 |      6072808
+ 17 |            0 |           -9 |            9
+ 18 |            1 |           -3 |            3
+ 19 |            0 |           -1 |            1
+ 20 |            0 |           -1 |            1
+ 21 |           -2 |            3 |            4
+ 22 |            0 |           -1 |            1
+ 23 |            0 |            0 |            0
+ 24 |            0 |            0 |            0
+ 25 |           -2 |            0 |            2
+ 26 |           -2 |            0 |            2
+ 27 |            0 |            0 |            0
+ 28 |            0 |            0 |            0
+ 29 |           -2 |            2 |            3
+ 30 |           -1 |            0 |            1
+ 31 |           -1 |            0 |            1
+
+Peak detected at bin 176 with magnitude 9825651
+============================================
+Test 2: DC Signal
+============================================
+FFT: Loading [0] = 4194303
+FFT: Cycle 1669: State transition IDLE -> LOADING (stage=0, butterfly_idx=0)
+FFT: Loading [1] = 4194303
+FFT: Loading [2] = 4194303
+FFT: Loading [3] = 4194303
+FFT: Loading [254] = 4194303
+FFT: Loading [255] = 4194303
+FFT: Cycle 1924: State transition LOADING -> BIT_REVERSE (stage=0, butterfly_idx=0)
+FFT: Cycle 1925: State transition BIT_REVERSE -> PROCESSING (stage=0, butterfly_idx=0)
+FFT: Bit-reverse [0] <- [0], value=4194303
+FFT: Bit-reverse [1] <- [128], value=4194303
+FFT: Bit-reverse [2] <- [64], value=4194303
+FFT: Bit-reverse [3] <- [192], value=4194303
+FFT: Cycle 1926: Addr gen bf_idx=0 -> idx_a=0, idx_b=1
+FFT: Cycle 1927: Addr gen bf_idx=1 -> idx_a=2, idx_b=3
+FFT: Cycle 1928: Writing stage=0, bf_idx=2: [0]=8388605+j0, [1]=1+j0 (bf_in_a=4194303, bf_in_b=4194303, tw=8388607+j0)
+FFT: Cycle 1928: Addr gen bf_idx=2 -> idx_a=4, idx_b=5
+FFT: Cycle 1929: Addr gen bf_idx=3 -> idx_a=6, idx_b=7
+FFT: Cycle 1929: Writing stage=0, bf_idx=3: [2]=8388605+j0, [3]=1+j0 (bf_in_a=4194303, bf_in_b=4194303, tw=8388607+j0)
+FFT: Cycle 1930: Writing stage=0, bf_idx=4: [4]=8388605+j0, [5]=1+j0 (bf_in_a=4194303, bf_in_b=4194303, tw=8388607+j0)
+FFT: Cycle 1930: Addr gen bf_idx=4 -> idx_a=8, idx_b=9
+FFT: Cycle 1931: Addr gen bf_idx=5 -> idx_a=10, idx_b=11
+FFT: Cycle 1931: Writing stage=0, bf_idx=5: [6]=8388605+j0, [7]=1+j0 (bf_in_a=4194303, bf_in_b=4194303, tw=8388607+j0)
+FFT: Cycle 2974: State transition PROCESSING -> OUTPUTTING (stage=8, butterfly_idx=0)
+FFT: Cycle 3230: State transition OUTPUTTING -> IDLE (stage=8, butterfly_idx=0)
+
+Test 2 - DC Signal - Spectrum Analysis:
+Bin | Real         | Imaginary    | Magnitude
+----|--------------|--------------|------------
+  0 |         -224 |            0 |          224
+  1 |            1 |          -31 |           31
+  2 |            1 |          -15 |           15
+  3 |            1 |           -7 |            7
+  4 |            0 |            0 |            0
+  5 |            7 |            9 |           11
+  6 |            1 |           -3 |            3
+  7 |            1 |           -3 |            3
+  8 |            0 |            0 |            0
+  9 |            3 |            5 |            6
+ 10 |            3 |            5 |            6
+ 11 |            1 |           -3 |            3
+ 12 |            0 |            0 |            0
+ 13 |            5 |            4 |            6
+ 14 |            1 |           -1 |            1
+ 15 |            0 |            0 |            0
+ 16 |            0 |            0 |            0
+ 17 |            1 |            3 |            3
+ 18 |            1 |            3 |            3
+ 19 |            1 |            3 |            3
+ 20 |            0 |            0 |            0
+ 21 |           -6 |            2 |            6
+ 22 |            1 |           -1 |            1
+ 23 |            1 |            0 |            1
+ 24 |            0 |            0 |            0
+ 25 |            2 |            3 |            4
+ 26 |            2 |            3 |            4
+ 27 |            1 |            0 |            1
+ 28 |            0 |            0 |            0
+ 29 |            3 |            1 |            3
+ 30 |            0 |            0 |            0
+ 31 |            0 |            2 |            2
+
+Peak detected at bin 0 with magnitude 224
+============================================
+Test 3: Two Frequency Signal
+============================================
+FFT: Loading [0] = 0
+FFT: Loading [1] = 1449847
+FFT: Cycle 3332: State transition IDLE -> LOADING (stage=0, butterfly_idx=0)
+FFT: Loading [2] = 741454
+FFT: Loading [3] = -79818
+FFT: Loading [254] = -741454
+FFT: Loading [255] = -1449847
+FFT: Cycle 3587: State transition LOADING -> BIT_REVERSE (stage=0, butterfly_idx=0)
+FFT: Cycle 3588: State transition BIT_REVERSE -> PROCESSING (stage=0, butterfly_idx=0)
+FFT: Bit-reverse [0] <- [0], value=0
+FFT: Bit-reverse [1] <- [128], value=0
+FFT: Bit-reverse [2] <- [64], value=0
+FFT: Bit-reverse [3] <- [192], value=0
+FFT: Cycle 3589: Addr gen bf_idx=0 -> idx_a=0, idx_b=1
+FFT: Cycle 3590: Addr gen bf_idx=1 -> idx_a=2, idx_b=3
+FFT: Cycle 3591: Addr gen bf_idx=2 -> idx_a=4, idx_b=5
+FFT: Cycle 3591: Writing stage=0, bf_idx=2: [0]=0+j0, [1]=0+j0 (bf_in_a=0, bf_in_b=0, tw=8388607+j0)
+FFT: Cycle 3592: Writing stage=0, bf_idx=3: [2]=0+j0, [3]=0+j0 (bf_in_a=0, bf_in_b=0, tw=8388607+j0)
+FFT: Cycle 3592: Addr gen bf_idx=3 -> idx_a=6, idx_b=7
+FFT: Cycle 3593: Addr gen bf_idx=4 -> idx_a=8, idx_b=9
+FFT: Cycle 3593: Writing stage=0, bf_idx=4: [4]=0+j0, [5]=0+j0 (bf_in_a=0, bf_in_b=0, tw=8388607+j0)
+FFT: Cycle 3594: Writing stage=0, bf_idx=5: [6]=0+j0, [7]=0+j0 (bf_in_a=0, bf_in_b=0, tw=8388607+j0)
+FFT: Cycle 3594: Addr gen bf_idx=5 -> idx_a=10, idx_b=11
+FFT: Cycle 4637: State transition PROCESSING -> OUTPUTTING (stage=8, butterfly_idx=0)
+FFT: Cycle 4893: State transition OUTPUTTING -> IDLE (stage=8, butterfly_idx=0)
+
+Test 3 - Two Tone Signal - Spectrum Analysis:
+Bin | Real         | Imaginary    | Magnitude
+----|--------------|--------------|------------
+  0 |          -48 |            0 |           48
+  1 |            0 |          -12 |           12
+  2 |            0 |           -6 |            6
+  3 |            0 |           -3 |            3
+  4 |            0 |           -3 |            3
+  5 |            0 |            3 |            3
+  6 |            0 |           -3 |            3
+  7 |            0 |           -3 |            3
+  8 |            0 |           -3 |            3
+  9 |            3 |            0 |            3
+ 10 |            2 |           -2 |            3
+ 11 |            0 |           -3 |            3
+ 12 |            0 |           -1 |            1
+ 13 |            4 |            0 |            4
+ 14 |            0 |           -1 |            1
+ 15 |            0 |           -1 |            1
+ 16 |     -1036753 |     -8074999 |      8141282
+ 17 |            0 |           -9 |            9
+ 18 |            1 |           -3 |            3
+ 19 |            0 |           -1 |            1
+ 20 |            0 |           -1 |            1
+ 21 |           -2 |            3 |            4
+ 22 |            0 |           -1 |            1
+ 23 |            0 |            0 |            0
+ 24 |            0 |            0 |            0
+ 25 |           -2 |            0 |            2
+ 26 |           -2 |            0 |            2
+ 27 |            0 |            0 |            0
+ 28 |            0 |            0 |            0
+ 29 |           -2 |            2 |            3
+ 30 |           -1 |            0 |            1
+ 31 |           -1 |            0 |            1
+
+Peak detected at bin 16 with magnitude 8141282
+============================================
+All tests completed!
+============================================
+testbench/fft_256_tb.sv:161: $finish called at 50035000 (1ps)

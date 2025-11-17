@@ -1,39 +1,38 @@
-// Boiler plate for a midsize fpga project 
-// 
+//--------------------------------------------------------------------------------------------------------
 
-import fpga_template_pkg::*; 
+    import fpga_template_pkg::*; 
 
-module fpga_template_top (
-    input   clk,
-    //---I2C----------- (Disabled - pins used for UART monitors)
-        //input   i2c_scl,
-        //inout   i2c_sda,
-    //---UART----------
-        input   uart_rx,    // Pin 70 - RX from USB/FTDI
-        output  uart_tx,    // Pin 69 - TX to USB/FTDI
-        output  uart_tx_mon,  // Pin 28 - Scope monitor
-        output  uart_rx_mon,  // Pin 27 - Scope monitor
-    //---UART State Monitors---
-        //output  [1:0] rx_state_mon,
-        //output  [3:0] proto_state_mon,
-        //output  [1:0] tx_state_mon,
+    module fpga_template_top (
+        input   clk,
+        //---I2C----------- (Disabled - pins used for UART monitors)
+            //input   i2c_scl,
+            //inout   i2c_sda,
+        //---UART----------
+            input   uart_rx,    // Pin 70 - RX from USB/FTDI
+            output  uart_tx,    // Pin 69 - TX to USB/FTDI
+            output  uart_tx_mon,  // Pin 28 - Scope monitor
+            output  uart_rx_mon,  // Pin 27 - Scope monitor
+        //---UART State Monitors---
+            //output  [1:0] rx_state_mon,
+            //output  [3:0] proto_state_mon,
+            //output  [1:0] tx_state_mon,
 
-    //---PWM-----------
-        // output pwm_out,
-    //---Debug---------
-        output  [5:0] debug_led,
-        input   btn_s1_resetb,     // Button 1 input
-        input   btn_s2,            // Button 2 input
-    //---I2S sampler outputs MIC---
-        output logic       i2s_sck,
-        output logic       i2s_ws,
-        output logic       buffer_full,
+        //---PWM-----------
+            // output pwm_out,
+        //---Debug---------
+            output  [5:0] debug_led,
+            input   btn_s1_resetb,     // Button 1 input
+            input   btn_s2,            // Button 2 input
+        //---I2S sampler outputs MIC---
+            output logic       i2s_sck,
+            output logic       i2s_ws,
+            output logic       buffer_full,
 
-        input  logic        mic_sd_0       // Mikrofon 0 + 1
-        // input  logic mic_sd_1,       // Mikrofon 2 + 3
-        // input  logic mic_sd_2,       // Mikrofon 4 + 5
-        // input  logic mic_sd_3        // Mikrofon 6 +(7)
-    );
+            // input  logic        mic_sd_0       // Mikrofon 0 + 1
+            // input  logic mic_sd_1,       // Mikrofon 2 + 3
+            // input  logic mic_sd_2,       // Mikrofon 4 + 5
+            // input  logic mic_sd_3        // Mikrofon 6 +(7)
+        );
 
 //--------------------------------------------------------------------------------------------------------
 //  Debug LED og registerbank 
@@ -42,7 +41,7 @@ module fpga_template_top (
     // for (genvar i = 0; i < 6; i++)
     //     assign debug_led[i] = (i <= steps);    // evt. inverter hvis aktiv lav
 
-    assign debug_led = ~debug_sample_led[5:0];
+    // assign debug_led = ~debug_sample_led[5:0];
     assign sampler_cfg.chanel0_lsb = debug_sample_l[7:0];
     assign sampler_cfg.chanel1_lsb = debug_sample_l[15:8];
     assign sampler_cfg.chanel2_lsb = debug_sample_l[23:16];
@@ -67,60 +66,149 @@ module fpga_template_top (
     // assign sampler_cfg.chanel4_lsb = mic_samples[0][7:0];
 
 //--------------------------------------------------------------------------------------------------------
-//  Sampler
+//  min kode
 //--------------------------------------------------------------------------------------------------------
-    wire [23:0] debug_sample_l, debug_sample_r;
-    wire [5:0] debug_sample_led;
+    logic signed [23:0] sample_left, sample_right;
+    logic               mic_sd_0;         // Internal I²S data from pcm_rom
+    //--------------------------------------------------------------------------------------------------------
+    //  PCM ROM for Test Input (I²S Microphone Emulator)
+    //--------------------------------------------------------------------------------------------------------
 
-    //  i2s_sd_edge_meter_led6 u_sd_test (
-    //     .clk_i      (clk),
-    //     .rst_ni     (resetb),
-    //     .sck_i      (i2s_sck),
-    //     .ws_i       (i2s_ws),
-    //     .sd_i       (mic_sd_0),
-    //     .level6_o   (debug_sample_led)
-    // );
+        pcm_rom u_pcm_rom (
+            .clk_i  (clk),
+            .rst_ni (resetb),
+            .sck_i  (i2s_sck),
+            .ws_i   (i2s_ws),
+            .sd_o   (mic_sd_0)
+        );
+    //--------------------------------------------------------------------------------------------------------
+    //  Inter-module wiring
+    //--------------------------------------------------------------------------------------------------------
+        logic               sample_ready; // Write valid from sampler
+        logic signed [35:0] data_ram_o;         // 36-bit read data from RAM
+        logic               read_valid;      // Read data valid
+        logic               read_ready;      // VU meter ready to consume
+        logic               buffer_ready;    // Buffer swap signal
+    //--------------------------------------------------------------------------------------------------------
 
-    i2s_capture_24 u_sampler (
-        .clk_i     (clk),               // input         
-        .rst_ni    (resetb),            // input         
-        .sck_i     (i2s_sck),           // input         
-        .ws_i      (i2s_ws),            // input         
-        .sd_i      (mic_sd_0),          // input    
-        .left_o    (debug_sample_l),  // output [23:0]   
-        .right_o   (debug_sample_r),      // output [23:0]   
-        .ready_o   (buffer_full)        // output          
-    );
-    // VU-meter på KUN én kanal (vælg her: 1=venstre, 0=højre)
-    vu_meter_6led vu (
-        .clk_i          (clk),
-        .rst_ni         (resetb),
-        .sample_stb_i   (buffer_full), // fra cap.ready_o
-        .left_sample_i  (debug_sample_l),
-        .right_sample_i (debug_sample_r),
-        .leds_o         (debug_sample_led)        // forbind til dine 6 LED pins i .cst
-    );
+        i2s_capture_24 u_sampler (
+            .clk_i     (clk),               // input
+            .rst_ni    (resetb),            // input
+            .sck_i     (i2s_sck),           // input
+            .ws_i      (i2s_ws),            // input
+            .sd_i      (mic_sd_0),          // input
+            .left_o    (sample_left),       // output [23:0]
+            .right_o   (sample_right),      // output [23:0]
+            .ready_o   (sample_ready)       // output
+        );
 
-    // activity_envelope_led6 uled6 (
-    //     .clk_i              (clk),
-    //     .rst_ni             (resetb),
-    //     .sample_valid_i     (buffer_full),
-    //     .sample_i           (debug_sample_l),
-    //     .level6_o           (debug_sample_led)
-    // );
+        assign buffer_full = sample_ready;
 
-//--------------------------------------------------------------------------------------------------------
-// Clock Generator
-//--------------------------------------------------------------------------------------------------------
+        ram_logic u_ram (
+            .clk_i              (clk),
+            .rst_ni             (resetb),       // Active-low synchronous reset
+            .write_data_i       ({sample_right[23:6], sample_left[23:6]}),      // bruger kun MSB 18bit 
+            .write_valid_i      (sample_ready),       // Write request
+            .write_ready_o      (),             // Ready to accept write
+            .read_data_o        (data_ram_o),
+            .read_ready_i       (read_ready),             // Reader ready for data
+            .read_valid_o       (read_valid),             // Read data valid
+            .buffer_ready_o     (buffer_ready),           // Pulse: full buffer ready for reading
+            .buffer_overflow_o  (),   // Error: write to full system (drives top-level output)
+            .write_count_o      (),              // Current write buffer fill level
+            .read_count_o       (),              // Current read buffer position
+            .debug_leds_o       (ram_debug_leds) // Debug LED outputs
+        );
 
-    // Generate I2S clock
-    i2s_clock_gen u_i2s_clock (
-        .clk_i        ( clk   ),
-        .rst_ni       ( resetb       ),
-        .sck_o         ( i2s_sck     ),
-        .ws_o          ( i2s_ws      ),
-        .frame_start_o ( )
-    );
+    //--------------------------------------------------------------------------------------------------------
+    // FFT Module Integration
+    //--------------------------------------------------------------------------------------------------------
+        logic signed [17:0] fft_data_real_o;
+        logic signed [17:0] fft_data_imag_o;
+        logic               fft_valid_o;
+        logic               fft_ready_i;
+        logic               fft_busy_o;
+
+        // FFT reads from RAM buffer
+        fft_256 #(
+            .DATA_WIDTH(18),
+            .FFT_SIZE(256),
+            .STAGES(8)
+        ) u_fft (
+            .clk_i          (clk),
+            .rst_ni         (resetb),
+            .data_real_i    (data_ram_o[17:0]),   // Connect to RAM output (Only LEFT sample)
+            .data_imag_i    (18'sd0),             // Real signal only
+            .valid_i        (read_valid),         // RAM read valid
+            .ready_o        (read_ready),         // FFT ready for input
+            .data_real_o    (fft_data_real_o),    // Frequency bin real part
+            .data_imag_o    (fft_data_imag_o),    // Frequency bin imaginary part
+            .valid_o        (fft_valid_o),        // Output valid
+            .ready_i        (fft_ready_i),        // Consumer ready
+            .busy_o         (fft_busy_o)          // FFT busy computing
+        );
+
+        assign fft_busy = fft_busy_o;
+        assign fft_output_valid = fft_valid_o;
+
+        // FFT Output Consumer: Peak Detection
+        logic [7:0] current_bin;
+        logic [47:0] max_magnitude;
+        logic [7:0] peak_bin;
+        logic [5:0] fft_debug_leds;
+
+        always_ff @(posedge clk or negedge resetb) begin
+            if (!resetb) begin
+                current_bin <= 0;
+                max_magnitude <= 0;
+                peak_bin <= 0;
+                fft_ready_i <= 1;
+            end else begin
+                if (fft_valid_o && fft_ready_i) begin
+                    // Calculate magnitude squared (real^2 + imag^2)
+                    logic [47:0] mag_sq;
+                    mag_sq = (fft_data_real_o * fft_data_real_o) +
+                            (fft_data_imag_o * fft_data_imag_o);
+
+                    // Track maximum (peak detection)
+                    if (current_bin < 128) begin // Only check first half (Nyquist)
+                        if (mag_sq > max_magnitude) begin
+                            max_magnitude <= mag_sq;
+                            peak_bin <= current_bin;
+                        end
+                        current_bin <= current_bin + 1;
+                    end else begin
+                        // End of FFT frame - reset for next buffer
+                        current_bin <= 0;
+                        max_magnitude <= 0;
+                    end
+                end
+            end
+        end
+
+        // Display peak bin on LEDs (scaled to 6 LEDs)
+        assign fft_debug_leds = peak_bin[7:2]; // Divide by 4 to fit in 6 bits
+
+        // Update debug LED display
+        assign vu_debug_leds = fft_debug_leds;
+
+        // VU meter analog output placeholder
+        assign vu_analog_out = 1'b0;
+
+    //--------------------------------------------------------------------------------------------------------
+    // Clock Generator
+    //--------------------------------------------------------------------------------------------------------
+
+        // Generate I2S clock
+        i2s_clock_gen u_i2s_clock (
+            .clk_i        ( clk),
+            .rst_ni       ( resetb),
+            .sck_o         ( i2s_sck),
+            .ws_o          ( i2s_ws),
+            .frame_start_o ( )
+        );
+
+
 
 //--------------------------------------------------------------------------------------------------------
 //  assign uart_rx
@@ -273,12 +361,12 @@ module fpga_template_top (
 //-------------------------------------------------------------------------------------------------------- 
 // pwm            
 //-------------------------------------------------------------------------------------------------------- 
-    pwm pwm_inst (
-        .clock_in(clk),
-        .reset(!resetb),
-        .duty_cycle(sys_cfg.pwm_duty),  // 0x80 -> 50% 
-        .pwm_out(pwm_out)
-    ); 
+    // pwm pwm_inst (
+    //     .clock_in(clk),
+    //     .reset(!resetb),
+    //     .duty_cycle(sys_cfg.pwm_duty),  // 0x80 -> 50% 
+    //     .pwm_out(pwm_out)
+    // ); 
          
 //--------------------------------------------------------------------------------------------------------
 // Debug functionality - Button S2 triggers UART debug sequence
