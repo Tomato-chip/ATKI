@@ -34,7 +34,7 @@
 //==============================================================================
 module ram_logic #(
     parameter int unsigned WIDTH = 36,          // Data width in bits
-    parameter int unsigned DEPTH = 16,          // Number of samples per buffer
+    parameter int unsigned DEPTH = 256,          // Number of samples per buffer
     parameter int unsigned ADDR_WIDTH = $clog2(DEPTH)  // Address bits needed
 ) (
     input  logic                    clk_i,          // System clock

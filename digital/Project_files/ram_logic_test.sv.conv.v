@@ -18,7 +18,7 @@ module ram_logic (
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:36:15
 	parameter [31:0] WIDTH = 36;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:37:15
-	parameter [31:0] DEPTH = 16;
+	parameter [31:0] DEPTH = 256;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:38:15
 	parameter [31:0] ADDR_WIDTH = $clog2(DEPTH);
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:40:5
