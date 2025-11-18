@@ -1,5 +1,3 @@
-// Boiler plate for a midsize fpga project 
-// 
 
 import fpga_template_pkg::*; 
 
@@ -17,9 +15,6 @@ module fpga_template_top (
         //output  [1:0] rx_state_mon,
         //output  [3:0] proto_state_mon,
         //output  [1:0] tx_state_mon,
-
-    //---PWM-----------
-        // output pwm_out,
     //---Debug---------
         output  [5:0] debug_led,
         input   btn_s1_resetb,     // Button 1 input
@@ -28,28 +23,13 @@ module fpga_template_top (
         output logic       i2s_sck,
         output logic       i2s_ws,
         output logic       buffer_full,
-
         input  logic        mic_sd_0       // Mikrofon 0 + 1
-        // input  logic mic_sd_1,       // Mikrofon 2 + 3
-        // input  logic mic_sd_2,       // Mikrofon 4 + 5
-        // input  logic mic_sd_3        // Mikrofon 6 +(7)
     );
 
 //--------------------------------------------------------------------------------------------------------
 //  Debug LED og registerbank 
 //--------------------------------------------------------------------------------------------------------
-    // wire [2:0] steps = debug_sample_led[5:3];  // grov skala 0..7
-    // for (genvar i = 0; i < 6; i++)
-    //     assign debug_led[i] = (i <= steps);    // evt. inverter hvis aktiv lav
-
     assign debug_led = ~debug_sample_led[5:0];
-    assign sampler_cfg.chanel0_lsb = debug_sample_l[7:0];
-    assign sampler_cfg.chanel1_lsb = debug_sample_l[15:8];
-    assign sampler_cfg.chanel2_lsb = debug_sample_l[23:16];
-
-
-
-
 //--------------------------------------------------------------------------------------------------------
 // Debug assign kommandoer
 //--------------------------------------------------------------------------------------------------------
@@ -72,42 +52,26 @@ module fpga_template_top (
     wire [23:0] debug_sample_l, debug_sample_r;
     wire [5:0] debug_sample_led;
 
-    //  i2s_sd_edge_meter_led6 u_sd_test (
-    //     .clk_i      (clk),
-    //     .rst_ni     (resetb),
-    //     .sck_i      (i2s_sck),
-    //     .ws_i       (i2s_ws),
-    //     .sd_i       (mic_sd_0),
-    //     .level6_o   (debug_sample_led)
-    // );
-
     i2s_capture_24 u_sampler (
-        .clk_i     (clk),               // input         
-        .rst_ni    (resetb),            // input         
-        .sck_i     (i2s_sck),           // input         
-        .ws_i      (i2s_ws),            // input         
-        .sd_i      (mic_sd_0),          // input    
-        .left_o    (debug_sample_l),  // output [23:0]   
-        .right_o   (debug_sample_r),      // output [23:0]   
-        .ready_o   (buffer_full)        // output          
+        .clk_i     (clk),                        
+        .rst_ni    (resetb),                     
+        .sck_i     (i2s_sck),                    
+        .ws_i      (i2s_ws),                     
+        .sd_i      (mic_sd_0),              
+        .left_o    (debug_sample_l),  
+        .right_o   (debug_sample_r),    
+        .ready_o   (buffer_full)        
     );
-    // VU-meter på KUN én kanal (vælg her: 1=venstre, 0=højre)
+
     vu_meter_6led vu (
         .clk_i          (clk),
         .rst_ni         (resetb),
-        .sample_stb_i   (buffer_full), // fra cap.ready_o
+        .sample_stb_i   (buffer_full), 
         .left_sample_i  (debug_sample_l),
         .right_sample_i (debug_sample_r),
-        .leds_o         (debug_sample_led)        // forbind til dine 6 LED pins i .cst
+        .leds_o         (debug_sample_led) 
     );
 
-    // activity_envelope_led6 uled6 (
-    //     .clk_i              (clk),
-    //     .rst_ni             (resetb),
-    //     .sample_valid_i     (buffer_full),
-    //     .sample_i           (debug_sample_l),
-    //     .level6_o           (debug_sample_led)
-    // );
 
 //--------------------------------------------------------------------------------------------------------
 // Clock Generator
@@ -115,10 +79,10 @@ module fpga_template_top (
 
     // Generate I2S clock
     i2s_clock_gen u_i2s_clock (
-        .clk_i        ( clk   ),
-        .rst_ni       ( resetb       ),
-        .sck_o         ( i2s_sck     ),
-        .ws_o          ( i2s_ws      ),
+        .clk_i         (clk),
+        .rst_ni        (resetb),
+        .sck_o         (i2s_sck),
+        .ws_o          (i2s_ws),
         .frame_start_o ( )
     );
 

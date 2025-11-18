@@ -38,7 +38,7 @@ SRC_jesper = \
 	digital/sampler/vu_meter_6led.sv 
 
 
-SRC_I2C = \
+# SRC_I2C = \
 	digital/i2c_if/i2c_if.v \
 	digital/i2c_if/i2cSlave_define.v \
 	digital/i2c_if/serialInterface.v \
@@ -47,11 +47,11 @@ SRC_I2C = \
 SRC_UART = \
 	digital/uart_if/uart_if.v
 
-SRC_RB_IF = $(SRC_I2C) $(SRC_UART)
+# SRC_RB_IF = $(SRC_I2C) $(SRC_UART)
+SRC_RB_IF = $(SRC_UART)
 
 SRC_LIST = \
 	$(SRC_jesper) \
-	digital/pwm/pwm.v \
 	$(SRC_RB_IF) \
 	digital/rb_$(PROJ)/rb_$(PROJ).sv \
 	digital/$(PROJ)/$(PROJ).sv
@@ -93,7 +93,6 @@ $(OBJ)/$(PROJ).fs: $(OBJ)/$(PROJ)_pnr.json
 
 
 build: $(OBJ)/$(PROJ).fs
-
 
 # Flash to Eprom and reboot
 flash: 
