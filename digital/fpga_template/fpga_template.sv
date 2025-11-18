@@ -2,7 +2,7 @@
 import fpga_template_pkg::*; 
 
 module fpga_template_top (
-    input   clk,
+        input   clk,
     //---I2C----------- (Disabled - pins used for UART monitors)
         //input   i2c_scl,
         //inout   i2c_sda,
@@ -23,18 +23,18 @@ module fpga_template_top (
         output logic       i2s_sck,
         output logic       i2s_ws,
         output logic       buffer_full,
-        input  logic        mic_sd_0       // Mikrofon 0 + 1
+        input  logic       mic_sd_0       // Mikrofon 0 + 1
     );
 
 //--------------------------------------------------------------------------------------------------------
 //  Debug LED og registerbank 
 //--------------------------------------------------------------------------------------------------------
-    assign debug_led = ~debug_sample_led[5:0];
+    // assign debug_led = ~debug_sample_led[5:0];
 //--------------------------------------------------------------------------------------------------------
 // Debug assign kommandoer
 //--------------------------------------------------------------------------------------------------------
-    // assign debug_led_pin = sys_cfg.debug_led;
-    // assign debug_led_pin = sys_cfg.debug_led[5:0];
+    // assign debug_led = sys_cfg.debug_led;
+    assign debug_led = sys_cfg.debug_led[5:0];
     // assign debug_led_pin = {5'b11111,btn_s1_reset};
     // assign debug_led_pin = ram_out[0][5:0];
     // assign sys_cfg.debug_led[5:0] = ram_out[0][5:0];
@@ -90,6 +90,7 @@ module fpga_template_top (
 //--------------------------------------------------------------------------------------------------------
     rb_sys_cfg_wire_t sys_cfg;
     rb_dsp_cfg_wire_t dsp_cfg;
+    rb_sampler_cfg_wire_t sampler_cfg;
     wire resetb = ~btn_s1_resetb;
 
     fpga_template_comm u_comm (
@@ -101,9 +102,9 @@ module fpga_template_top (
         .uart_tx_mon    (uart_tx_mon),
         .uart_rx_mon    (uart_rx_mon),
         .sys_cfg        (sys_cfg),
+        .sampler_cfg    (sampler_cfg),
         .dsp_cfg        (dsp_cfg)
     );
-
 //--------------------------------------------------------------------------------------------------------
 
 endmodule

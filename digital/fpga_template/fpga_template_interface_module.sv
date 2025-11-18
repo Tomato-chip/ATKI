@@ -10,6 +10,7 @@ module fpga_template_comm (
     output logic        uart_rx_mon,
 
     output rb_sys_cfg_wire_t sys_cfg,
+    output rb_sampler_cfg_wire_t sampler_cfg,
     output rb_dsp_cfg_wire_t dsp_cfg
 );
 
@@ -155,6 +156,7 @@ module fpga_template_comm (
         .reg_en             (rb_reg_en),
         .write_en           (rb_write_en),
         .sys_cfg            (sys_cfg),
+        .sampler_cfg        (sampler_cfg),
         .dsp_cfg            (dsp_cfg)
         );
 

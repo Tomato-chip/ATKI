@@ -39,13 +39,15 @@ module fpga_template_top (
 	output wire buffer_full;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:26:9
 	input wire mic_sd_0;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:32:5
-	wire [5:0] debug_sample_led;
-	assign debug_led = ~debug_sample_led[5:0];
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:37:5
+	// removed localparam type fpga_template_pkg_rb_sys_cfg_wire_t
+	wire [42:0] sys_cfg;
+	assign debug_led = sys_cfg[29:24];
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:52:5
 	wire [23:0] debug_sample_l;
 	wire [23:0] debug_sample_r;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:53:5
+	wire [5:0] debug_sample_led;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:55:5
 	wire resetb = ~btn_s1_resetb;
 	i2s_capture_24 u_sampler(
@@ -76,13 +78,14 @@ module fpga_template_top (
 		.frame_start_o()
 	);
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:91:5
-	// removed localparam type fpga_template_pkg_rb_sys_cfg_wire_t
-	wire [42:0] sys_cfg;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:92:5
 	// removed localparam type fpga_template_pkg_rb_dsp_cfg_wire_t
 	wire [7:0] dsp_cfg;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:93:5
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:95:5
+	// removed localparam type fpga_template_pkg_rb_sampler_cfg_wire_t
+	wire [24:0] sampler_cfg;
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:94:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:96:5
 	fpga_template_comm u_comm(
 		.clk(clk),
 		.btn_s1_resetb(btn_s1_resetb),
@@ -92,6 +95,7 @@ module fpga_template_top (
 		.uart_tx_mon(uart_tx_mon),
 		.uart_rx_mon(uart_rx_mon),
 		.sys_cfg(sys_cfg),
+		.sampler_cfg(sampler_cfg),
 		.dsp_cfg(dsp_cfg)
 	);
 endmodule
