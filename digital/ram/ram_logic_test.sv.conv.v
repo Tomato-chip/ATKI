@@ -18,7 +18,7 @@ module ram_logic (
 );
 	reg _sv2v_0;
 	// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:44:15
-	parameter [31:0] WIDTH = 36;
+	parameter [31:0] WIDTH = 32;
 	// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:45:15
 	parameter [31:0] DEPTH = 256;
 	// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:46:15
@@ -110,7 +110,7 @@ module ram_logic (
 			format_gowin_sp_ram_address = {1'b0, addr, 5'b00000};
 		else if (WIDTH == 36)
 			// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:131:13
-			format_gowin_sp_ram_address = {addr, 5'b00000};
+			format_gowin_sp_ram_address = {1'b0, addr, 5'b00000};
 		else if (WIDTH == 18)
 			// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:133:13
 			format_gowin_sp_ram_address = {2'b00, addr, 4'b0000};
@@ -291,7 +291,7 @@ module ram_logic (
 	// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:346:5
 	assign read_data_o = (read_buf_sel_q == 1'b0 ? ram0_dout : ram1_dout);
 	// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:358:5
-	(* keep, blackbox *) SPX9 pingpong_buffer_ram0(
+	SP pingpong_buffer_ram0(
 		.CLK(clk_i),
 		.CE(1'b1),
 		.OCE(1'b0),
@@ -309,9 +309,9 @@ module ram_logic (
 	// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:371:5
 	defparam pingpong_buffer_ram0.WRITE_MODE = 2'b00;
 	// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:372:5
-	defparam pingpong_buffer_ram0.BLK_SEL = 3'b111;
+	defparam pingpong_buffer_ram0.BLK_SEL = 3'b000;
 	// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:380:5
-	(* keep, blackbox *) SPX9 pingpong_buffer_ram1(
+	SP pingpong_buffer_ram1(
 		.CLK(clk_i),
 		.CE(1'b1),
 		.OCE(1'b0),
@@ -329,6 +329,6 @@ module ram_logic (
 	// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:393:5
 	defparam pingpong_buffer_ram1.WRITE_MODE = 2'b00;
 	// Trace: /home/tomato-chip/ATKI/digital/ram/ram_logic_test.sv:394:5
-	defparam pingpong_buffer_ram1.BLK_SEL = 3'b111;
+	defparam pingpong_buffer_ram1.BLK_SEL = 3'b000;
 	initial _sv2v_0 = 0;
 endmodule

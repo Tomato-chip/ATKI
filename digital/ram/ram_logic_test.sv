@@ -41,7 +41,7 @@
     //
 //==============================================================================
 module ram_logic #(
-    parameter int unsigned WIDTH = 36,          // Data width in bits
+    parameter int unsigned WIDTH = 32,          // Data width in bits
     parameter int unsigned DEPTH = 256,         // Number of samples per buffer
     parameter int unsigned ADDR_WIDTH = $clog2(DEPTH)  // Address bits needed
 ) (
@@ -126,9 +126,9 @@ module ram_logic #(
             return {2'b00, addr, 4'b0000};     // addr positioned at [11:4]
         end else if (WIDTH == 8) begin
             return {1'b0, addr, 5'b00000};     // addr positioned at [12:5]
-    // 18Kbits: 512 x 36 mode requires AD[13:5] (9 bits)
+    // 18Kbits:
         end else if (WIDTH == 36) begin
-            return {addr, 5'b00000};           // addr positioned at [13:5] for 512x36
+            return {1'b0, addr, 5'b00000};     // addr positioned at [12:5]
         end else if (WIDTH == 18) begin
             return {2'b00, addr, 4'b0000};     // addr positioned at [11:4]
         end else begin
@@ -355,7 +355,7 @@ module ram_logic #(
     //   - Clock enable (CE) always active for continuous operation
     //   - Output clock enable (OCE) disabled for bypass mode
     //==========================================================================
-    (* keep, blackbox *) SPX9 pingpong_buffer_ram0 (
+    SP pingpong_buffer_ram0 (
         .CLK    (clk_i),            // System clock
         .CE     (1'b1),             // Clock enable always on
         .OCE    (1'b0),             // Output clock enable (bypass mode)
@@ -369,7 +369,7 @@ module ram_logic #(
     defparam pingpong_buffer_ram0.BIT_WIDTH  = WIDTH;   // Data width configuration
     defparam pingpong_buffer_ram0.READ_MODE  = 1'b0;    // BYPASS mode for low latency
     defparam pingpong_buffer_ram0.WRITE_MODE = 2'b00;   // NORMAL write mode
-    defparam pingpong_buffer_ram0.BLK_SEL    = 3'b111;  // 18Kbit mode (SPX9 requires 3'b111)
+    defparam pingpong_buffer_ram0.BLK_SEL    = 3'b000;  // Block selection
 
     //==========================================================================
     // RAM Instantiation - Buffer 1
@@ -377,7 +377,7 @@ module ram_logic #(
     // Second Gowin Single-Port RAM for ping-pong buffer operation.
     // Configured identically to Buffer 0.
     //==========================================================================
-    (* keep, blackbox *) SPX9 pingpong_buffer_ram1 (
+    SP pingpong_buffer_ram1 (
         .CLK    (clk_i),            // System clock
         .CE     (1'b1),             // Clock enable always on
         .OCE    (1'b0),             // Output clock enable (bypass mode)
@@ -391,6 +391,6 @@ module ram_logic #(
     defparam pingpong_buffer_ram1.BIT_WIDTH  = WIDTH;   // Data width configuration
     defparam pingpong_buffer_ram1.READ_MODE  = 1'b0;    // BYPASS mode for low latency
     defparam pingpong_buffer_ram1.WRITE_MODE = 2'b00;   // NORMAL write mode
-    defparam pingpong_buffer_ram1.BLK_SEL    = 3'b111;  // 18Kbit mode (SPX9 requires 3'b111)
+    defparam pingpong_buffer_ram1.BLK_SEL    = 3'b000;  // Block selection
 
 endmodule

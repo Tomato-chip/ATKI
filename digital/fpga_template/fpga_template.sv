@@ -28,7 +28,7 @@
             output logic       i2s_ws,
             output logic       buffer_full,
 
-            input  logic        mic_sd_0       // Mikrofon 0 + 1
+            // input  logic        mic_sd_0       // Mikrofon 0 + 1
             // input  logic mic_sd_1,       // Mikrofon 2 + 3
             // input  logic mic_sd_2,       // Mikrofon 4 + 5
             // input  logic mic_sd_3        // Mikrofon 6 +(7)
@@ -38,9 +38,6 @@
 //  Debug LED og registerbank 
 //--------------------------------------------------------------------------------------------------------
 
-    // assign sampler_cfg.chanel0_lsb = debug_sample_led[5:0];
-    // assign sampler_cfg.chanel1_lsb = debug_sample_l[15:8];
-    // assign sampler_cfg.chanel2_lsb = debug_sample_l[23:16];
 
     logic [5:0] ram_debug_leds;
     logic [5:0] vu_debug_leds;
@@ -93,7 +90,7 @@
             .sd_o   (mic_sd_dummy)
         );
 
-    assign mic_sd = (sd_select_mux == 1'b0) ? sd_mic : mic_sd_dummy;
+    // assign mic_sd = (sd_select_mux == 1'b0) ? sd_mic : mic_sd_dummy;
 
     //--------------------------------------------------------------------------------------------------------
     //  Inter-module wiring
@@ -110,7 +107,7 @@
             .rst_ni    (resetb),            // input
             .sck_i     (i2s_sck),           // input
             .ws_i      (i2s_ws),            // input
-            .sd_i      (mic_sd),          // input
+            .sd_i      (mic_sd_dummy),          // input
             .left_o    (sample_left),       // output [23:0]
             .right_o   (sample_right),      // output [23:0]
             .ready_o   (sample_ready)       // output
@@ -132,8 +129,8 @@
             .write_count_o      (),              // Current write buffer fill level
             .read_count_o       (),              // Current read buffer position
             .debug_leds_o       (ram_debug_leds), // Debug LED outputs
-            .manual_mode_i      (debug_ram),
-            .manual_addr_i      (rb_ram_add)
+            .manual_mode_i      (1'b0),
+            .manual_addr_i      ()
         );
 
 
@@ -144,7 +141,7 @@
     vu_meter_6led vu (
         .clk_i               (clk),
         .rst_ni              (resetb),
-        .ram_read_data_i     (data_ram_o[17:0]),       // From ram_logic.read_data_o
+        .ram_read_data_i     (data_ram_o[23:0]),       // From ram_logic.read_data_o
         .ram_read_valid_i    (read_valid),          // From ram_logic.read_valid_o
         .ram_read_ready_o    (read_ready),          // To ram_logic.read_ready_i
         .ram_buffer_ready_i  (buffer_ready),        // From ram_logic.buffer_ready_o
