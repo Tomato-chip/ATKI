@@ -28,7 +28,7 @@
             output logic       i2s_ws,
             output logic       buffer_full,
 
-            // input  logic        mic_sd_0       // Mikrofon 0 + 1
+            input  logic        mic_sd_0       // Mikrofon 0 + 1
             // input  logic mic_sd_1,       // Mikrofon 2 + 3
             // input  logic mic_sd_2,       // Mikrofon 4 + 5
             // input  logic mic_sd_3        // Mikrofon 6 +(7)
@@ -37,19 +37,26 @@
 //--------------------------------------------------------------------------------------------------------
 //  Debug LED og registerbank 
 //--------------------------------------------------------------------------------------------------------
-    // wire [2:0] steps = debug_sample_led[5:3];  // grov skala 0..7
-    // for (genvar i = 0; i < 6; i++)
-    //     assign debug_led[i] = (i <= steps);    // evt. inverter hvis aktiv lav
 
-    assign debug_led = ~debug_sample_led[5:0];
-    assign sampler_cfg.chanel0_lsb = debug_sample_l[7:0];
-    assign sampler_cfg.chanel1_lsb = debug_sample_l[15:8];
-    assign sampler_cfg.chanel2_lsb = debug_sample_l[23:16];
+    // assign sampler_cfg.chanel0_lsb = debug_sample_led[5:0];
+    // assign sampler_cfg.chanel1_lsb = debug_sample_l[15:8];
+    // assign sampler_cfg.chanel2_lsb = debug_sample_l[23:16];
 
     logic [5:0] ram_debug_leds;
     logic [5:0] vu_debug_leds;
     // assign debug_led =  ~debug_sample_led[5:0];  // Show VU meter output
-    assign debug_led =  ~vu_debug_leds;  // Show debug: state machine
+    assign debug_led =  ~{sd_select_mux, rb_ram_add[0], debug_ram, ram_debug_leds[5],vu_debug_leds[0]};  // Show debug: state machine
+                          // 25          22             21          
+    // register ram 
+    logic debug_ram;
+    logic [7:0] rb_ram_add;
+    logic sd_select_mux;
+
+    assign debug_ram = sampler_cfg.debug_ram;               // 0x21
+    assign rb_ram_add = sampler_cfg.debug_ram_add;          // 0x22
+    // assign sampler_cfg.debug_ram_value0 = data_ram_o[7:0];  // 0x23
+    // assign sampler_cfg.debug_ram_value1 = data_ram_o[15:8]; // 0x24 
+    assign sd_select_mux = sampler_cfg.sd_input_sel;        // 0x25
 
 
 //--------------------------------------------------------------------------------------------------------
@@ -72,7 +79,8 @@
 //  min kode
 //--------------------------------------------------------------------------------------------------------
     logic signed [23:0] sample_left, sample_right;
-    logic               mic_sd_0;         // Internal I²S data from pcm_rom
+    logic               mic_sd, mic_sd_dummy, sd_mic;         // Internal I²S data from pcm_rom
+    assign sd_mic = mic_sd_0;
     //--------------------------------------------------------------------------------------------------------
     //  PCM ROM for Test Input (I²S Microphone Emulator)
     //--------------------------------------------------------------------------------------------------------
@@ -82,8 +90,11 @@
             .rst_ni (resetb),
             .sck_i  (i2s_sck),
             .ws_i   (i2s_ws),
-            .sd_o   (mic_sd_0)
+            .sd_o   (mic_sd_dummy)
         );
+
+    assign mic_sd = (sd_select_mux == 1'b0) ? sd_mic : mic_sd_dummy;
+
     //--------------------------------------------------------------------------------------------------------
     //  Inter-module wiring
     //--------------------------------------------------------------------------------------------------------
@@ -99,7 +110,7 @@
             .rst_ni    (resetb),            // input
             .sck_i     (i2s_sck),           // input
             .ws_i      (i2s_ws),            // input
-            .sd_i      (mic_sd_0),          // input
+            .sd_i      (mic_sd),          // input
             .left_o    (sample_left),       // output [23:0]
             .right_o   (sample_right),      // output [23:0]
             .ready_o   (sample_ready)       // output
@@ -120,7 +131,9 @@
             .buffer_overflow_o  (),   // Error: write to full system (drives top-level output)
             .write_count_o      (),              // Current write buffer fill level
             .read_count_o       (),              // Current read buffer position
-            .debug_leds_o       (ram_debug_leds) // Debug LED outputs
+            .debug_leds_o       (ram_debug_leds), // Debug LED outputs
+            .manual_mode_i      (debug_ram),
+            .manual_addr_i      (rb_ram_add)
         );
 
 
@@ -278,7 +291,7 @@
     assign sys_cfg.monitor_flag = 1'b0;
 
     rb_dsp_cfg_wire_t dsp_cfg;
-
+    rb_sampler_cfg_wire_t sampler_cfg;
 //--------------------------------------------------------------------------------------------------------
 // Interface signals (shared between I2C and UART)
 //--------------------------------------------------------------------------------------------------------
@@ -375,7 +388,8 @@
         .reg_en             (rb_reg_en),
         .write_en           (rb_write_en),
         .sys_cfg            (sys_cfg),
-        .dsp_cfg            (dsp_cfg)
+        .dsp_cfg            (dsp_cfg),
+        .sampler_cfg        (sampler_cfg)
         ); 
 
 //-------------------------------------------------------------------------------------------------------- 

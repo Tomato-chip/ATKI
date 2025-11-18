@@ -45,6 +45,11 @@ reg        reg__dsp_cfg__placeholder3;                           //placeholder
 
     // --- Section: sampler_cfg  Offset: 0x0020  Size: 16
 reg        reg__sampler_cfg__sampler_start;                      //Enable sampler
+reg        reg__sampler_cfg__debug_ram;                          //Enable stuf
+reg [7:0]  reg__sampler_cfg__debug_ram_add;                      //Enable stuf
+reg [7:0]  reg__sampler_cfg__debug_ram_value0;                   //Enable stuf
+reg [7:0]  reg__sampler_cfg__debug_ram_value1;                   //Enable stuf
+reg        reg__sampler_cfg__sd_input_sel;                       //Enable stuf
 
 always_ff @(posedge clk)
 begin
@@ -72,6 +77,11 @@ begin
 
     // --- Section: sampler_cfg  Offset: 0x0020  Size: 16
     reg__sampler_cfg__sampler_start                       <=  1'b1;   //Enable sampler
+    reg__sampler_cfg__debug_ram                           <=  1'b0;   //Enable stuf
+    reg__sampler_cfg__debug_ram_add                       <=  8'b00000000;   //Enable stuf
+    reg__sampler_cfg__debug_ram_value0                    <=  8'b00000000;   //Enable stuf
+    reg__sampler_cfg__debug_ram_value1                    <=  8'b00000000;   //Enable stuf
+    reg__sampler_cfg__sd_input_sel                        <=  1'b0;   //Enable stuf
   end
   else
   begin
@@ -93,6 +103,16 @@ begin
         006 : reg__sys_cfg__debug_data2                         <=   data_write_in[7:0];  // Data store
  
         032 : reg__sampler_cfg__sampler_start                   <=   data_write_in[0:0];  // Enable sampler
+ 
+        033 : reg__sampler_cfg__debug_ram                       <=   data_write_in[0:0];  // Enable stuf
+ 
+        034 : reg__sampler_cfg__debug_ram_add                   <=   data_write_in[7:0];  // Enable stuf
+ 
+        035 : reg__sampler_cfg__debug_ram_value0                <=   data_write_in[7:0];  // Enable stuf
+ 
+        036 : reg__sampler_cfg__debug_ram_value1                <=   data_write_in[7:0];  // Enable stuf
+ 
+        037 : reg__sampler_cfg__sd_input_sel                    <=   data_write_in[0:0];  // Enable stuf
  
         064 : begin 
               reg__dsp_cfg__bypass_enable                       <=   data_write_in[0:0];  // Bypass filters on the DSP
@@ -134,11 +154,15 @@ begin
  
         032 : data_read_out[0:0]  <=  reg__sampler_cfg__sampler_start;          // Enable sampler
  
-        033 : data_read_out[7:0]  <=  sampler_cfg.chanel0_lsb;                  // Enable stuf
+        033 : data_read_out[0:0]  <=  reg__sampler_cfg__debug_ram;              // Enable stuf
  
-        034 : data_read_out[7:0]  <=  sampler_cfg.chanel1_lsb;                  // Enable stuf
+        034 : data_read_out[7:0]  <=  reg__sampler_cfg__debug_ram_add;          // Enable stuf
  
-        035 : data_read_out[7:0]  <=  sampler_cfg.chanel2_lsb;                  // Enable stuf
+        035 : data_read_out[7:0]  <=  reg__sampler_cfg__debug_ram_value0;       // Enable stuf
+ 
+        036 : data_read_out[7:0]  <=  reg__sampler_cfg__debug_ram_value1;       // Enable stuf
+ 
+        037 : data_read_out[0:0]  <=  reg__sampler_cfg__sd_input_sel;           // Enable stuf
  
         064 : begin 
               data_read_out[0:0]  <=  reg__dsp_cfg__bypass_enable;              // Bypass filters on the DSP
@@ -171,4 +195,9 @@ assign dsp_cfg.placeholder1                     = reg__dsp_cfg__placeholder1 ;
 assign dsp_cfg.placeholder2                     = reg__dsp_cfg__placeholder2 ;
 assign dsp_cfg.placeholder3                     = reg__dsp_cfg__placeholder3 ;
 assign sampler_cfg.sampler_start                = reg__sampler_cfg__sampler_start ;
+assign sampler_cfg.debug_ram                    = reg__sampler_cfg__debug_ram ;
+assign sampler_cfg.debug_ram_add                = reg__sampler_cfg__debug_ram_add ;
+assign sampler_cfg.debug_ram_value0             = reg__sampler_cfg__debug_ram_value0 ;
+assign sampler_cfg.debug_ram_value1             = reg__sampler_cfg__debug_ram_value1 ;
+assign sampler_cfg.sd_input_sel                 = reg__sampler_cfg__sd_input_sel ;
 endmodule

@@ -35,7 +35,8 @@ SRC_RAM = \
 	digital/ram/ram_logic_test.sv
 
 SRC_SAMPLER = \
-	digital/sampler/i2s_capture_24_test.sv 
+	digital/sampler/i2s_capture_24_test.sv \
+	digital/sampler/vu_meter_6led.sv 
 
 SRC_FFT = \
 	digital/fft/fft_256.sv \

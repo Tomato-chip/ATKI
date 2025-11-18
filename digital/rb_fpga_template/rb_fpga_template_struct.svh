@@ -32,9 +32,11 @@ typedef struct packed {
 // Wire interface for sampler_cfg
 typedef struct packed {
   logic       sampler_start;                   // Enable sampler
-  logic [7:0] chanel0_lsb;                     // Enable stuf
-  logic [7:0] chanel1_lsb;                     // Enable stuf
-  logic [7:0] chanel2_lsb;                     // Enable stuf
+  logic       debug_ram;                       // Enable stuf
+  logic [7:0] debug_ram_add;                   // Enable stuf
+  logic [7:0] debug_ram_value0;                // Enable stuf
+  logic [7:0] debug_ram_value1;                // Enable stuf
+  logic       sd_input_sel;                    // Enable stuf
 } rb_sampler_cfg_wire_t;
 
 

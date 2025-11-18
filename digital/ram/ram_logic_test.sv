@@ -57,7 +57,9 @@ module ram_logic #(
     output logic                    buffer_overflow_o,   // Error: write overflow
     output logic [ADDR_WIDTH:0]     write_count_o,       // Write buffer fill level
     output logic [ADDR_WIDTH:0]     read_count_o,        // Read buffer position
-    output logic [5:0]              debug_leds_o         // Debug LED outputs
+    output logic [5:0]              debug_leds_o,        // Debug LED outputs
+    input  logic                    manual_mode_i,       // Manual control enable
+    input  logic [ADDR_WIDTH-1:0]   manual_addr_i        // Manual read address
 );
 
     //==========================================================================
@@ -124,9 +126,9 @@ module ram_logic #(
             return {2'b00, addr, 4'b0000};     // addr positioned at [11:4]
         end else if (WIDTH == 8) begin
             return {1'b0, addr, 5'b00000};     // addr positioned at [12:5]
-    // 18Kbits:
+    // 18Kbits: 512 x 36 mode requires AD[13:5] (9 bits)
         end else if (WIDTH == 36) begin
-            return {1'b0, addr, 5'b00000};     // addr positioned at [12:5]
+            return {addr, 5'b00000};           // addr positioned at [13:5] for 512x36
         end else if (WIDTH == 18) begin
             return {2'b00, addr, 4'b0000};     // addr positioned at [11:4]
         end else begin
@@ -138,7 +140,8 @@ module ram_logic #(
     // Handshaking Logic
     //==========================================================================
     // Transaction occurs when both valid and ready are high (AXI-Stream protocol)
-    assign write_accepted = write_valid_i && write_ready_o;
+    // In manual mode, writes are blocked to prevent sampler interference
+    assign write_accepted = write_valid_i && write_ready_o && !manual_mode_i;
     assign read_accepted  = read_ready_i && read_valid_o;
 
     //==========================================================================
@@ -306,15 +309,21 @@ module ram_logic #(
     // Routes write and read addresses to the appropriate RAM based on buffer
     // selection. When write_buf_sel_q=0: writes go to RAM0, reads from RAM1.
     // When write_buf_sel_q=1: writes go to RAM1, reads from RAM0.
+    // In manual mode, read address is overridden with manual_addr_i.
     //==========================================================================
     always_comb begin
+        logic [ADDR_WIDTH-1:0] active_read_addr;
+
+        // Select read address: manual or automatic
+        active_read_addr = manual_mode_i ? manual_addr_i : read_addr_q;
+
         if (write_buf_sel_q == 1'b0) begin
             // Writing to RAM0, reading from RAM1
             ram0_addr = format_gowin_sp_ram_address(write_addr_q);
-            ram1_addr = format_gowin_sp_ram_address(read_addr_q);
+            ram1_addr = format_gowin_sp_ram_address(active_read_addr);
         end else begin
             // Writing to RAM1, reading from RAM0
-            ram0_addr = format_gowin_sp_ram_address(read_addr_q);
+            ram0_addr = format_gowin_sp_ram_address(active_read_addr);
             ram1_addr = format_gowin_sp_ram_address(write_addr_q);
         end
     end
@@ -346,7 +355,7 @@ module ram_logic #(
     //   - Clock enable (CE) always active for continuous operation
     //   - Output clock enable (OCE) disabled for bypass mode
     //==========================================================================
-    SP pingpong_buffer_ram0 (
+    (* keep, blackbox *) SPX9 pingpong_buffer_ram0 (
         .CLK    (clk_i),            // System clock
         .CE     (1'b1),             // Clock enable always on
         .OCE    (1'b0),             // Output clock enable (bypass mode)
@@ -360,7 +369,7 @@ module ram_logic #(
     defparam pingpong_buffer_ram0.BIT_WIDTH  = WIDTH;   // Data width configuration
     defparam pingpong_buffer_ram0.READ_MODE  = 1'b0;    // BYPASS mode for low latency
     defparam pingpong_buffer_ram0.WRITE_MODE = 2'b00;   // NORMAL write mode
-    defparam pingpong_buffer_ram0.BLK_SEL    = 3'b000;  // Block selection
+    defparam pingpong_buffer_ram0.BLK_SEL    = 3'b111;  // 18Kbit mode (SPX9 requires 3'b111)
 
     //==========================================================================
     // RAM Instantiation - Buffer 1
@@ -368,7 +377,7 @@ module ram_logic #(
     // Second Gowin Single-Port RAM for ping-pong buffer operation.
     // Configured identically to Buffer 0.
     //==========================================================================
-    SP pingpong_buffer_ram1 (
+    (* keep, blackbox *) SPX9 pingpong_buffer_ram1 (
         .CLK    (clk_i),            // System clock
         .CE     (1'b1),             // Clock enable always on
         .OCE    (1'b0),             // Output clock enable (bypass mode)
@@ -382,6 +391,6 @@ module ram_logic #(
     defparam pingpong_buffer_ram1.BIT_WIDTH  = WIDTH;   // Data width configuration
     defparam pingpong_buffer_ram1.READ_MODE  = 1'b0;    // BYPASS mode for low latency
     defparam pingpong_buffer_ram1.WRITE_MODE = 2'b00;   // NORMAL write mode
-    defparam pingpong_buffer_ram1.BLK_SEL    = 3'b000;  // Block selection
+    defparam pingpong_buffer_ram1.BLK_SEL    = 3'b111;  // 18Kbit mode (SPX9 requires 3'b111)
 
 endmodule

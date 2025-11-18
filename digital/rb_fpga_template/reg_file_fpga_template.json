@@ -155,30 +155,48 @@
       "description" : "Enable sampler"
     },
     {
-      "symbol"      : "sampler_cfg.chanel0_lsb",
+      "symbol"      : "sampler_cfg.debug_ram",
       "address"     : "0x21",
       "pos"         : "0",
-      "size"        : "8",
+      "size"        : "1",
       "reset"       : "0",
-      "readonly"    : "1",
+      "readonly"    : "0",
       "description" : "Enable stuf"
     },
     {
-      "symbol"      : "sampler_cfg.chanel1_lsb",
+      "symbol"      : "sampler_cfg.debug_ram_add",
       "address"     : "0x22",
       "pos"         : "0",
       "size"        : "8",
       "reset"       : "0",
-      "readonly"    : "1",
+      "readonly"    : "0",
       "description" : "Enable stuf"
     },
     {
-      "symbol"      : "sampler_cfg.chanel2_lsb",
+      "symbol"      : "sampler_cfg.debug_ram_value0",
       "address"     : "0x23",
       "pos"         : "0",
       "size"        : "8",
       "reset"       : "0",
-      "readonly"    : "1",
+      "readonly"    : "0",
+      "description" : "Enable stuf"
+    },
+    {
+      "symbol"      : "sampler_cfg.debug_ram_value1",
+      "address"     : "0x24",
+      "pos"         : "0",
+      "size"        : "8",
+      "reset"       : "0",
+      "readonly"    : "0",
+      "description" : "Enable stuf"
+    },
+    {
+      "symbol"      : "sampler_cfg.sd_input_sel",
+      "address"     : "0x25",
+      "pos"         : "0",
+      "size"        : "1",
+      "reset"       : "0",
+      "readonly"    : "0",
       "description" : "Enable stuf"
     }
   ]
