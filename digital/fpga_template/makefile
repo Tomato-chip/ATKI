@@ -22,19 +22,23 @@ PROJ		= fpga_template
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 WS		= $(abspath $(MAKEFILE_DIR)/../..)
 OBJ 		= $(WS)/obj/$(PROJ)
+BUILD_DIR 	= $(WS)/digital/fpga_template/build
 
 SRC_INC 	= $(WS)/digital
 PKG 		= $(WS)/digital/rb_$(PROJ)/rb_$(PROJ)_struct.svh
 
-.PHONY: $(OBJ)
+.PHONY: $(OBJ) $(BUILD_DIR)
 # Create Object build dir
 $(OBJ):
+	mkdir -p $@
+
+# Create build dir for converted verilog files
+$(BUILD_DIR):
 	mkdir -p $@
 
 SRC_jesper = \
 	digital/clk_generator/i2s_clock_gen.sv \
 	digital/sampler/i2s_capture_24.sv \
-	digital/sampler/activity_envelope_led6.sv \
 	digital/sampler/vu_meter_6led.sv 
 
 
@@ -54,13 +58,15 @@ SRC_LIST = \
 	$(SRC_jesper) \
 	$(SRC_RB_IF) \
 	digital/rb_$(PROJ)/rb_$(PROJ).sv \
+	digital/$(PROJ)/$(PROJ)_interface_module.sv \
 	digital/$(PROJ)/$(PROJ).sv
 
 
 SRC = $(addprefix $(WS)/, $(SRC_LIST) )
 SRC_SV = $(filter %.sv ,$(SRC))
 SRC_V  = $(filter %.v ,$(SRC))
-SRC_CONV = $(addsuffix .conv.v,$(SRC_SV))
+# Place all .conv.v files in build directory with flat structure
+SRC_CONV = $(addprefix $(BUILD_DIR)/,$(notdir $(addsuffix .conv.v,$(SRC_SV))))
 
 $(WS)/digital/rb_$(PROJ)/rb_$(PROJ).sv: $(WS)/digital/rb_$(PROJ)/register_bank.go 
 	cd $(WS)/digital/rb_$(PROJ) && go run register_bank.go > rb_$(PROJ).sv
@@ -70,9 +76,9 @@ test:
 	@echo $(SRC_CONV)
 
 
-conv2v: $(SRC_SV)
+conv2v: $(SRC_SV) | $(BUILD_DIR)
 	$(foreach s,$(SRC_SV), \
-	  $(shell sv2v -v -I$(WS)/digital --siloed -D$(BOARD_DEFINE) $(PKG) $(s) > $(s).conv.v) \
+	  $(shell sv2v -v -I$(WS)/digital --siloed -D$(BOARD_DEFINE) $(PKG) $(s) > $(BUILD_DIR)/$(notdir $(s)).conv.v) \
 	  $(info Converting systemverilog $(s) : ))
 
 $(OBJ)/$(PROJ).json: conv2v $(SRC) | $(OBJ) 
@@ -104,7 +110,7 @@ load:
 	openFPGALoader -d /dev/ttyUSB1 -b ${BOARD} $(OBJ)/$(PROJ).fs
 
 clean:
-	rm -rf $(OBJ)
+	rm -rf $(OBJ) $(BUILD_DIR)
 
 # Show build information and help
 info:
