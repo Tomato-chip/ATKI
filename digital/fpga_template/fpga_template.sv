@@ -39,7 +39,7 @@ module fpga_template_top (
     logic [5:0] ram_debug_leds;
     logic [5:0] vu_debug_leds;
     // assign debug_led =  ~debug_sample_led[5:0];
-    assign debug_led =  ~vu_debug_leds;  // Show VU meter debug
+    assign debug_led =  ~debug_sample_led;  // Show VU meter debug
 
 
     logic signed [23:0] sample_left, sample_right;

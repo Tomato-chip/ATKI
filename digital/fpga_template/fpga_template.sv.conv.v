@@ -37,12 +37,12 @@ module fpga_template_top (
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:40:5
 	wire [5:0] vu_debug_leds;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:42:5
-	assign debug_led = ~vu_debug_leds;
+	wire [5:0] debug_sample_led;
+	assign debug_led = ~debug_sample_led;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:45:5
 	wire signed [23:0] sample_left;
 	wire signed [23:0] sample_right;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:46:5
-	wire [5:0] debug_sample_led;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:50:5
 	wire sample_ready;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:52:5
