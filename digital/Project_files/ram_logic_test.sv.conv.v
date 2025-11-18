@@ -281,7 +281,7 @@ module ram_logic (
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:329:5
 	assign read_data_o = (state_q == 2'd2 ? (read_buf_sel_q == 1'b0 ? ram0_dout : ram1_dout) : {WIDTH {1'sb0}});
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:343:5
-	SP pingpong_buffer_ram0(
+	SPX9 pingpong_buffer_ram0(
 		.CLK(clk_i),
 		.CE(1'b1),
 		.OCE(1'b0),
@@ -301,7 +301,7 @@ module ram_logic (
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:357:5
 	defparam pingpong_buffer_ram0.BLK_SEL = 3'b000;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:365:5
-	SP pingpong_buffer_ram1(
+	SPX9 pingpong_buffer_ram1(
 		.CLK(clk_i),
 		.CE(1'b1),
 		.OCE(1'b0),

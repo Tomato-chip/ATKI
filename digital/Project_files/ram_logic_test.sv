@@ -340,7 +340,7 @@ module ram_logic #(
     //   - Clock enable (CE) always active for continuous operation
     //   - Output clock enable (OCE) disabled for bypass mode
     //==========================================================================
-    SP pingpong_buffer_ram0 (
+    SPX9 pingpong_buffer_ram0 (
         .CLK    (clk_i),            // System clock
         .CE     (1'b1),             // Clock enable always on
         .OCE    (1'b0),             // Output clock enable (bypass mode)
@@ -362,7 +362,7 @@ module ram_logic #(
     // Second Gowin Single-Port RAM for ping-pong buffer operation.
     // Configured identically to Buffer 0.
     //==========================================================================
-    SP pingpong_buffer_ram1 (
+    SPX9 pingpong_buffer_ram1 (
         .CLK    (clk_i),            // System clock
         .CE     (1'b1),             // Clock enable always on
         .OCE    (1'b0),             // Output clock enable (bypass mode)
