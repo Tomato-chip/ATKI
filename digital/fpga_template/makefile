@@ -32,6 +32,9 @@ $(OBJ):
 	mkdir -p $@
 
 SRC_jesper = \
+	digital/Project_files/dummy_pcm/pcm_rom.v \
+	digital/Project_files/fft/fft_256.sv \
+	digital/Project_files/fft/fft_twiddle_256.sv \
 	digital/Project_files/i2s_capture_24_test.sv \
 	digital/Project_files/i2s_clock_gen_test.sv \
 	digital/Project_files/ram_logic_test.sv \

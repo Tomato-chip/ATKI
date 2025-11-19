@@ -19,7 +19,7 @@ module pcm_rom #(
     reg [WIDTH-1:0] mem_right [(1<<ADDR_WIDTH)-1:0];
 
     initial begin
-        $readmemh("/home/tomato-chip/ATKI/tools/pcm_data.hex", mem_left);
+        $readmemh("/home/tomato-chip/ATKI/tools/pcm_data_sine.hex", mem_left);
         $readmemh("/home/tomato-chip/ATKI/tools/pcm_data_cosine.hex", mem_right);
     end
 

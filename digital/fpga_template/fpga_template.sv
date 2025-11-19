@@ -25,6 +25,8 @@ module fpga_template_top (
         output logic       i2s_sck,
         output logic       i2s_ws,
         // input  logic       mic_sd_0,      // Mikrofon 0 + 1 (now driven by pcm_rom)
+        output  logic       mic_sd_0,      // Mikrofon 0 + 1 (now driven by pcm_rom)
+
         output logic       buffer_full,
     //---Analog VU Meter Output for Oscilloscope---
         output logic       vu_analog_out,  // PWM output for scope viewing
@@ -47,7 +49,8 @@ module fpga_template_top (
 
     logic signed [23:0] sample_left, sample_right;
     logic        [5:0]  debug_sample_led;
-    logic               mic_sd_0;         // Internal I²S data from pcm_rom
+    logic               mic_sd_0_test;         // Internal I²S data from pcm_rom
+    assign  mic_sd_0 = mic_sd_0_test;
 //--------------------------------------------------------------------------------------------------------
 //  PCM ROM for Test Input (I²S Microphone Emulator)
 //--------------------------------------------------------------------------------------------------------
@@ -60,7 +63,7 @@ module fpga_template_top (
         .rst_ni (resetb),
         .sck_i  (i2s_sck),
         .ws_i   (i2s_ws),
-        .sd_o   (mic_sd_0)
+        .sd_o   (mic_sd_0_test)
     );
 
 //--------------------------------------------------------------------------------------------------------
@@ -78,7 +81,7 @@ module fpga_template_top (
         .rst_ni    (resetb),            // input
         .sck_i     (i2s_sck),           // input
         .ws_i      (i2s_ws),            // input
-        .sd_i      (mic_sd_0),          // input
+        .sd_i      (mic_sd_0_test),          // input
         .left_o    (sample_left),       // output [23:0]
         .right_o   (sample_right),      // output [23:0]
         .ready_o   (sample_ready)       // output
@@ -111,7 +114,7 @@ module fpga_template_top (
     logic               fft_ready_i;
     logic               fft_busy_o;
 
-    // FFT reads from RAM buffer
+    // FFT reads from audio RAM buffer
     fft_256 #(
         .DATA_WIDTH(18),
         .FFT_SIZE(256),
@@ -126,31 +129,64 @@ module fpga_template_top (
         .data_real_o    (fft_data_real_o),    // Frequency bin real part
         .data_imag_o    (fft_data_imag_o),    // Frequency bin imaginary part
         .valid_o        (fft_valid_o),        // Output valid
-        .ready_i        (fft_ready_i),        // Consumer ready
+        .ready_i        (fft_ready_i),        // Consumer ready (from FFT RAM)
         .busy_o         (fft_busy_o)          // FFT busy computing
     );
 
     assign fft_busy = fft_busy_o;
     assign fft_output_valid = fft_valid_o;
 
-    // FFT Output Consumer: Peak Detection
+//--------------------------------------------------------------------------------------------------------
+// FFT RAM Buffer - Stores FFT output for analysis
+//--------------------------------------------------------------------------------------------------------
+    logic signed [35:0] fft_ram_data_o;     // FFT RAM output: {imag[17:0], real[17:0]}
+    logic               fft_ram_read_valid;
+    logic               fft_ram_read_ready;
+    logic               fft_ram_buffer_ready;
+
+    ram_logic #(
+        .WIDTH(36),      // 18 bits real + 18 bits imaginary
+        .DEPTH(256)      // FFT output size
+    ) u_fft_ram (
+        .clk_i              (clk),
+        .rst_ni             (resetb),
+        .write_data_i       ({fft_data_imag_o, fft_data_real_o}),  // Pack complex data
+        .write_valid_i      (fft_valid_o),                          // FFT output valid
+        .write_ready_o      (fft_ready_i),                          // FFT backpressure
+        .read_data_o        (fft_ram_data_o),                       // Complex data out
+        .read_ready_i       (fft_ram_read_ready),                   // Peak detector ready
+        .read_valid_o       (fft_ram_read_valid),                   // Data available
+        .buffer_ready_o     (fft_ram_buffer_ready),                 // Full FFT frame ready
+        .buffer_overflow_o  (),                                     // Overflow error
+        .write_count_o      (),
+        .read_count_o       (),
+        .debug_leds_o       ()
+    );
+
+    // FFT Output Consumer: Peak Detection (reads from FFT RAM)
     logic [7:0] current_bin;
     logic [47:0] max_magnitude;
     logic [7:0] peak_bin;
     logic [5:0] fft_debug_leds;
+    logic signed [17:0] fft_real_from_ram;
+    logic signed [17:0] fft_imag_from_ram;
+
+    // Unpack complex data from FFT RAM
+    assign fft_real_from_ram = fft_ram_data_o[17:0];
+    assign fft_imag_from_ram = fft_ram_data_o[35:18];
 
     always_ff @(posedge clk or negedge resetb) begin
         if (!resetb) begin
             current_bin <= 0;
             max_magnitude <= 0;
             peak_bin <= 0;
-            fft_ready_i <= 1;
+            fft_ram_read_ready <= 1;
         end else begin
-            if (fft_valid_o && fft_ready_i) begin
+            if (fft_ram_read_valid && fft_ram_read_ready) begin
                 // Calculate magnitude squared (real^2 + imag^2)
                 logic [47:0] mag_sq;
-                mag_sq = (fft_data_real_o * fft_data_real_o) +
-                         (fft_data_imag_o * fft_data_imag_o);
+                mag_sq = (fft_real_from_ram * fft_real_from_ram) +
+                         (fft_imag_from_ram * fft_imag_from_ram);
 
                 // Track maximum (peak detection)
                 if (current_bin < 128) begin // Only check first half (Nyquist)

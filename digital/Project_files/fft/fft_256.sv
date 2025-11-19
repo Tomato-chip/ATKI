@@ -77,8 +77,8 @@ module fft_256 #(
             `ifndef SYNTHESIS
             cycle_count <= cycle_count + 1;
             if (state != next_state) begin
-                $display("FFT: Cycle %0d: State transition %s -> %s (stage=%0d, butterfly_idx=%0d)",
-                         cycle_count, state.name(), next_state.name(), stage, butterfly_idx);
+                $display("FFT: Cycle %0d: State transition %0d -> %0d (stage=%0d, butterfly_idx=%0d)",
+                         cycle_count, state, next_state, stage, butterfly_idx);
             end
             `endif
         end
