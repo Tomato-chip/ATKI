@@ -29,12 +29,13 @@ module fpga_template_top (
 //--------------------------------------------------------------------------------------------------------
 //  Debug LED og registerbank 
 //--------------------------------------------------------------------------------------------------------
-    // assign debug_led = ~debug_sample_led[5:0];
+    assign debug_led = ~debug_sample_led[5:0];
 //--------------------------------------------------------------------------------------------------------
 // Debug assign kommandoer
 //--------------------------------------------------------------------------------------------------------
+    // assign debug_led = sys_cfg.debug_led[5:0];
+
     // assign debug_led = sys_cfg.debug_led;
-    assign debug_led = sys_cfg.debug_led[5:0];
     // assign debug_led_pin = {5'b11111,btn_s1_reset};
     // assign debug_led_pin = ram_out[0][5:0];
     // assign sys_cfg.debug_led[5:0] = ram_out[0][5:0];
