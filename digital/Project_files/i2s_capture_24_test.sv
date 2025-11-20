@@ -91,21 +91,3 @@ module i2s_capture_24 (
     end
   end
 endmodule
-
-
-
-      // if (cnt_q == 6'd25 ) begin
-      //   if (channel_q == 1'b0) begin  // Use captured channel, not current ws_i
-      //     left_o      <= shift25_q[23:0];
-      //     left_done_q <= 1'b1;
-      //   end else begin
-      //     right_o      <= shift25_q[23:0];
-      //     right_done_q <= 1'b1;
-      //   end
-      // end
-
-      // if (left_done_q && right_done_q) begin
-      //   ready_o      <= 1'b1;   // én clk_i-cyklus
-      //   left_done_q  <= 1'b0;
-      //   right_done_q <= 1'b0;
-      // end

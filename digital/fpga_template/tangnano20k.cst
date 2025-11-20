@@ -1,5 +1,14 @@
-IO_LOC  "vu_analog_out" 51;
-IO_PORT "vu_analog_out" DRIVE=4 IO_TYPE=LVCMOS33;
+IO_LOC  "sample_ready_o" 54;
+IO_PORT "sample_ready_o" IO_TYPE=LVCMOS33;
+
+IO_LOC  "debug_tx_request" 56;
+IO_PORT "debug_tx_request" IO_TYPE=LVCMOS33;
+
+IO_LOC  "debug_tx_transmitting" 41;
+IO_PORT "debug_tx_transmitting" IO_TYPE=LVCMOS33;
+
+IO_LOC  "sd_ad2_test" 48;
+IO_PORT "sd_ad2_test" IO_TYPE=LVCMOS33;
 
 IO_LOC  "debug_led[0]" 15;
 IO_PORT "debug_led[0]" DRIVE=8 IO_TYPE=LVCMOS33;
@@ -49,7 +58,7 @@ IO_PORT "uart_tx" IO_TYPE=LVCMOS33;
 IO_LOC  "uart_rx" 70;
 IO_PORT "uart_rx" IO_TYPE=LVCMOS33;
 
-IO_LOC  "buffer_full" 48;
+IO_LOC  "buffer_full" 51;
 IO_PORT "buffer_full" IO_TYPE=LVCMOS33;
 
 IO_LOC  "i2s_ws" 55;

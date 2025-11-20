@@ -33,6 +33,7 @@ $(OBJ):
 
 SRC_jesper = \
 	digital/Project_files/i2s_capture_24_test.sv \
+	digital/Project_files/i2s_transmit_24.sv \
 	digital/Project_files/i2s_clock_gen_test.sv \
 	digital/Project_files/ram_logic_test.sv \
 	digital/Project_files/vu_meter_6led_test.sv
