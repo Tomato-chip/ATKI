@@ -1,0 +1,196 @@
+//==============================================================================
+// Tang Nano 20K Constraints for Test with RAM Readout
+// Pin assignments for fpga_test_sine_readout.sv
+//==============================================================================
+
+//---System Clock and Reset---
+IO_LOC  "clk" 4;
+IO_PORT "clk" IO_TYPE=LVCMOS33;
+
+IO_LOC  "btn_s1_resetb" 88;
+IO_PORT "btn_s1_resetb" IO_TYPE=LVCMOS33;
+
+IO_LOC  "btn_s2" 87;
+IO_PORT "btn_s2" IO_TYPE=LVCMOS33;
+
+//---Debug LEDs (Built-in)---
+IO_LOC  "debug_led[0]" 15;
+IO_PORT "debug_led[0]" DRIVE=8 IO_TYPE=LVCMOS33;
+
+IO_LOC  "debug_led[1]" 16;
+IO_PORT "debug_led[1]" DRIVE=8 IO_TYPE=LVCMOS33;
+
+IO_LOC  "debug_led[2]" 17;
+IO_PORT "debug_led[2]" DRIVE=8 IO_TYPE=LVCMOS33;
+
+IO_LOC  "debug_led[3]" 18;
+IO_PORT "debug_led[3]" DRIVE=8 IO_TYPE=LVCMOS33;
+
+IO_LOC  "debug_led[4]" 19;
+IO_PORT "debug_led[4]" DRIVE=8 IO_TYPE=LVCMOS33;
+
+IO_LOC  "debug_led[5]" 20;
+IO_PORT "debug_led[5]" DRIVE=8 IO_TYPE=LVCMOS33;
+
+//---VU Meter Analog Output---
+IO_LOC  "vu_analog_out" 51;
+IO_PORT "vu_analog_out" DRIVE=4 IO_TYPE=LVCMOS33;
+
+//---Status Output---
+IO_LOC  "buffer_full" 48;
+IO_PORT "buffer_full" IO_TYPE=LVCMOS33 DRIVE=8;
+
+//---Original I2S Signals (kept for compatibility, not used externally)---
+IO_LOC  "i2s_ws" 55;
+IO_PORT "i2s_ws" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "i2s_sck" 49;
+IO_PORT "i2s_sck" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "mic_sd_0" 86;
+IO_PORT "mic_sd_0" IO_TYPE=LVCMOS33;
+
+//---Test I2S Signals (for monitoring internal generator)---
+IO_LOC  "test_i2s_sck" 77;
+IO_PORT "test_i2s_sck" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "test_i2s_ws" 76;
+IO_PORT "test_i2s_ws" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "test_i2s_sd" 75;
+IO_PORT "test_i2s_sd" IO_TYPE=LVCMOS33 DRIVE=8;
+
+//==============================================================================
+// RAM READOUT INTERFACE - Connect to Analog Discovery 2
+//==============================================================================
+
+//---Control Signals (Priority 1)---
+IO_LOC  "ram_read_valid" 25;
+IO_PORT "ram_read_valid" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_buffer_ready" 26;
+IO_PORT "ram_buffer_ready" IO_TYPE=LVCMOS33 DRIVE=8;
+
+//---Write Counter [8:0] (9 bits for monitoring progress)---
+IO_LOC  "ram_write_count[0]" 27;
+IO_PORT "ram_write_count[0]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_write_count[1]" 28;
+IO_PORT "ram_write_count[1]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_write_count[2]" 29;
+IO_PORT "ram_write_count[2]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_write_count[3]" 30;
+IO_PORT "ram_write_count[3]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_write_count[4]" 31;
+IO_PORT "ram_write_count[4]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_write_count[5]" 32;
+IO_PORT "ram_write_count[5]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_write_count[6]" 33;
+IO_PORT "ram_write_count[6]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_write_count[7]" 34;
+IO_PORT "ram_write_count[7]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_write_count[8]" 35;
+IO_PORT "ram_write_count[8]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+//---Read Counter [8:0] (9 bits for monitoring read progress)---
+IO_LOC  "ram_read_count[0]" 36;
+IO_PORT "ram_read_count[0]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_read_count[1]" 37;
+IO_PORT "ram_read_count[1]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_read_count[2]" 38;
+IO_PORT "ram_read_count[2]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_read_count[3]" 39;
+IO_PORT "ram_read_count[3]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_read_count[4]" 40;
+IO_PORT "ram_read_count[4]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_read_count[5]" 41;
+IO_PORT "ram_read_count[5]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_read_count[6]" 42;
+IO_PORT "ram_read_count[6]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_read_count[7]" 43;
+IO_PORT "ram_read_count[7]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_read_count[8]" 44;
+IO_PORT "ram_read_count[8]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+//---RAM Data Output [17:0] (18 bits - left channel data)---
+// Only using first 16 bits if Analog Discovery channels are limited
+IO_LOC  "ram_data_out[0]" 52;
+IO_PORT "ram_data_out[0]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[1]" 53;
+IO_PORT "ram_data_out[1]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[2]" 54;
+IO_PORT "ram_data_out[2]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[3]" 56;
+IO_PORT "ram_data_out[3]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[4]" 57;
+IO_PORT "ram_data_out[4]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[5]" 68;
+IO_PORT "ram_data_out[5]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[6]" 69;
+IO_PORT "ram_data_out[6]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[7]" 70;
+IO_PORT "ram_data_out[7]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[8]" 71;
+IO_PORT "ram_data_out[8]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[9]" 72;
+IO_PORT "ram_data_out[9]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[10]" 73;
+IO_PORT "ram_data_out[10]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[11]" 74;
+IO_PORT "ram_data_out[11]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[12]" 79;
+IO_PORT "ram_data_out[12]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[13]" 80;
+IO_PORT "ram_data_out[13]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[14]" 81;
+IO_PORT "ram_data_out[14]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[15]" 82;
+IO_PORT "ram_data_out[15]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+// Upper 2 bits (if you have extra channels)
+IO_LOC  "ram_data_out[16]" 83;
+IO_PORT "ram_data_out[16]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+IO_LOC  "ram_data_out[17]" 84;
+IO_PORT "ram_data_out[17]" IO_TYPE=LVCMOS33 DRIVE=8;
+
+//==============================================================================
+// Note: Analog Discovery 2 has 16 digital channels
+// Suggested connection priority:
+//   DIO 0: ram_buffer_ready (trigger on this!)
+//   DIO 1: ram_read_valid
+//   DIO 2-9: ram_data_out[7:0] (lower byte of audio data)
+//   DIO 10-15: ram_data_out[13:8] (middle bits)
+// Or monitor counters for progress:
+//   DIO 2-10: ram_write_count[8:0]
+//==============================================================================
