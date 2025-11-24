@@ -21,6 +21,7 @@ module i2s_transmit_24 (
   input  logic               buffer_ready_i, // Buffer ready pulse from RAM
 
   output logic               sd_o,         // I²S serial data output (MSB-first)
+  output logic               ws_o,         // WS output synchronized with transmitted data
 
   // Debug outputs
   output logic               debug_state_transmitting,
@@ -56,22 +57,27 @@ module i2s_transmit_24 (
 
   state_t state_q;
   logic request_sample;  // Pulse to request sample from RAM
+  logic sample_consumed; // Flag: we've used the current sample
 
-  // RAM handshake: ready when requesting a sample
-  assign ram_ready_o = request_sample;
+  // RAM handshake: ready when we're in transmitting state AND have consumed previous sample
+  assign ram_ready_o = (state_q == TRANSMITTING) && sample_consumed;
 
   // Debug outputs
   assign debug_state_transmitting = (state_q == TRANSMITTING);
   assign debug_request_sample = request_sample;
 
+  // WS output - pass through the input WS
+  assign ws_o = ws_i;
+
   always_ff @(posedge clk_i) begin
     if (!rst_ni) begin
-      shift25_q      <= '0;
-      cnt_q          <= 6'd0;
-      sample_reg     <= 24'h0;
-      sd_o           <= 1'b0;
-      state_q        <= IDLE;
-      request_sample <= 1'b0;
+      shift25_q       <= '0;
+      cnt_q           <= 6'd0;
+      sample_reg      <= 24'h0;
+      sd_o            <= 1'b0;
+      state_q         <= IDLE;
+      request_sample  <= 1'b0;
+      sample_consumed <= 1'b0;
     end else begin
 
       // Default: clear request pulse
@@ -82,8 +88,8 @@ module i2s_transmit_24 (
         IDLE: begin
           // Wait for buffer ready signal from RAM
           if (buffer_ready_i) begin
-            state_q        <= TRANSMITTING;
-            request_sample <= 1'b1;  // Request first sample
+            state_q         <= TRANSMITTING;
+            sample_consumed <= 1'b1;  // Ready to accept first sample
           end
         end
 
@@ -91,25 +97,29 @@ module i2s_transmit_24 (
           // Continue transmitting until RAM signals no more valid data
           if (!ram_valid_i && ws_edge) begin
             // RAM has no more data and we're at a frame boundary
-            state_q <= IDLE;
+            state_q         <= IDLE;
+            sample_consumed <= 1'b0;
           end
         end
       endcase
 
-      // Load sample when RAM provides valid data
-      if (ram_valid_i && request_sample) begin
-        sample_reg <= ram_data_i;
+      // Load sample from RAM when handshake completes
+      if (ram_valid_i && ram_ready_o) begin
+        sample_reg      <= ram_data_i;
+        sample_consumed <= 1'b0;  // Mark as not consumed yet
       end
 
       // New half-frame: reset counter and load sample data
       if (ws_edge) begin
           cnt_q     <= 6'd0;
-          shift25_q <= {1'b0, sample_reg};
           sd_o      <= 1'b0;  // Clear output at WS edge
 
-          // Request next sample from RAM when transmitting
+          // Load sample into shift register
+          shift25_q <= {1'b0, sample_reg};
+
+          // Mark sample as consumed, ready for next one
           if (state_q == TRANSMITTING) begin
-            request_sample <= 1'b1;
+            sample_consumed <= 1'b1;
           end
       end else if (sck_rise) begin
         // Shift out data on SCK rising edges

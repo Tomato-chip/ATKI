@@ -39,30 +39,26 @@ module fpga_template_top (
 	output wire sample_ready_o;
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:43:5
 	wire resetb;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:44:9
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:44:5
 	assign resetb = ~btn_s1_resetb;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:50:5
-	wire [5:0] ram_debug_leds;
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:45:5
+	wire [5:0] debug_sample_led;
+	assign debug_led = ~debug_sample_led[5:0];
 	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:51:5
-	wire [5:0] vu_debug_leds;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:54:5
-	assign debug_led = ~ram_debug_leds;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:56:5
 	wire signed [23:0] sample_left;
 	wire signed [23:0] sample_right;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:57:5
-	wire [5:0] debug_sample_led;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:61:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:52:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:56:5
 	wire sample_ready;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:62:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:57:5
 	wire signed [31:0] data_ram_o;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:63:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:58:5
 	wire read_valid;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:64:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:59:5
 	wire read_ready;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:65:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:60:5
 	wire buffer_ready;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:68:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:63:5
 	i2s_capture_24 u_sampler(
 		.clk_i(clk),
 		.rst_ni(resetb),
@@ -73,11 +69,11 @@ module fpga_template_top (
 		.right_o(sample_right),
 		.ready_o(sample_ready)
 	);
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:79:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:74:5
 	assign buffer_full = buffer_ready;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:80:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:75:5
 	assign sample_ready_o = sample_ready;
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:82:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:77:5
 	ram_logic u_ram(
 		.clk_i(clk),
 		.rst_ni(resetb),
@@ -91,9 +87,11 @@ module fpga_template_top (
 		.buffer_overflow_o(),
 		.write_count_o(),
 		.read_count_o(),
-		.debug_leds_o(ram_debug_leds)
+		.debug_leds_o()
 	);
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:98:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:93:5
+	wire sd_test_tansmit;
+	wire ws_test_transmit;
 	i2s_transmit_24 u_transmit(
 		.clk_i(clk),
 		.rst_ni(resetb),
@@ -103,11 +101,45 @@ module fpga_template_top (
 		.ram_valid_i(read_valid),
 		.ram_ready_o(read_ready),
 		.buffer_ready_i(buffer_ready),
-		.sd_o(sd_ad2_test),
+		.sd_o(sd_test_tansmit),
+		.ws_o(ws_test_transmit),
 		.debug_state_transmitting(debug_tx_transmitting),
 		.debug_request_sample(debug_tx_request)
 	);
-	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:117:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:108:5
+	wire signed [23:0] sample_left_ram;
+	wire signed [23:0] sample_right_ram;
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:109:5
+	wire buffer_ready_test;
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:110:5
+	wire sd_test_vu;
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:111:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:112:5
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:114:5
+	assign sd_ad2_test = sd_test_tansmit;
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:115:5
+	assign sd_test_vu = sd_test_tansmit;
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:118:5
+	i2s_capture_24 u_sampler_ram(
+		.clk_i(clk),
+		.rst_ni(resetb),
+		.sck_i(i2s_sck),
+		.ws_i(ws_test_transmit),
+		.sd_i(sd_test_vu),
+		.left_o(sample_left_ram),
+		.right_o(sample_right_ram),
+		.ready_o(buffer_ready_test)
+	);
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:128:5
+	vu_meter_6led vu(
+		.clk_i(clk),
+		.rst_ni(resetb),
+		.sample_stb_i(buffer_ready_test),
+		.left_sample_i(sample_left_ram),
+		.right_sample_i(sample_right_ram),
+		.leds_o(debug_sample_led)
+	);
+	// Trace: /home/tomato-chip/ATKI/digital/fpga_template/fpga_template.sv:141:5
 	i2s_clock_gen u_i2s_clock(
 		.clk_i(clk),
 		.rst_ni(resetb),

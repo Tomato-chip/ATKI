@@ -41,17 +41,12 @@ module fpga_template_top (
 
     );
     logic resetb;
-        assign resetb = ~btn_s1_resetb; 
+    assign resetb = ~btn_s1_resetb; 
+    assign debug_led = ~debug_sample_led[5:0];
+
 //--------------------------------------------------------------------------------------------------------
 //  Debug LED og registerbank
 //--------------------------------------------------------------------------------------------------------
-
-    // Switch between VU meter LEDs, RAM debug LEDs, and VU debug using button 2
-    logic [5:0] ram_debug_leds;
-    logic [5:0] vu_debug_leds;
-    // assign debug_led =  ~debug_sample_led[5:0];  // Show VU meter output
-    // assign debug_led =  ~vu_debug_leds;  // Show debug: state machine
-    assign debug_led =  ~ram_debug_leds;  // Show RAM debug
 
     logic signed [23:0] sample_left, sample_right;
     logic        [5:0]  debug_sample_led;
@@ -92,7 +87,7 @@ module fpga_template_top (
         .buffer_overflow_o  (),   // Error: write to full system (drives top-level output)
         .write_count_o      (),              // Current write buffer fill level
         .read_count_o       (),              // Current read buffer position
-        .debug_leds_o       (ram_debug_leds) // Debug LED outputs
+        .debug_leds_o       () // Debug LED outputs
     );
 
     i2s_transmit_24 u_transmit (
@@ -104,11 +99,40 @@ module fpga_template_top (
         .ram_valid_i                (read_valid),
         .ram_ready_o                (read_ready),
         .buffer_ready_i             (buffer_ready),      // Buffer ready pulse from RAM
-        .sd_o                       (sd_ad2_test),
+        .sd_o                       (sd_test_tansmit),
+        .ws_o                       (ws_test_transmit),  // WS output for loopback
         .debug_state_transmitting   (debug_tx_transmitting),
         .debug_request_sample       (debug_tx_request)
     );
 
+    logic signed [23:0] sample_left_ram, sample_right_ram;
+    logic               buffer_ready_test;    // Buffer swap signal
+    logic               sd_test_vu;           // I2S data to loopback capture
+    logic               sd_test_tansmit;      // I2S data from transmit
+    logic               ws_test_transmit;     // WS from transmit
+
+    assign sd_ad2_test = sd_test_tansmit;
+    assign sd_test_vu = sd_test_tansmit;
+
+
+    i2s_capture_24 u_sampler_ram (
+        .clk_i     (clk),               // input
+        .rst_ni    (resetb),            // input
+        .sck_i     (i2s_sck),           // input
+        .ws_i      (ws_test_transmit),  // Use WS from transmitter for proper sync
+        .sd_i      (sd_test_vu),        // input
+        .left_o    (sample_left_ram),   // output [23:0]
+        .right_o   (sample_right_ram),  // output [23:0]
+        .ready_o   (buffer_ready_test)  // output
+    );
+    vu_meter_6led vu (
+        .clk_i          (clk),
+        .rst_ni         (resetb),
+        .sample_stb_i   (buffer_ready_test),
+        .left_sample_i  (sample_left_ram),
+        .right_sample_i (sample_right_ram),
+        .leds_o         (debug_sample_led)
+    );
 //--------------------------------------------------------------------------------------------------------
 // Clock Generator
 //--------------------------------------------------------------------------------------------------------

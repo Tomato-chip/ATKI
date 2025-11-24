@@ -90,8 +90,8 @@ module ram_logic #(
     logic [13:0]            ram1_addr;          // Formatted address for RAM1
     logic                   ram0_we;            // Write enable for RAM0
     logic                   ram1_we;            // Write enable for RAM1
-    logic [WIDTH-1:0]       ram0_dout;          // Data output from RAM0
-    logic [WIDTH-1:0]       ram1_dout;          // Data output from RAM1
+    logic signed [WIDTH-1:0]       ram0_dout;          // Data output from RAM0
+    logic signed [WIDTH-1:0]       ram1_dout;          // Data output from RAM1
 
     //==========================================================================
     // Function: format_gowin_sp_ram_address

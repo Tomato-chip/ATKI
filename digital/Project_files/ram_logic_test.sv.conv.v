@@ -81,9 +81,9 @@ module ram_logic (
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:92:5
 	wire ram1_we;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:93:5
-	wire [WIDTH - 1:0] ram0_dout;
+	wire signed [WIDTH - 1:0] ram0_dout;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:94:5
-	wire [WIDTH - 1:0] ram1_dout;
+	wire signed [WIDTH - 1:0] ram1_dout;
 	// Trace: /home/tomato-chip/ATKI/digital/Project_files/ram_logic_test.sv:112:5
 	function automatic [(14 - ADDR_WIDTH) - 1:0] sv2v_cast_19EF5;
 		input reg [(14 - ADDR_WIDTH) - 1:0] inp;
